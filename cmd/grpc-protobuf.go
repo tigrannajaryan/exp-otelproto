@@ -11,5 +11,5 @@ import (
 func main() {
 	log.Println("GRPC/Protobuf Experiment.")
 
-	core.Run(&grpcimpl.Client{}, &grpcimpl.Server{}, &traceprotobuf.Generator{})
+	core.RunTest(&grpcimpl.Client{}, &grpcimpl.Server{}, &traceprotobuf.Generator{})
 }

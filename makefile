@@ -8,6 +8,7 @@ gen:
 
 build:
 	go build -o bin/grpc-protobuf cmd/grpc-protobuf.go
+	go build -o bin/grpc-protobuf-agent cmd/grpc-protobuf-agent.go
 
 run:
 	go run cmd/grpc-protobuf.go
