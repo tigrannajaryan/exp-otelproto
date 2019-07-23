@@ -1,11 +1,10 @@
-package grpcimpl
+package grpc_flatbuffers_impl
 
 import (
 	"context"
 	"log"
 
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
-
+	"github.com/tigrannajaryan/exp-otelproto/traceflatbuffers"
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -13,7 +12,7 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client traceprotobuf.TracerClient
+	client traceflatbuffers.TracerClient
 }
 
 func (c *Client) Connect(server string) error {
@@ -22,10 +21,10 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewTracerClient(conn)
+	c.client = traceflatbuffers.NewTracerClient(conn)
 	return nil
 }
 
 func (c *Client) Export(batch core.SpanBatch) {
-	c.client.SendBatch(context.Background(), batch.(*traceprotobuf.SpanBatch))
+	c.client.SendBatch(context.Background(), batch.(*traceflatbuffers.BatchRequest))
 }

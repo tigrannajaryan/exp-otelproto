@@ -1,0 +1,48 @@
+namespace traceflatbuffers;
+
+table SpanBatch {
+  spans:[Span];
+}
+
+enum SpanKind: byte {
+  // Unspecified.
+  SPAN_KIND_UNSPECIFIED = 0,
+
+  // Indicates that the span covers server-side handling of an RPC or other
+  // remote network request.
+  SERVER = 1,
+
+  // Indicates that the span covers the client-side wrapper around an RPC or
+  // other remote request.
+  CLIENT = 2
+}
+
+table Span {
+  trace_id:[ubyte];
+  span_id:[ubyte];
+  tracestate:Tracestate;
+  parent_span_id:[ubyte];
+  name:string;
+  kind:SpanKind;
+  start_time:int64;
+  end_time:int64;
+}
+
+table TracestateEntry {
+  // The key must begin with a lowercase letter, and can only contain
+  // lowercase letters 'a'-'z', digits '0'-'9', underscores '_', dashes
+  // '-', asterisks '*', and forward slashes '/'.
+  key:string;
+
+  // The value is opaque string up to 256 characters printable ASCII
+  // RFC0020 characters (i.e., the range 0x20 to 0x7E) except ',' and '='.
+  // Note that this also excludes tabs, newlines, carriage returns, etc.
+  value:string;
+}
+
+table Tracestate {
+  // A list of entries that represent the Tracestate.
+  entries:[TracestateEntry];
+}
+
+root_type SpanBatch;

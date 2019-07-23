@@ -5,6 +5,8 @@ all: gen build
 gen:
 	protoc -I/usr/local/include -I traceprotobuf/ traceprotobuf/trace.proto --go_out=plugins=grpc:traceprotobuf
 	protoc -I/usr/local/include -I traceprotobuf/ traceprotobuf/resource.proto --go_out=plugins=grpc:traceprotobuf
+	protoc -I/usr/local/include -I traceflatbuffers/ traceflatbuffers/trace.proto --go_out=plugins=grpc:traceflatbuffers
+	flatc --go traceflatbuffers/trace.fbs
 
 build:
 	go build -o bin/grpc-protobuf cmd/grpc-protobuf.go

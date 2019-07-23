@@ -10,11 +10,11 @@ func onBatchReceive(batch SpanBatch) {
 
 func RunTest(clnt Client, srv Server, gen Generator) {
 
+	// Listen locally for Agent's forwarded data
+	go srv.Listen("0.0.0.0:3465", onBatchReceive)
+
 	// Connect to Agent
 	clnt.Connect("localhost:3465")
-
-	// Listen locally for Agent's forwarded data
-	go srv.Listen("0.0.0.0:4848", onBatchReceive)
 
 	// Generate and send a batch
 	batch := gen.GenerateBatch()

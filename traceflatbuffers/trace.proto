@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package traceflatbuffers;
+
+option java_multiple_files = true;
+option java_package = "io.opencensus.proto.trace.v1";
+option java_outer_classname = "TraceProto";
+
+// option go_package = "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1";
+
+option ruby_package = "OpenCensus.Proto.Trace.V1";
+
+// The tracer service definition.
+service Tracer {
+  // Sends a batch
+  rpc SendBatch (BatchRequest) returns (BatchResponse) {}
+}
+
+message BatchRequest {
+  bytes encodedSpans = 1;
+}
+
+message BatchResponse {
+  string message = 1;
+}
