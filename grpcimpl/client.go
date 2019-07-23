@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/tigrannajaryan/exp-otelproto/tracerprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
 
 	"google.golang.org/grpc"
 
@@ -13,7 +13,7 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client tracerprotobuf.TracerClient
+	client traceprotobuf.TracerClient
 }
 
 func (c *Client) Connect(server string) error {
@@ -22,10 +22,10 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = tracerprotobuf.NewTracerClient(conn)
+	c.client = traceprotobuf.NewTracerClient(conn)
 	return nil
 }
 
-func (c *Client) SendBatch(batch core.SpanBatch) {
-	c.client.SendBatch(context.Background(), batch.(*tracerprotobuf.SpanBatch))
+func (c *Client) Export(batch core.SpanBatch) {
+	c.client.SendBatch(context.Background(), batch.(*traceprotobuf.SpanBatch))
 }

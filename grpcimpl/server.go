@@ -5,32 +5,38 @@ import (
 	"log"
 	"net"
 
+	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/tracerprotobuf"
 )
 
 type GrpcServer struct {
 	onReceive func(batch core.SpanBatch)
 }
 
-func (s *GrpcServer) SendBatch(ctx context.Context, batch *tracerprotobuf.SpanBatch) (*tracerprotobuf.BatchResponse, error) {
+func (s *GrpcServer) SendBatch(ctx context.Context, batch *traceprotobuf.SpanBatch) (*traceprotobuf.BatchResponse, error) {
+	log.Printf("Received %d spans", len(batch.Spans))
 	s.onReceive(batch)
-	return &tracerprotobuf.BatchResponse{}, nil
+	return &traceprotobuf.BatchResponse{}, nil
 }
 
 type Server struct {
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
+	log.Println("Starting GRPC Server...")
+
 	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	tracerprotobuf.RegisterTracerServer(s, &GrpcServer{onReceive})
+	traceprotobuf.RegisterTracerServer(s, &GrpcServer{onReceive})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+
+	return nil
 }
