@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+
+package tracerprotobuf;
+
+// The tracer service definition.
+service Tracer {
+  // Sends a batch
+  rpc SendBatch (SpanBatch) returns (BatchResponse) {}
+}
+
+// The request message containing the user's name.
+message SpanBatch {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message BatchResponse {
+  string message = 1;
+}
