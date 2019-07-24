@@ -2,6 +2,7 @@ package traceflatbuffers
 
 import (
 	"encoding/binary"
+	"sync/atomic"
 	"time"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -18,7 +19,7 @@ type Generator struct {
 }
 
 func (g *Generator) GenerateBatch() core.SpanBatch {
-	// traceID := atomic.AddUint64(&g.tracesSent, 1)
+	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	builder := flatbuffers.NewBuilder(1024)
 	const N = 100
@@ -28,25 +29,62 @@ func (g *Generator) GenerateBatch() core.SpanBatch {
 	for i := 0; i < N; i++ {
 		startTime := time.Now()
 
-		//spanID := atomic.AddUint64(&g.spansSent, 1)
+		spanID := atomic.AddUint64(&g.spansSent, 1)
 
 		name := builder.CreateString("load-generator-span")
 
 		//TraceId := generateTraceID(traceID)
 		//SpanId := generateSpanID(spanID)
 
+		seqNumKey := builder.CreateString("load_generator.span_seq_num")
+
+		Int64ValueStart(builder)
+		Int64ValueAddInt64Value(builder, int64(spanID))
+		seqNumVal := Int64ValueEnd(builder)
+
+		AttributeStart(builder)
+		AttributeAddKey(builder, seqNumKey)
+		AttributeAddValueType(builder, AttributeValueInt64Value)
+		AttributeAddValue(builder, seqNumVal)
+		attr1 := AttributeEnd(builder)
+
+		seqNumKey = builder.CreateString("load_generator.trace_seq_num")
+
+		Int64ValueStart(builder)
+		Int64ValueAddInt64Value(builder, int64(traceID))
+		seqNumVal = Int64ValueEnd(builder)
+
+		AttributeStart(builder)
+		AttributeAddKey(builder, seqNumKey)
+		AttributeAddValueType(builder, AttributeValueInt64Value)
+		AttributeAddValue(builder, seqNumVal)
+		attr2 := AttributeEnd(builder)
+
+		SpanStartAttributesVector(builder, 2)
+		builder.PrependUOffsetT(attr1)
+		builder.PrependUOffsetT(attr2)
+		attrs := builder.EndVector(2)
+
 		SpanStart(builder)
+
+		SpanAddTraceIdLo(builder, traceID)
+		SpanAddTraceIdHi(builder, 0)
+		SpanAddSpanId(builder, spanID)
 		SpanAddName(builder, name)
 		SpanAddKind(builder, SpanKindCLIENT)
 		SpanAddStartTime(builder, startTime.UnixNano())
 		SpanAddEndTime(builder, startTime.Add(time.Duration(time.Millisecond)).UnixNano())
+
+		SpanAddAttributes(builder, attrs)
+
 		spans[i] = SpanEnd(builder)
 
 		// Create a span.
 		//span := &Span{
 		//	Attributes: &Span_Attributes{
 		//		AttributeMap: map[string]*AttributeValue{
-		//			"load_generator.span_seq_num":  &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}},
+		//			"load_generator.span_seq_num":  &AttributeValue{Value: &AttributeValue_IntValu
+		//			e{IntValue: int64(spanID)}},
 		//			"load_generator.trace_seq_num": &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}},
 		//		},
 		//	},

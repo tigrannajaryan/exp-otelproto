@@ -1,7 +1,7 @@
 namespace traceflatbuffers;
 
 table SpanBatch {
-  spans:[Span];
+  spans: [Span];
 }
 
 enum SpanKind: byte {
@@ -18,31 +18,61 @@ enum SpanKind: byte {
 }
 
 table Span {
-  trace_id:[ubyte];
-  span_id:[ubyte];
-  tracestate:Tracestate;
-  parent_span_id:[ubyte];
-  name:string;
-  kind:SpanKind;
-  start_time:int64;
-  end_time:int64;
+  trace_id_lo: uint64;
+  trace_id_hi: uint64;
+
+  span_id: uint64;
+  tracestate: Tracestate;
+  parent_span_id: [ubyte];
+  name: string;
+  kind: SpanKind;
+  start_time: int64;
+  end_time: int64;
+
+  attributes: [Attribute];
+  dropped_attributes_count: int32;
 }
 
 table TracestateEntry {
   // The key must begin with a lowercase letter, and can only contain
   // lowercase letters 'a'-'z', digits '0'-'9', underscores '_', dashes
   // '-', asterisks '*', and forward slashes '/'.
-  key:string;
+  key: string;
 
   // The value is opaque string up to 256 characters printable ASCII
   // RFC0020 characters (i.e., the range 0x20 to 0x7E) except ',' and '='.
   // Note that this also excludes tabs, newlines, carriage returns, etc.
-  value:string;
+  value: string;
 }
 
 table Tracestate {
   // A list of entries that represent the Tracestate.
-  entries:[TracestateEntry];
+  entries: [TracestateEntry];
+}
+
+union AttributeValue {
+  StringValue, Int64Value, BoolValue, DoubleValue
+}
+
+table Attribute {
+  key: string;
+  value: AttributeValue;
+}
+
+table StringValue {
+  stringValue: string;
+}
+
+table Int64Value {
+  int64Value: int64;
+}
+
+table BoolValue {
+  boolValue: bool;
+}
+
+table DoubleValue {
+  doubleValue: double;
 }
 
 root_type SpanBatch;

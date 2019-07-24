@@ -17,8 +17,10 @@ func RunTest(clnt Client, srv Server, gen Generator) {
 	clnt.Connect("localhost:3465")
 
 	// Generate and send a batch
-	batch := gen.GenerateBatch()
-	clnt.Export(batch)
+	for i := 0; i < 2; i++ {
+		batch := gen.GenerateBatch()
+		clnt.Export(batch)
+	}
 }
 
 func RunAgent(clnt Client, srv Server, listenAddress, destination string) {

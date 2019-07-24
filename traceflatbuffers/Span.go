@@ -26,76 +26,44 @@ func (rcv *Span) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Span) TraceId(j int) byte {
+func (rcv *Span) TraceIdLo() uint64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *Span) TraceIdLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+func (rcv *Span) MutateTraceIdLo(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(4, n)
+}
+
+func (rcv *Span) TraceIdHi() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.VectorLen(o)
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *Span) TraceIdBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
+func (rcv *Span) MutateTraceIdHi(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(6, n)
 }
 
-func (rcv *Span) MutateTraceId(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+func (rcv *Span) SpanId() uint64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
-}
-
-func (rcv *Span) SpanId(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetUint64(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *Span) SpanIdLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
-func (rcv *Span) SpanIdBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
-func (rcv *Span) MutateSpanId(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
-	}
-	return false
+func (rcv *Span) MutateSpanId(n uint64) bool {
+	return rcv._tab.MutateUint64Slot(8, n)
 }
 
 func (rcv *Span) Tracestate(obj *Tracestate) *Tracestate {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -108,7 +76,7 @@ func (rcv *Span) Tracestate(obj *Tracestate) *Tracestate {
 }
 
 func (rcv *Span) ParentSpanId(j int) byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
@@ -117,7 +85,7 @@ func (rcv *Span) ParentSpanId(j int) byte {
 }
 
 func (rcv *Span) ParentSpanIdLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -125,7 +93,7 @@ func (rcv *Span) ParentSpanIdLength() int {
 }
 
 func (rcv *Span) ParentSpanIdBytes() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -133,7 +101,7 @@ func (rcv *Span) ParentSpanIdBytes() []byte {
 }
 
 func (rcv *Span) MutateParentSpanId(j int, n byte) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
 		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
@@ -142,7 +110,7 @@ func (rcv *Span) MutateParentSpanId(j int, n byte) bool {
 }
 
 func (rcv *Span) Name() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
@@ -150,7 +118,7 @@ func (rcv *Span) Name() []byte {
 }
 
 func (rcv *Span) Kind() SpanKind {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
 	if o != 0 {
 		return rcv._tab.GetInt8(o + rcv._tab.Pos)
 	}
@@ -158,22 +126,10 @@ func (rcv *Span) Kind() SpanKind {
 }
 
 func (rcv *Span) MutateKind(n SpanKind) bool {
-	return rcv._tab.MutateInt8Slot(14, n)
+	return rcv._tab.MutateInt8Slot(16, n)
 }
 
 func (rcv *Span) StartTime() int64 {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		return rcv._tab.GetInt64(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *Span) MutateStartTime(n int64) bool {
-	return rcv._tab.MutateInt64Slot(16, n)
-}
-
-func (rcv *Span) EndTime() int64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
 	if o != 0 {
 		return rcv._tab.GetInt64(o + rcv._tab.Pos)
@@ -181,45 +137,95 @@ func (rcv *Span) EndTime() int64 {
 	return 0
 }
 
-func (rcv *Span) MutateEndTime(n int64) bool {
+func (rcv *Span) MutateStartTime(n int64) bool {
 	return rcv._tab.MutateInt64Slot(18, n)
 }
 
+func (rcv *Span) EndTime() int64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		return rcv._tab.GetInt64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Span) MutateEndTime(n int64) bool {
+	return rcv._tab.MutateInt64Slot(20, n)
+}
+
+func (rcv *Span) Attributes(obj *Attribute, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *Span) AttributesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(22))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *Span) DroppedAttributesCount() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(24))
+	if o != 0 {
+		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Span) MutateDroppedAttributesCount(n int32) bool {
+	return rcv._tab.MutateInt32Slot(24, n)
+}
+
 func SpanStart(builder *flatbuffers.Builder) {
-	builder.StartObject(8)
+	builder.StartObject(11)
 }
-func SpanAddTraceId(builder *flatbuffers.Builder, traceId flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(traceId), 0)
+func SpanAddTraceIdLo(builder *flatbuffers.Builder, traceIdLo uint64) {
+	builder.PrependUint64Slot(0, traceIdLo, 0)
 }
-func SpanStartTraceIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func SpanAddTraceIdHi(builder *flatbuffers.Builder, traceIdHi uint64) {
+	builder.PrependUint64Slot(1, traceIdHi, 0)
 }
-func SpanAddSpanId(builder *flatbuffers.Builder, spanId flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(spanId), 0)
-}
-func SpanStartSpanIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+func SpanAddSpanId(builder *flatbuffers.Builder, spanId uint64) {
+	builder.PrependUint64Slot(2, spanId, 0)
 }
 func SpanAddTracestate(builder *flatbuffers.Builder, tracestate flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(tracestate), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(tracestate), 0)
 }
 func SpanAddParentSpanId(builder *flatbuffers.Builder, parentSpanId flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(parentSpanId), 0)
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(parentSpanId), 0)
 }
 func SpanStartParentSpanIdVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
 }
 func SpanAddName(builder *flatbuffers.Builder, name flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(name), 0)
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(name), 0)
 }
 func SpanAddKind(builder *flatbuffers.Builder, kind int8) {
-	builder.PrependInt8Slot(5, kind, 0)
+	builder.PrependInt8Slot(6, kind, 0)
 }
 func SpanAddStartTime(builder *flatbuffers.Builder, startTime int64) {
-	builder.PrependInt64Slot(6, startTime, 0)
+	builder.PrependInt64Slot(7, startTime, 0)
 }
 func SpanAddEndTime(builder *flatbuffers.Builder, endTime int64) {
-	builder.PrependInt64Slot(7, endTime, 0)
+	builder.PrependInt64Slot(8, endTime, 0)
+}
+func SpanAddAttributes(builder *flatbuffers.Builder, attributes flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(9, flatbuffers.UOffsetT(attributes), 0)
+}
+func SpanStartAttributesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func SpanAddDroppedAttributesCount(builder *flatbuffers.Builder, droppedAttributesCount int32) {
+	builder.PrependInt32Slot(10, droppedAttributesCount, 0)
 }
 func SpanEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
