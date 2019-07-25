@@ -1,19 +1,18 @@
-package grpc_protobuf_impl
+package grpc_unary
 
 import (
 	"context"
 	"log"
 
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
-
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client traceprotobuf.TracerClient
+	client traceprotobuf.UnaryTracerClient
 }
 
 func (c *Client) Connect(server string) error {
@@ -22,7 +21,7 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewTracerClient(conn)
+	c.client = traceprotobuf.NewUnaryTracerClient(conn)
 	return nil
 }
 

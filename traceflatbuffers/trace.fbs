@@ -55,7 +55,7 @@ union AttributeValue {
 }
 
 table Attribute {
-  key: string;
+  key: string (key);
   value: AttributeValue;
 }
 

@@ -15,9 +15,15 @@ option java_outer_classname = "TraceProto";
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
 // The tracer service definition.
-service Tracer {
+service UnaryTracer {
   // Sends a batch
   rpc SendBatch (SpanBatch) returns (BatchResponse) {}
+}
+
+// The tracer service definition.
+service StreamTracer {
+  // Sends a batch
+  rpc SendBatch (stream SpanBatch) returns (stream BatchResponse) {}
 }
 
 // The request message containing the user's name.
@@ -27,7 +33,6 @@ message SpanBatch {
 
 // The response message containing the greetings
 message BatchResponse {
-  string message = 1;
 }
 
 // A span represents a single operation within a trace. Spans can be

@@ -4,9 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/tigrannajaryan/exp-otelproto/grpc_protobuf_impl"
-
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/grpc_unary"
 )
 
 func main() {
@@ -20,5 +19,5 @@ func main() {
 
 	flag.Parse()
 
-	core.RunAgent(&grpc_protobuf_impl.Client{}, &grpc_protobuf_impl.Server{}, listenAddress, destination)
+	core.RunAgent(&grpc_unary.Client{}, &grpc_unary.Server{}, listenAddress, destination)
 }
