@@ -75,11 +75,11 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 sudo tc qdisc add dev lo root netem delay 100ms
 let ASYNCBATCHES=10*${BATCHES}
-./benchmark -protocol streamlbasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol streamlbasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 sudo tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================
