@@ -13,7 +13,9 @@ build:
 	go build -o bin/grpc_protobuf_agent cmd/grpc_protobuf_agent/main.go
 
 test:
-	go test -v -bench . -benchmem github.com/tigrannajaryan/exp-otelproto/tests
+	./runtests.sh
+	./runtests.sh
+	./runtests.sh
 
 run:
 	go run cmd/grpc-protobuf.go

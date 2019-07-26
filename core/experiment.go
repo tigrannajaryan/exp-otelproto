@@ -35,9 +35,8 @@ func BenchmarkLocalDelivery(
 	serverFactory func() Server,
 	generatorFactory func() Generator,
 	b *testing.B,
-	addTime func(cpuSecs float64, wallSecs float64),
 	batchCount int,
-) {
+) (cpuSecs float64, wallSecs float64) {
 	// Stop benchmark timer while setting up the test.
 	b.StopTimer()
 
@@ -97,17 +96,16 @@ func BenchmarkLocalDelivery(
 	if err != nil {
 		log.Fatal(err)
 	}
-	deltaCPUTime := endCPUTimes.Total() - startCPUTimes.Total()
+	cpuSecs = endCPUTimes.Total() - startCPUTimes.Total()
 
 	// Measure used wall time.
 	endWallTime := time.Now()
-	deltaWallTime := endWallTime.Sub(startWallTime)
-
-	// Report used times.
-	addTime(deltaCPUTime, deltaWallTime.Seconds())
+	wallSecs = endWallTime.Sub(startWallTime).Seconds()
 
 	// Stop the server.
 	srv.Stop()
+
+	return
 }
 
 func RunAgent(clnt Client, srv Server, listenAddress, destination string) {

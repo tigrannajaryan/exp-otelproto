@@ -1,86 +1,90 @@
-10000 batches
-
-BenchmarkGRPC/GRPCUnary-8         	       1	7642783260 ns/op	3041921040 B/op	52930886 allocs/op
-2019/07/25 11:43:06  GRPCUnary: CPU time 13.070 sec, wall time 7.643 sec, total 10000 span batches, 765 batches/cpusec
-BenchmarkGRPC/GRPCStream-8        	       1	8558966896 ns/op	2951983232 B/op	51627703 allocs/op
-2019/07/25 11:43:15 GRPCStream: CPU time 13.220 sec, wall time 8.559 sec, total 10000 span batches, 756 batches/cpusec
-2019/07/25 11:43:15 ========
-BenchmarkGRPC/GRPCUnary#01-8      	       1	9488618278 ns/op	3036129080 B/op	52928143 allocs/op
-2019/07/25 11:43:24  GRPCUnary: CPU time 16.100 sec, wall time 9.489 sec, total 10000 span batches, 621 batches/cpusec
-BenchmarkGRPC/GRPCStream#01-8     	       1	8547482019 ns/op	2952896384 B/op	51628867 allocs/op
-2019/07/25 11:43:33 GRPCStream: CPU time 13.350 sec, wall time 8.548 sec, total 10000 span batches, 749 batches/cpusec
-2019/07/25 11:43:33 ========
-BenchmarkGRPC/GRPCUnary#02-8      	       1	9514792006 ns/op	3035946920 B/op	52929146 allocs/op
-2019/07/25 11:43:42  GRPCUnary: CPU time 16.350 sec, wall time 9.515 sec, total 10000 span batches, 612 batches/cpusec
-BenchmarkGRPC/GRPCStream#02-8     	       1	8598264862 ns/op	2953507688 B/op	51630197 allocs/op
-2019/07/25 11:43:51 GRPCStream: CPU time 13.670 sec, wall time 8.598 sec, total 10000 span batches, 732 batches/cpusec
-2019/07/25 11:43:51 ========
-BenchmarkGRPC/GRPCUnary#03-8      	       1	9575201759 ns/op	3042100072 B/op	52931277 allocs/op
-2019/07/25 11:44:00  GRPCUnary: CPU time 16.630 sec, wall time 9.575 sec, total 10000 span batches, 601 batches/cpusec
-BenchmarkGRPC/GRPCStream#03-8     	       1	8644119183 ns/op	2954193984 B/op	51631191 allocs/op
-2019/07/25 11:44:09 GRPCStream: CPU time 13.900 sec, wall time 8.644 sec, total 10000 span batches, 719 batches/cpusec
-2019/07/25 11:44:09 ========
-BenchmarkGRPC/GRPCUnary#04-8      	       1	9662011557 ns/op	3043246200 B/op	52931865 allocs/op
-2019/07/25 11:44:19  GRPCUnary: CPU time 17.030 sec, wall time 9.662 sec, total 10000 span batches, 587 batches/cpusec
-BenchmarkGRPC/GRPCStream#04-8     	       1	8771704521 ns/op	2952825520 B/op	51632761 allocs/op
-2019/07/25 11:44:28 GRPCStream: CPU time 14.290 sec, wall time 8.772 sec, total 10000 span batches, 700 batches/cpusec
-2019/07/25 11:44:28 ========
-
-
-30000 batches
-
-BenchmarkGRPC/GRPCUnary-8         	       1	26932025741 ns/op	9107180096 B/op	158781779 allocs/op
-2019/07/25 11:45:54  GRPCUnary: CPU time 45.280 sec, wall time 26.932 sec, total 30000 span batches, 663 batches/cpusec
-BenchmarkGRPC/GRPCStream-8        	       1	25468535036 ns/op	8856088632 B/op	154882606 allocs/op
-2019/07/25 11:46:19 GRPCStream: CPU time 39.370 sec, wall time 25.469 sec, total 30000 span batches, 762 batches/cpusec
-2019/07/25 11:46:19 ========
-BenchmarkGRPC/GRPCUnary#01-8      	       1	28504933422 ns/op	9103963224 B/op	158782890 allocs/op
-2019/07/25 11:46:48  GRPCUnary: CPU time 48.350 sec, wall time 28.505 sec, total 30000 span batches, 620 batches/cpusec
-BenchmarkGRPC/GRPCStream#01-8     	       1	25651774460 ns/op	8856071784 B/op	154885903 allocs/op
-2019/07/25 11:47:14 GRPCStream: CPU time 40.290 sec, wall time 25.652 sec, total 30000 span batches, 745 batches/cpusec
-2019/07/25 11:47:14 ========
-BenchmarkGRPC/GRPCUnary#02-8      	       1	28728611305 ns/op	9109149112 B/op	158786070 allocs/op
-2019/07/25 11:47:42  GRPCUnary: CPU time 49.400 sec, wall time 28.729 sec, total 30000 span batches, 607 batches/cpusec
-BenchmarkGRPC/GRPCStream#02-8     	       1	25940473232 ns/op	8855928960 B/op	154889827 allocs/op
-2019/07/25 11:48:08 GRPCStream: CPU time 41.240 sec, wall time 25.941 sec, total 30000 span batches, 727 batches/cpusec
-2019/07/25 11:48:08 ========
-BenchmarkGRPC/GRPCUnary#03-8      	       1	28956306908 ns/op	9119751048 B/op	158790761 allocs/op
-2019/07/25 11:48:37  GRPCUnary: CPU time 50.310 sec, wall time 28.956 sec, total 30000 span batches, 596 batches/cpusec
-BenchmarkGRPC/GRPCStream#03-8     	       1	26070806859 ns/op	8864332312 B/op	154892781 allocs/op
-2019/07/25 11:49:03 GRPCStream: CPU time 41.860 sec, wall time 26.071 sec, total 30000 span batches, 717 batches/cpusec
-2019/07/25 11:49:03 ========
-BenchmarkGRPC/GRPCUnary#04-8      	       1	29206985209 ns/op	9125942464 B/op	158794717 allocs/op
-2019/07/25 11:49:33  GRPCUnary: CPU time 51.400 sec, wall time 29.207 sec, total 30000 span batches, 584 batches/cpusec
-BenchmarkGRPC/GRPCStream#04-8     	       1	26431921798 ns/op	8863665592 B/op	154897426 allocs/op
-2019/07/25 11:49:59 GRPCStream: CPU time 43.200 sec, wall time 26.432 sec, total 30000 span batches, 694 batches/cpusec
-2019/07/25 11:49:59 ========
-
-
-60000 batches
-
-BenchmarkGRPC/GRPCUnary-8         	       1	55210931659 ns/op	18192474584 B/op	317558172 allocs/op
-2019/07/25 11:51:43  GRPCUnary: CPU time 92.810 sec, wall time 55.211 sec, total 60000 span batches, 646 batches/cpusec
-BenchmarkGRPC/GRPCStream-8        	       1	50890849452 ns/op	17710050824 B/op	309765145 allocs/op
-2019/07/25 11:52:34 GRPCStream: CPU time 78.940 sec, wall time 50.891 sec, total 60000 span batches, 760 batches/cpusec
-2019/07/25 11:52:34 ========
-BenchmarkGRPC/GRPCUnary#01-8      	       1	56969088869 ns/op	18210688248 B/op	317565061 allocs/op
-2019/07/25 11:53:31  GRPCUnary: CPU time 97.160 sec, wall time 56.969 sec, total 60000 span batches, 618 batches/cpusec
-BenchmarkGRPC/GRPCStream#01-8     	       1	51407854565 ns/op	17713692648 B/op	309771443 allocs/op
-2019/07/25 11:54:23 GRPCStream: CPU time 80.900 sec, wall time 51.408 sec, total 60000 span batches, 742 batches/cpusec
-2019/07/25 11:54:23 ========
-BenchmarkGRPC/GRPCUnary#02-8      	       1	57438953367 ns/op	18210822672 B/op	317571858 allocs/op
-2019/07/25 11:55:20  GRPCUnary: CPU time 99.010 sec, wall time 57.439 sec, total 60000 span batches, 606 batches/cpusec
-BenchmarkGRPC/GRPCStream#02-8     	       1	51831944019 ns/op	17724430048 B/op	309780435 allocs/op
-2019/07/25 11:56:12 GRPCStream: CPU time 82.640 sec, wall time 51.832 sec, total 60000 span batches, 726 batches/cpusec
-2019/07/25 11:56:12 ========
-BenchmarkGRPC/GRPCUnary#03-8      	       1	57859455323 ns/op	18237315456 B/op	317582775 allocs/op
-2019/07/25 11:57:10  GRPCUnary: CPU time 100.720 sec, wall time 57.860 sec, total 60000 span batches, 596 batches/cpusec
-BenchmarkGRPC/GRPCStream#03-8     	       1	52487401329 ns/op	17724715872 B/op	309785554 allocs/op
-2019/07/25 11:58:02 GRPCStream: CPU time 84.640 sec, wall time 52.488 sec, total 60000 span batches, 709 batches/cpusec
-2019/07/25 11:58:02 ========
-BenchmarkGRPC/GRPCUnary#04-8      	       1	58428621103 ns/op	18248242104 B/op	317588338 allocs/op
-2019/07/25 11:59:01  GRPCUnary: CPU time 102.990 sec, wall time 58.429 sec, total 60000 span batches, 583 batches/cpusec
-BenchmarkGRPC/GRPCStream#04-8     	       1	52718043152 ns/op	17733181416 B/op	309794688 allocs/op
-2019/07/25 11:59:53 GRPCStream: CPU time 86.190 sec, wall time 52.718 sec, total 60000 span batches, 696 batches/cpusec
-2019/07/25 11:59:53 ========
+=============
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCUnary/GRPCUnary-8         	       1	185564378924 ns/op	60631870904 B/op	1058518090 allocs/op
+2019/07/25 22:18:57    GRPCUnary: CPU time 311.360 sec, wall time 185.564 sec, total 200000 span batches, 642 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	185.588s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166159739264 ns/op	58976884584 B/op	1032525150 allocs/op
+2019/07/25 22:21:44 GRPCStreamLB: CPU time 253.790 sec, wall time 166.160 sec, total 200000 span batches, 788 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.187s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	166110808252 ns/op	58977907616 B/op	1032521889 allocs/op
+2019/07/25 22:24:30 GRPCStreamNoLB: CPU time 253.050 sec, wall time 166.111 sec, total 200000 span batches, 790 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.137s
+=============
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCUnary/GRPCUnary-8         	       1	186825270822 ns/op	60630855920 B/op	1058516273 allocs/op
+2019/07/25 22:27:38    GRPCUnary: CPU time 313.660 sec, wall time 186.825 sec, total 200000 span batches, 638 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.850s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166694807306 ns/op	58971610024 B/op	1032526016 allocs/op
+2019/07/25 22:30:26 GRPCStreamLB: CPU time 254.300 sec, wall time 166.695 sec, total 200000 span batches, 786 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.720s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	167270914505 ns/op	58982494584 B/op	1032527103 allocs/op
+2019/07/25 22:33:14 GRPCStreamNoLB: CPU time 254.940 sec, wall time 167.271 sec, total 200000 span batches, 784 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	167.297s
+=============
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCUnary/GRPCUnary-8         	       1	186454207557 ns/op	60630929768 B/op	1058518474 allocs/op
+2019/07/25 22:36:21    GRPCUnary: CPU time 313.080 sec, wall time 186.454 sec, total 200000 span batches, 639 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.481s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166236052478 ns/op	58981087216 B/op	1032522413 allocs/op
+2019/07/25 22:39:08 GRPCStreamLB: CPU time 253.980 sec, wall time 166.236 sec, total 200000 span batches, 787 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.260s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	166030032894 ns/op	58977345320 B/op	1032520860 allocs/op
+2019/07/25 22:41:55 GRPCStreamNoLB: CPU time 252.580 sec, wall time 166.030 sec, total 200000 span batches, 792 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.055s
+=============
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCUnary/GRPCUnary-8         	       1	186749156322 ns/op	60638707464 B/op	1058515959 allocs/op
+2019/07/25 22:45:03    GRPCUnary: CPU time 312.780 sec, wall time 186.749 sec, total 200000 span batches, 639 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.776s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166199679543 ns/op	59126879520 B/op	1032531407 allocs/op
+2019/07/25 22:47:50 GRPCStreamLB: CPU time 255.350 sec, wall time 166.200 sec, total 200000 span batches, 783 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.227s
+goos: linux
+goarch: amd64
+pkg: github.com/tigrannajaryan/exp-otelproto/tests
+BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	163522523861 ns/op	59287865592 B/op	1032537448 allocs/op
+2019/07/25 22:50:34 GRPCStreamNoLB: CPU time 251.830 sec, wall time 163.523 sec, total 200000 span batches, 794 batches/cpusec
+PASS
+ok  	github.com/tigrannajaryan/exp-otelproto/tests	163.549s
+=============
 
