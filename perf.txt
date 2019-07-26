@@ -1,90 +1,48 @@
-=============
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCUnary/GRPCUnary-8         	       1	185564378924 ns/op	60631870904 B/op	1058518090 allocs/op
-2019/07/25 22:18:57    GRPCUnary: CPU time 311.360 sec, wall time 185.564 sec, total 200000 span batches, 642 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	185.588s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166159739264 ns/op	58976884584 B/op	1032525150 allocs/op
-2019/07/25 22:21:44 GRPCStreamLB: CPU time 253.790 sec, wall time 166.160 sec, total 200000 span batches, 788 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.187s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	166110808252 ns/op	58977907616 B/op	1032521889 allocs/op
-2019/07/25 22:24:30 GRPCStreamNoLB: CPU time 253.050 sec, wall time 166.111 sec, total 200000 span batches, 790 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.137s
-=============
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCUnary/GRPCUnary-8         	       1	186825270822 ns/op	60630855920 B/op	1058516273 allocs/op
-2019/07/25 22:27:38    GRPCUnary: CPU time 313.660 sec, wall time 186.825 sec, total 200000 span batches, 638 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.850s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166694807306 ns/op	58971610024 B/op	1032526016 allocs/op
-2019/07/25 22:30:26 GRPCStreamLB: CPU time 254.300 sec, wall time 166.695 sec, total 200000 span batches, 786 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.720s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	167270914505 ns/op	58982494584 B/op	1032527103 allocs/op
-2019/07/25 22:33:14 GRPCStreamNoLB: CPU time 254.940 sec, wall time 167.271 sec, total 200000 span batches, 784 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	167.297s
-=============
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCUnary/GRPCUnary-8         	       1	186454207557 ns/op	60630929768 B/op	1058518474 allocs/op
-2019/07/25 22:36:21    GRPCUnary: CPU time 313.080 sec, wall time 186.454 sec, total 200000 span batches, 639 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.481s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166236052478 ns/op	58981087216 B/op	1032522413 allocs/op
-2019/07/25 22:39:08 GRPCStreamLB: CPU time 253.980 sec, wall time 166.236 sec, total 200000 span batches, 787 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.260s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	166030032894 ns/op	58977345320 B/op	1032520860 allocs/op
-2019/07/25 22:41:55 GRPCStreamNoLB: CPU time 252.580 sec, wall time 166.030 sec, total 200000 span batches, 792 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.055s
-=============
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCUnary/GRPCUnary-8         	       1	186749156322 ns/op	60638707464 B/op	1058515959 allocs/op
-2019/07/25 22:45:03    GRPCUnary: CPU time 312.780 sec, wall time 186.749 sec, total 200000 span batches, 639 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	186.776s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamLB/GRPCStreamLB-8         	       1	166199679543 ns/op	59126879520 B/op	1032531407 allocs/op
-2019/07/25 22:47:50 GRPCStreamLB: CPU time 255.350 sec, wall time 166.200 sec, total 200000 span batches, 783 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	166.227s
-goos: linux
-goarch: amd64
-pkg: github.com/tigrannajaryan/exp-otelproto/tests
-BenchmarkGRPCStreamNoLB/GRPCStreamNoLB-8         	       1	163522523861 ns/op	59287865592 B/op	1032537448 allocs/op
-2019/07/25 22:50:34 GRPCStreamNoLB: CPU time 251.830 sec, wall time 163.523 sec, total 200000 span batches, 794 batches/cpusec
-PASS
-ok  	github.com/tigrannajaryan/exp-otelproto/tests	163.549s
-=============
+====================================================================================
+Legend:
+GRPC/Unary                - GRPC, unary request per batch
+GRPC/Stream/NoLB          - GRPC, streaming, not load balancer friendly
+GRPC/Stream/LBAlways/Sync - GRPC, streaming, load balancer friendly, close stream after every batch
+GRPC/Stream/LBTimed/Sync  - GRPC, streaming, load balancer friendly, close stream every 30 sec
+GRPC/Stream/LBTimed/Async - GRPC, streaming, load balancer friendly, async ack, close stream every 30 sec
 
+Small batches
+spans/batch=100, attrs/span=2
+GRPC/Unary                20000 batches,  100 spans/batch, 2000000 spans, CPU time 29.3 sec, wall time 17.6 sec,  682 batches/cpusec, 1135 batches/wallsec
+GRPC/Stream/NoLB          20000 batches,  100 spans/batch, 2000000 spans, CPU time 25.3 sec, wall time 16.7 sec,  789 batches/cpusec, 1195 batches/wallsec
+GRPC/Stream/LBAlways/Sync 20000 batches,  100 spans/batch, 2000000 spans, CPU time 55.1 sec, wall time 22.3 sec,  363 batches/cpusec,  896 batches/wallsec
+GRPC/Stream/LBTimed/Sync  20000 batches,  100 spans/batch, 2000000 spans, CPU time 25.3 sec, wall time 16.7 sec,  791 batches/cpusec, 1197 batches/wallsec
+GRPC/Stream/LBTimed/Async 20000 batches,  100 spans/batch, 2000000 spans, CPU time 30.9 sec, wall time 11.7 sec,  648 batches/cpusec, 1715 batches/wallsec
+
+Large batches
+spans/batch=500, attrs/span=5
+GRPC/Unary                 2000 batches,  500 spans/batch, 1000000 spans, CPU time 26.7 sec, wall time 22.2 sec,   75 batches/cpusec,   90 batches/wallsec
+GRPC/Stream/NoLB           2000 batches,  500 spans/batch, 1000000 spans, CPU time 25.7 sec, wall time 21.9 sec,   78 batches/cpusec,   91 batches/wallsec
+GRPC/Stream/LBAlways/Sync  2000 batches,  500 spans/batch, 1000000 spans, CPU time 41.8 sec, wall time 24.4 sec,   48 batches/cpusec,   82 batches/wallsec
+GRPC/Stream/LBTimed/Sync   2000 batches,  500 spans/batch, 1000000 spans, CPU time 25.7 sec, wall time 21.8 sec,   78 batches/cpusec,   92 batches/wallsec
+GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time 37.5 sec, wall time 18.8 sec,   53 batches/cpusec,  107 batches/wallsec
+
+Large batches, 2ms network roundttrip latency
+spans/batch=500, attrs/span=5
+GRPC/Unary                 2000 batches,  500 spans/batch, 1000000 spans, CPU time 25.3 sec, wall time 25.1 sec,   79 batches/cpusec,   80 batches/wallsec
+GRPC/Stream/NoLB           2000 batches,  500 spans/batch, 1000000 spans, CPU time 23.7 sec, wall time 24.6 sec,   84 batches/cpusec,   81 batches/wallsec
+GRPC/Stream/LBAlways/Sync  2000 batches,  500 spans/batch, 1000000 spans, CPU time 40.4 sec, wall time 27.9 sec,   50 batches/cpusec,   72 batches/wallsec
+GRPC/Stream/LBTimed/Sync   2000 batches,  500 spans/batch, 1000000 spans, CPU time 23.9 sec, wall time 24.8 sec,   84 batches/cpusec,   81 batches/wallsec
+GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time 39.0 sec, wall time 19.3 sec,   51 batches/cpusec,  104 batches/wallsec
+
+Large batches, 20ms network roundttrip latency
+spans/batch=500, attrs/span=5
+GRPC/Unary                 1000 batches,  500 spans/batch, 500000 spans, CPU time 10.6 sec, wall time 28.9 sec,   94 batches/cpusec,   35 batches/wallsec
+GRPC/Stream/NoLB           1000 batches,  500 spans/batch, 500000 spans, CPU time 10.9 sec, wall time 29.3 sec,   91 batches/cpusec,   34 batches/wallsec
+GRPC/Stream/LBAlways/Sync  1000 batches,  500 spans/batch, 500000 spans, CPU time 20.9 sec, wall time 30.0 sec,   48 batches/cpusec,   33 batches/wallsec
+GRPC/Stream/LBTimed/Sync   1000 batches,  500 spans/batch, 500000 spans, CPU time 10.8 sec, wall time 29.1 sec,   92 batches/cpusec,   34 batches/wallsec
+GRPC/Stream/LBTimed/Async  1000 batches,  500 spans/batch, 500000 spans, CPU time 20.6 sec, wall time  9.0 sec,   48 batches/cpusec,  111 batches/wallsec
+
+Large batches, 200ms network roundttrip latency
+spans/batch=500, attrs/span=5
+GRPC/Unary                  100 batches,  500 spans/batch,  50000 spans, CPU time  1.0 sec, wall time 21.9 sec,   96 batches/cpusec,    5 batches/wallsec
+GRPC/Stream/LBAlways/Sync   100 batches,  500 spans/batch,  50000 spans, CPU time  1.1 sec, wall time 21.7 sec,   90 batches/cpusec,    5 batches/wallsec
+GRPC/Stream/NoLB            100 batches,  500 spans/batch,  50000 spans, CPU time  1.1 sec, wall time 21.5 sec,   94 batches/cpusec,    5 batches/wallsec
+GRPC/Stream/LBTimed/Sync    100 batches,  500 spans/batch,  50000 spans, CPU time  1.0 sec, wall time 21.5 sec,   98 batches/cpusec,    5 batches/wallsec
+GRPC/Stream/LBTimed/Async  1000 batches,  500 spans/batch, 500000 spans, CPU time 15.1 sec, wall time 18.0 sec,   66 batches/cpusec,   56 batches/wallsec
+====================================================================================

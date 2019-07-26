@@ -28,11 +28,13 @@ service StreamTracer {
 
 // The request message containing the user's name.
 message SpanBatch {
-  repeated Span spans = 1;
+  uint64 id = 1;
+  repeated Span spans = 2;
 }
 
 // The response message containing the greetings
 message BatchResponse {
+  uint64 id = 1;
 }
 
 // A span represents a single operation within a trace. Spans can be

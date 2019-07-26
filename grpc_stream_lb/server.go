@@ -30,7 +30,7 @@ func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer
 		s.onReceive(batch)
 
 		// Send response to client.
-		stream.Send(&traceprotobuf.BatchResponse{})
+		stream.Send(&traceprotobuf.BatchResponse{Id: batch.Id})
 	}
 }
 

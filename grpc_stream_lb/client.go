@@ -13,9 +13,10 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client         traceprotobuf.StreamTracerClient
-	stream         traceprotobuf.StreamTracer_SendBatchClient
-	lastStreamOpen time.Time
+	client                  traceprotobuf.StreamTracerClient
+	stream                  traceprotobuf.StreamTracer_SendBatchClient
+	lastStreamOpen          time.Time
+	ReopenAfterEveryRequest bool
 }
 
 // How often to reopen the stream to help LB's rebalance traffic.
@@ -55,7 +56,7 @@ func (c *Client) Export(batch core.SpanBatch) {
 		log.Fatal("Error from server when expecting batch response")
 	}
 
-	if time.Since(c.lastStreamOpen) > streamReopenPeriod {
+	if c.ReopenAfterEveryRequest || time.Since(c.lastStreamOpen) > streamReopenPeriod {
 		// Close and reopen the stream.
 		c.lastStreamOpen = time.Now()
 		err = c.stream.CloseSend()

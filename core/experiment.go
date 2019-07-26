@@ -5,7 +5,6 @@ import (
 	"net"
 	"os"
 	"sync"
-	"testing"
 	"time"
 
 	"github.com/shirou/gopsutil/process"
@@ -25,21 +24,23 @@ func RunTest(clnt Client, srv Server, gen Generator) {
 
 	// Generate and send a batch
 	for i := 0; i < 2; i++ {
-		batch := gen.GenerateBatch()
+		batch := gen.GenerateBatch(100, 2)
 		clnt.Export(batch)
 	}
+}
+
+type Options struct {
+	Batches       int
+	SpansPerBatch int
+	AttrPerSpan   int
 }
 
 func BenchmarkLocalDelivery(
 	clientFactory func() Client,
 	serverFactory func() Server,
 	generatorFactory func() Generator,
-	b *testing.B,
-	batchCount int,
+	options Options,
 ) (cpuSecs float64, wallSecs float64) {
-	// Stop benchmark timer while setting up the test.
-	b.StopTimer()
-
 	// Create client, server and generator from factories
 	clnt := clientFactory()
 	srv := serverFactory()
@@ -48,7 +49,7 @@ func BenchmarkLocalDelivery(
 	// Find a local address for delivery.
 	endpoint := GetAvailableLocalAddress()
 
-	// Create a WaitGroup to count sent/received batches.
+	// Create a WaitGroup to count sent/received Batches.
 	wg := sync.WaitGroup{}
 
 	// Server listen locally.
@@ -74,22 +75,16 @@ func BenchmarkLocalDelivery(
 	// Begin measuring wall time.
 	startWallTime := time.Now()
 
-	// Restart benchmark timer.
-	b.StartTimer()
-
-	// Generate and send batches.
-	for i := 0; i < batchCount; i++ {
+	// Generate and send Batches.
+	for i := 0; i < options.Batches; i++ {
 		// Count sent batch.
 		wg.Add(1)
-		batch := gen.GenerateBatch()
+		batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan)
 		clnt.Export(batch)
 	}
 
-	// Wait until all batches are delivered.
+	// Wait until all Batches are delivered.
 	wg.Wait()
-
-	// Stop benachmark timer.
-	b.StopTimer()
 
 	// Measure used CPU time.
 	endCPUTimes, err := proc.Times()

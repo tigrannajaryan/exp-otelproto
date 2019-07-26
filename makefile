@@ -11,11 +11,10 @@ gen:
 build:
 	go build -o bin/grpc_protobuf cmd/grpc_protobuf/main.go
 	go build -o bin/grpc_protobuf_agent cmd/grpc_protobuf_agent/main.go
+	go build -o bin/benchmark cmd/benchmark/main.go
 
-test:
-	./runtests.sh
-	./runtests.sh
-	./runtests.sh
+benchmark:
+	./runbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go

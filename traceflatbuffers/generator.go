@@ -18,7 +18,7 @@ type Generator struct {
 	spansSent  uint64
 }
 
-func (g *Generator) GenerateBatch() core.SpanBatch {
+func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.SpanBatch {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	builder := flatbuffers.NewBuilder(1024)
