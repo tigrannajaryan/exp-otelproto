@@ -13,7 +13,7 @@ sudo tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 
 cd bin
 
-BATCHES=20000
+BATCHES=40000
 SPANSPERBATCH=100
 ATTRPERSPAN=2
 echo Small batches
@@ -25,7 +25,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
-BATCHES=2000
+BATCHES=4000
 SPANSPERBATCH=500
 ATTRPERSPAN=5
 echo Large batches
@@ -37,10 +37,10 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
-BATCHES=2000
+BATCHES=4000
 SPANSPERBATCH=500
 ATTRPERSPAN=5
-echo Large batches, 2ms network roundttrip latency
+echo Large batches, 2ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 sudo tc qdisc add dev lo root netem delay 1ms
@@ -52,10 +52,10 @@ sudo tc qdisc add dev lo root netem delay 1ms
 sudo tc qdisc delete dev lo root netem delay 1ms
 
 echo
-BATCHES=1000
+BATCHES=2000
 SPANSPERBATCH=500
 ATTRPERSPAN=5
-echo Large batches, 20ms network roundttrip latency
+echo Large batches, 20ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 sudo tc qdisc add dev lo root netem delay 10ms
@@ -67,10 +67,10 @@ sudo tc qdisc add dev lo root netem delay 10ms
 sudo tc qdisc delete dev lo root netem delay 10ms
 
 echo
-BATCHES=100
+BATCHES=200
 SPANSPERBATCH=500
 ATTRPERSPAN=5
-echo Large batches, 200ms network roundttrip latency
+echo Large batches, 200ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 sudo tc qdisc add dev lo root netem delay 100ms

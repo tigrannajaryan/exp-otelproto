@@ -37,6 +37,13 @@ message BatchResponse {
   uint64 id = 1;
 }
 
+// The tracer service definition that does not acknowledge every request.
+service NoAckStreamTracer {
+  // Sends a batch
+  rpc SendBatch (stream SpanBatch) returns (BatchResponse) {}
+}
+
+
 // A span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans
 // from the same or different trace. And form graphs. Often, a trace
