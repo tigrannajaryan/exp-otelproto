@@ -88,7 +88,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 sudo tc qdisc add dev lo root netem delay 100ms
 let ASYNCBATCHES=10*${BATCHES}
 
-./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol opencensus -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}

@@ -37,23 +37,22 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Span
 			SpanId:            generateSpanID(spanID),
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
-			Attributes:        &Span_Attributes{},
 			StartTimeUnixnano: timeToTimestamp(startTime),
 			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
 		}
 
 		if attrsPerSpan >= 0 {
 			// Append attributes.
-			span.Attributes.AttributeMap = map[string]*AttributeValue{}
+			span.Attributes = map[string]*AttributeValue{}
 
 			if attrsPerSpan >= 2 {
-				span.Attributes.AttributeMap["load_generator.span_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}}
-				span.Attributes.AttributeMap["load_generator.trace_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}}
+				span.Attributes["load_generator.span_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}}
+				span.Attributes["load_generator.trace_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}}
 			}
 
-			for j := len(span.Attributes.AttributeMap); j < attrsPerSpan; j++ {
+			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := genRandByteString(rand.Intn(50) + 1)
-				span.Attributes.AttributeMap[attrName] = &AttributeValue{
+				span.Attributes[attrName] = &AttributeValue{
 					Value: &AttributeValue_StringValue{
 						StringValue: genRandByteString(rand.Intn(100) + 1),
 					},

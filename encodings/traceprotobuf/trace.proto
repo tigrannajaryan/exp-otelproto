@@ -160,26 +160,26 @@ message Span {
   // This field is required.
   int64 end_time_unixnano = 6;
 
-  // A set of attributes, each with a key and a value.
-  message Attributes {
-    // The set of attributes. The value can be a string, an integer, a double
-    // or the Boolean values `true` or `false`. Note, global attributes like
-    // server name can be set as tags using resource API. Examples of attributes:
-    //
-    //     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
-    //     "/http/server_latency": 300
-    //     "abc.com/myattribute": true
-    //     "abc.com/score": 10.239
-    map<string, AttributeValue> attribute_map = 1;
-
-    // The number of attributes that were discarded. Attributes can be discarded
-    // because their keys are too long or because there are too many attributes.
-    // If this value is 0, then no attributes were dropped.
-    int32 dropped_attributes_count = 2;
-  }
+//  // A set of attributes, each with a key and a value.
+//  message Attributes {
+//    // The set of attributes. The value can be a string, an integer, a double
+//    // or the Boolean values `true` or `false`. Note, global attributes like
+//    // server name can be set as tags using resource API. Examples of attributes:
+//    //
+//    //     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
+//    //     "/http/server_latency": 300
+//    //     "abc.com/myattribute": true
+//    //     "abc.com/score": 10.239
+//    map<string, AttributeValue> attribute_map = 1;
+//
+//    // The number of attributes that were discarded. Attributes can be discarded
+//    // because their keys are too long or because there are too many attributes.
+//    // If this value is 0, then no attributes were dropped.
+//    int32 dropped_attributes_count = 2;
+//  }
 
   // A set of attributes on the span.
-  Attributes attributes = 7;
+  map<string, AttributeValue> attributes = 7;
 
   // A stack trace captured at the start of the span.
   StackTrace stack_trace = 8;
@@ -195,7 +195,7 @@ message Span {
       string description = 1;
 
       // A set of attributes on the annotation.
-      Attributes attributes = 2;
+      map<string, AttributeValue> attributes = 2;
     }
 
     // An event describing a message sent/received between Spans.
@@ -286,7 +286,7 @@ message Span {
     Type type = 3;
 
     // A set of attributes on the link.
-    Attributes attributes = 4;
+    map<string, AttributeValue> attributes = 4;
 
     // The Tracestate associated with the link.
     Tracestate tracestate = 5;
