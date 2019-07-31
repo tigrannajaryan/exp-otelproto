@@ -1,26 +1,20 @@
-package grpc_stream_lb
+package grpc_stream
 
 import (
 	"context"
 	"log"
-	"time"
 
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client                  traceprotobuf.StreamTracerClient
-	stream                  traceprotobuf.StreamTracer_SendBatchClient
-	lastStreamOpen          time.Time
-	ReopenAfterEveryRequest bool
+	client traceprotobuf.StreamTracerClient
+	stream traceprotobuf.StreamTracer_SendBatchClient
 }
-
-// How often to reopen the stream to help LB's rebalance traffic.
-var streamReopenPeriod = 30 * time.Second
 
 func (c *Client) Connect(server string) error {
 	// Set up a connection to the server.
@@ -31,16 +25,11 @@ func (c *Client) Connect(server string) error {
 	c.client = traceprotobuf.NewStreamTracerClient(conn)
 
 	// Establish stream to server.
-	return c.openStream()
-}
-
-func (c *Client) openStream() error {
-	var err error
 	c.stream, err = c.client.SendBatch(context.Background())
 	if err != nil {
 		return err
 	}
-	c.lastStreamOpen = time.Now()
+
 	return nil
 }
 
@@ -54,17 +43,5 @@ func (c *Client) Export(batch core.SpanBatch) {
 
 	if err != nil {
 		log.Fatal("Error from server when expecting batch response")
-	}
-
-	if c.ReopenAfterEveryRequest || time.Since(c.lastStreamOpen) > streamReopenPeriod {
-		// Close and reopen the stream.
-		c.lastStreamOpen = time.Now()
-		err = c.stream.CloseSend()
-		if err != nil {
-			log.Fatal("Error closing stream")
-		}
-		if err = c.openStream(); err != nil {
-			log.Fatal("Error opening stream")
-		}
 	}
 }

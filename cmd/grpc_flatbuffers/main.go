@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_flatbuffers_impl"
-	"github.com/tigrannajaryan/exp-otelproto/traceflatbuffers"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceflatbuffers"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_flatbuffers_impl"
 )
 
 func main() {

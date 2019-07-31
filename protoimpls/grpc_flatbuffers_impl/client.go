@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/tigrannajaryan/exp-otelproto/traceflatbuffers"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceflatbuffers"
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"

@@ -32,7 +32,7 @@ func (rcv *Tracestate) Entries(obj *TracestateEntry, j int) bool {
 		x := rcv._tab.Vector(o)
 		x += flatbuffers.UOffsetT(j) * 4
 		x = rcv._tab.Indirect(x)
-		obj.Init(rcv._tab.Bytes, x)
+		Init(rcv._tab.Bytes, x)
 		return true
 	}
 	return false

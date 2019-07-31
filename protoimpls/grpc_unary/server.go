@@ -1,37 +1,24 @@
-package grpc_stream_lb_async
+package grpc_unary
 
 import (
-	"io"
+	"context"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 )
 
 type GrpcServer struct {
 	onReceive func(batch core.SpanBatch)
 }
 
-func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer) error {
-	for {
-		// Wait for batch from client.
-		batch, err := stream.Recv()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return nil
-		}
-
-		// Process received batch.
-		s.onReceive(batch)
-
-		// Send response to client.
-		stream.Send(&traceprotobuf.BatchResponse{Id: batch.Id})
-	}
+func (s *GrpcServer) SendBatch(ctx context.Context, batch *traceprotobuf.SpanBatch) (*traceprotobuf.BatchResponse, error) {
+	// log.Printf("Received %d spans", len(batch.Spans))
+	s.onReceive(batch)
+	return &traceprotobuf.BatchResponse{Id: batch.Id}, nil
 }
 
 type Server struct {
@@ -39,12 +26,14 @@ type Server struct {
 }
 
 func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
+	// log.Println("Starting GRPC Server...")
+
 	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	traceprotobuf.RegisterStreamTracerServer(srv.s, &GrpcServer{onReceive})
+	traceprotobuf.RegisterUnaryTracerServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

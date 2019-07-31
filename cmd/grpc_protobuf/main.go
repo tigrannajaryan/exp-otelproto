@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_unary"
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
 )
 
 func main() {

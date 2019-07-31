@@ -1,4 +1,4 @@
-package grpc_stream_lb
+package grpc_stream
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 )
 
 type GrpcServer struct {

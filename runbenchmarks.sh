@@ -11,13 +11,17 @@ echo
 
 sudo tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 
+# Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
+MULTIPLIER=100
+
 cd bin
 
-BATCHES=40000
+let BATCHES=800*MULTIPLIER
 SPANSPERBATCH=100
 ATTRPERSPAN=2
 echo Small batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
+
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -25,7 +29,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
-BATCHES=4000
+let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
 ATTRPERSPAN=5
 echo Large batches
@@ -37,7 +41,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
-BATCHES=4000
+let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
 ATTRPERSPAN=5
 echo Large batches, 2ms network roundtrip latency
@@ -52,7 +56,7 @@ sudo tc qdisc add dev lo root netem delay 1ms
 sudo tc qdisc delete dev lo root netem delay 1ms
 
 echo
-BATCHES=2000
+let BATCHES=40*MULTIPLIER
 SPANSPERBATCH=500
 ATTRPERSPAN=5
 echo Large batches, 20ms network roundtrip latency
@@ -67,7 +71,7 @@ sudo tc qdisc add dev lo root netem delay 10ms
 sudo tc qdisc delete dev lo root netem delay 10ms
 
 echo
-BATCHES=200
+let BATCHES=4*MULTIPLIER
 SPANSPERBATCH=500
 ATTRPERSPAN=5
 echo Large batches, 200ms network roundtrip latency

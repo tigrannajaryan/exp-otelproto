@@ -3,10 +3,15 @@
 all: gen build
 
 gen:
-	protoc -I/usr/local/include -I traceprotobuf/ traceprotobuf/trace.proto --go_out=plugins=grpc:traceprotobuf
-	protoc -I/usr/local/include -I traceprotobuf/ traceprotobuf/resource.proto --go_out=plugins=grpc:traceprotobuf
-	protoc -I/usr/local/include -I traceflatbuffers/ traceflatbuffers/trace.proto --go_out=plugins=grpc:traceflatbuffers
-	flatc --gen-object-api --go traceflatbuffers/trace.fbs
+	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/trace.proto --go_out=plugins=grpc:encodings/traceprotobuf
+	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/resource.proto --go_out=plugins=grpc:encodings/traceprotobuf
+
+	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/octrace.proto --go_out=plugins=grpc:encodings/octraceprotobuf
+	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/resource.proto --go_out=plugins=grpc:encodings/octraceprotobuf
+
+	# FlatBuffers experiment is disabled since it does not provide functionality that we need.
+	# protoc -I/usr/local/include -I encodings/traceflatbuffers/ encodings/traceflatbuffers/trace.proto --go_out=plugins=grpc:encodings/traceflatbuffers
+	# flatc --gen-object-api --go encodings/traceflatbuffers/trace.fbs
 
 build:
 	go build -o bin/grpc_protobuf cmd/grpc_protobuf/main.go

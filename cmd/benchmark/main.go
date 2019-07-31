@@ -3,26 +3,43 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"runtime"
+	"runtime/pprof"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_stream"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_stream_lb"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_stream_lb_async"
-	"github.com/tigrannajaryan/exp-otelproto/grpc_unary"
-	"github.com/tigrannajaryan/exp-otelproto/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
 )
 
 func main() {
 	options := core.Options{}
 
+	ballastSizeBytes := uint64(500) * 1024 * 1024
+	ballast := make([]byte, ballastSizeBytes)
+
 	var protocol string
-	flag.StringVar(&protocol, "protocol", "", "protocol to benchmark (unary,streamsync,streamlbsync,streamlbasync)")
+	flag.StringVar(&protocol, "protocol", "", "protocol to benchmark (unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
 	flag.IntVar(&options.AttrPerSpan, "attrperspan", 2, "attributes per span")
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	switch protocol {
 	case "unary":
@@ -38,6 +55,8 @@ func main() {
 	default:
 		flag.Usage()
 	}
+
+	runtime.KeepAlive(ballast)
 }
 
 func benchmarkGRPCUnary(options core.Options) {
@@ -104,7 +123,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-25s %5d batches, %4d spans/batch, %6d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.0f batches/cpusec, %4.0f batches/wallsec\n",
+	fmt.Printf("%-25s %5d batches, %4d spans/batch, %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.0f batches/cpusec, %4.0f batches/wallsec\n",
 		name,
 		options.Batches,
 		options.SpansPerBatch,

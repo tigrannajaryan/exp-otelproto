@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/traceflatbuffers"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceflatbuffers"
 )
 
 type GrpcServer struct {
