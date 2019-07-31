@@ -19,7 +19,7 @@ cd bin
 
 let BATCHES=800*MULTIPLIER
 SPANSPERBATCH=100
-ATTRPERSPAN=2
+ATTRPERSPAN=4
 echo Small batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
@@ -33,7 +33,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 echo
 let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=5
+ATTRPERSPAN=10
 echo Large batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
@@ -47,7 +47,7 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 echo
 let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=5
+ATTRPERSPAN=10
 echo Large batches, 2ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
@@ -64,7 +64,7 @@ sudo tc qdisc delete dev lo root netem delay 1ms
 echo
 let BATCHES=40*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=5
+ATTRPERSPAN=10
 echo Large batches, 20ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
@@ -81,7 +81,7 @@ sudo tc qdisc delete dev lo root netem delay 10ms
 echo
 let BATCHES=4*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=5
+ATTRPERSPAN=10
 echo Large batches, 200ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
