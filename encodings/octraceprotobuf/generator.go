@@ -1,10 +1,12 @@
-package traceprotobuf
+package octraceprotobuf
 
 import (
 	"encoding/binary"
 	"math/rand"
 	"sync/atomic"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
@@ -33,13 +35,13 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Span
 
 		// Create a span.
 		span := &Span{
-			TraceId:           generateTraceID(traceID),
-			SpanId:            generateSpanID(spanID),
-			Name:              "load-generator-span",
-			Kind:              Span_CLIENT,
-			Attributes:        &Span_Attributes{},
-			StartTimeUnixnano: timeToTimestamp(startTime),
-			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			TraceId:    generateTraceID(traceID),
+			SpanId:     generateSpanID(spanID),
+			Name:       &TruncatableString{Value: "load-generator-span"},
+			Kind:       Span_CLIENT,
+			Attributes: &Span_Attributes{},
+			StartTime:  timeToTimestamp(startTime),
+			EndTime:    timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -55,7 +57,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Span
 				attrName := genRandByteString(rand.Intn(50) + 1)
 				span.Attributes.AttributeMap[attrName] = &AttributeValue{
 					Value: &AttributeValue_StringValue{
-						StringValue: genRandByteString(rand.Intn(100) + 1),
+						StringValue: &TruncatableString{Value: genRandByteString(rand.Intn(100) + 1)},
 					},
 				}
 			}
@@ -79,6 +81,10 @@ func generateSpanID(id uint64) []byte {
 	return spanID[:]
 }
 
-func timeToTimestamp(t time.Time) int64 {
-	return t.UnixNano()
+func timeToTimestamp(t time.Time) *timestamp.Timestamp {
+	nanoTime := t.UnixNano()
+	return &timestamp.Timestamp{
+		Seconds: nanoTime / 1e9,
+		Nanos:   int32(nanoTime % 1e9),
+	}
 }

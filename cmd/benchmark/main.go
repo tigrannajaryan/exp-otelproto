@@ -9,7 +9,9 @@ import (
 	"runtime/pprof"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_oc"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
@@ -23,7 +25,8 @@ func main() {
 	ballast := make([]byte, ballastSizeBytes)
 
 	var protocol string
-	flag.StringVar(&protocol, "protocol", "", "protocol to benchmark (unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
+	flag.StringVar(&protocol, "protocol", "",
+		"protocol to benchmark (opencensus,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
@@ -42,6 +45,8 @@ func main() {
 	}
 
 	switch protocol {
+	case "opencensus":
+		benchmarkGRPCOpenCensus(options)
 	case "unary":
 		benchmarkGRPCUnary(options)
 	case "streamsync":
@@ -57,6 +62,16 @@ func main() {
 	}
 
 	runtime.KeepAlive(ballast)
+}
+
+func benchmarkGRPCOpenCensus(options core.Options) {
+	benchmarkImpl(
+		"GRPC/OpenCensus",
+		options,
+		func() core.Client { return &grpc_oc.Client{} },
+		func() core.Server { return &grpc_oc.Server{} },
+		func() core.Generator { return &octraceprotobuf.Generator{} },
+	)
 }
 
 func benchmarkGRPCUnary(options core.Options) {

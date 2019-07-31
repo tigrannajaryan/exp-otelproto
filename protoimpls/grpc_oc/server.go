@@ -1,4 +1,4 @@
-package grpc_stream
+package grpc_oc
 
 import (
 	"io"
@@ -8,14 +8,14 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
 
 type GrpcServer struct {
 	onReceive func(batch core.SpanBatch)
 }
 
-func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer) error {
+func (s *GrpcServer) SendBatch(stream octraceprotobuf.OCStreamTracer_SendBatchServer) error {
 	for {
 		// Wait for batch from client.
 		batch, err := stream.Recv()
@@ -29,8 +29,7 @@ func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer
 		// Process received batch.
 		s.onReceive(batch)
 
-		// Send response to client.
-		stream.Send(&traceprotobuf.BatchResponse{Id: batch.Id})
+		// Do not send any response to client.
 	}
 }
 
@@ -44,7 +43,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch))
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	traceprotobuf.RegisterStreamTracerServer(srv.s, &GrpcServer{onReceive})
+	octraceprotobuf.RegisterOCStreamTracerServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

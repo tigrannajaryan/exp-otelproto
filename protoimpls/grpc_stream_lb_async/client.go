@@ -16,13 +16,12 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client            traceprotobuf.StreamTracerClient
-	stream            traceprotobuf.StreamTracer_SendBatchClient
-	lastStreamOpen    time.Time
-	pendingAck        map[uint64]core.SpanBatch
-	pendingAckMutex   sync.Mutex
-	nextId            uint64
-	inflightSemaphore chan interface{}
+	client          traceprotobuf.StreamTracerClient
+	stream          traceprotobuf.StreamTracer_SendBatchClient
+	lastStreamOpen  time.Time
+	pendingAck      map[uint64]core.SpanBatch
+	pendingAckMutex sync.Mutex
+	nextId          uint64
 }
 
 // How often to reopen the stream to help LB's rebalance traffic.
@@ -37,7 +36,6 @@ func (c *Client) Connect(server string) error {
 		log.Fatalf("did not connect: %v", err)
 	}
 	c.client = traceprotobuf.NewStreamTracerClient(conn)
-	c.inflightSemaphore = make(chan interface{}, 1)
 
 	// Establish stream to server.
 	return c.openStream()
@@ -68,8 +66,6 @@ func (c *Client) readStream(stream traceprotobuf.StreamTracer_SendBatchClient) {
 			return
 		}
 
-		// <-c.inflightSemaphore
-
 		c.pendingAckMutex.Lock()
 		_, ok := c.pendingAck[response.Id]
 		if !ok {
@@ -85,8 +81,6 @@ func (c *Client) Export(batch core.SpanBatch) {
 	// Send the batch via stream.
 	sbatch := batch.(*traceprotobuf.SpanBatch)
 	sbatch.Id = atomic.AddUint64(&c.nextId, 1)
-
-	// c.inflightSemaphore <- false
 
 	c.stream.Send(sbatch)
 

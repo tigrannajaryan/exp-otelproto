@@ -3,7 +3,6 @@ syntax = "proto3";
 package traceprotobuf;
 
 import "resource.proto";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 option java_multiple_files = true;
@@ -116,7 +115,7 @@ message Span {
   // receiver to fix the empty span name.
   //
   // This field is required.
-  TruncatableString name = 4;
+  string name = 4;
 
   // Type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
@@ -148,7 +147,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  google.protobuf.Timestamp start_time = 5;
+  int64 start_time_unixnano = 5;
 
   // The end time of the span. On the client side, this is the time kept by
   // the local machine where the span execution ends. On the server side, this
@@ -159,7 +158,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  google.protobuf.Timestamp end_time = 6;
+  int64 end_time_unixnano = 6;
 
   // A set of attributes, each with a key and a value.
   message Attributes {
@@ -188,12 +187,12 @@ message Span {
   // A time-stamped annotation or message event in the Span.
   message TimeEvent {
     // The time the event occurred.
-    google.protobuf.Timestamp time = 1;
+    int64 time_unixnano = 1;
 
     // A text annotation with a set of attributes.
     message Annotation {
       // A user-supplied message describing the event.
-      TruncatableString description = 1;
+      string description = 1;
 
       // A set of attributes on the annotation.
       Attributes attributes = 2;
@@ -348,7 +347,7 @@ message AttributeValue {
   // The type of the value.
   oneof value {
     // A string up to 256 bytes long.
-    TruncatableString string_value = 1;
+    string string_value = 1;
     // A 64-bit signed integer.
     int64 int_value = 2;
     // A Boolean value represented by `true` or `false`.
@@ -364,13 +363,13 @@ message StackTrace {
   message StackFrame {
     // The fully-qualified name that uniquely identifies the function or
     // method that is active in this frame.
-    TruncatableString function_name = 1;
+    string function_name = 1;
     // An un-mangled function name, if `function_name` is
     // [mangled](http://www.avabodh.com/cxxin/namemangling.html). The name can
     // be fully qualified.
-    TruncatableString original_function_name = 2;
+    string original_function_name = 2;
     // The name of the source file where the function call appears.
-    TruncatableString file_name = 3;
+    string file_name = 3;
     // The line number in `file_name` where the function call appears.
     int64 line_number = 4;
     // The column number where the function call appears, if available.
@@ -379,7 +378,7 @@ message StackTrace {
     // The binary module from where the code was loaded.
     Module load_module = 6;
     // The version of the deployed source code.
-    TruncatableString source_version = 7;
+    string source_version = 7;
   }
 
   // A collection of stack frames, which can be truncated.
@@ -415,24 +414,9 @@ message Module {
   // TODO: document the meaning of this field.
   // For example: main binary, kernel modules, and dynamic libraries
   // such as libc.so, sharedlib.so.
-  TruncatableString module = 1;
+  string module = 1;
 
   // A unique identifier for the module, usually a hash of its
   // contents.
-  TruncatableString build_id = 2;
-}
-
-// A string that might be shortened to a specified length.
-message TruncatableString {
-  // The shortened string. For example, if the original string was 500 bytes long and
-  // the limit of the string was 128 bytes, then this value contains the first 128
-  // bytes of the 500-byte string. Note that truncation always happens on a
-  // character boundary, to ensure that a truncated string is still valid UTF-8.
-  // Because it may contain multi-byte characters, the size of the truncated string
-  // may be less than the truncation limit.
-  string value = 1;
-
-  // The number of bytes removed from the original string. If this
-  // value is 0, then the string was not shortened.
-  int32 truncated_byte_count = 2;
+  string build_id = 2;
 }
