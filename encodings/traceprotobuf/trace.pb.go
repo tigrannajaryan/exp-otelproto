@@ -126,7 +126,7 @@ func (Span_Link_Type) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_0571941a1d628a80, []int{2, 4, 0}
 }
 
-// The request message containing the user's name.
+// A batch of spans
 type SpanBatch struct {
 	Id                   uint64   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Spans                []*Span  `protobuf:"bytes,2,rep,name=spans,proto3" json:"spans,omitempty"`
@@ -174,7 +174,7 @@ func (m *SpanBatch) GetSpans() []*Span {
 	return nil
 }
 
-// The response message containing the greetings
+// A response to SpanBatch
 type BatchResponse struct {
 	Id                   uint64   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

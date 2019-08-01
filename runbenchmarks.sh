@@ -2,8 +2,9 @@
 
 echo ====================================================================================
 echo Legend:
-echo "GRPC/OpenCensus           - GRPC, OpenCensus protocol, streaming, not load balancer friendly, without ack"
-echo "GRPC/OpenCensusWithAck    - GRPC, OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
+echo "WebSocket/Stream/Async    - WebSocket, streaming, unknown load balancer friendliness, with async ack"
+echo "GRPC/OpenCensus           - OpenCensus protocol, streaming, not load balancer friendly, without ack"
+echo "GRPC/OpenCensusWithAck    - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
 echo "GRPC/Unary                - GRPC, unary request per batch, load balancer friendly, with ack"
 echo "GRPC/Stream/NoLB          - GRPC, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/LBAlways/Sync - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
@@ -11,10 +12,10 @@ echo "GRPC/Stream/LBTimed/Sync  - GRPC, streaming, load balancer friendly, close
 echo "GRPC/Stream/LBTimed/Async - GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack"
 echo
 
-sudo tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
+tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=50
+MULTIPLIER=100
 
 cd bin
 
@@ -24,6 +25,7 @@ ATTRPERSPAN=4
 echo Small batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -39,6 +41,7 @@ ATTRPERSPAN=10
 echo Large batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -54,8 +57,9 @@ ATTRPERSPAN=10
 echo Large batches, 2ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
-sudo tc qdisc add dev lo root netem delay 1ms
+tc qdisc add dev lo root netem delay 1ms
 
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -63,7 +67,7 @@ sudo tc qdisc add dev lo root netem delay 1ms
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
-sudo tc qdisc delete dev lo root netem delay 1ms
+tc qdisc delete dev lo root netem delay 1ms
 
 echo
 let BATCHES=40*MULTIPLIER
@@ -72,8 +76,9 @@ ATTRPERSPAN=10
 echo Large batches, 20ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
-sudo tc qdisc add dev lo root netem delay 10ms
+tc qdisc add dev lo root netem delay 10ms
 
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -81,7 +86,7 @@ sudo tc qdisc add dev lo root netem delay 10ms
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
-sudo tc qdisc delete dev lo root netem delay 10ms
+tc qdisc delete dev lo root netem delay 10ms
 
 echo
 let BATCHES=4*MULTIPLIER
@@ -90,9 +95,10 @@ ATTRPERSPAN=10
 echo Large batches, 200ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
-sudo tc qdisc add dev lo root netem delay 100ms
+tc qdisc add dev lo root netem delay 100ms
 let ASYNCBATCHES=10*${BATCHES}
 
+./benchmark -protocol wsstreamasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -100,6 +106,6 @@ let ASYNCBATCHES=10*${BATCHES}
 ./benchmark -protocol streamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
-sudo tc qdisc delete dev lo root netem delay 100ms
+tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================

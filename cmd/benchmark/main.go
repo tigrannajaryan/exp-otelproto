@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"runtime/pprof"
 
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
@@ -26,7 +28,7 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamasync)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
@@ -59,6 +61,8 @@ func main() {
 		benchmarkGRPCStreamLBAlwaysSync(options)
 	case "streamlbasync":
 		benchmarkGRPCStreamLBAsync(options)
+	case "wsstreamasync":
+		benchmarkWSStream(options)
 	default:
 		flag.Usage()
 	}
@@ -136,6 +140,16 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 	)
 }
 
+func benchmarkWSStream(options core.Options) {
+	benchmarkImpl(
+		"WebSocket/Stream/Async",
+		options,
+		func() core.Client { return &ws_stream_async.Client{} },
+		func() core.Server { return &ws_stream_async.Server{} },
+		func() core.Generator { return &traceprotobuf.Generator{} },
+	)
+}
+
 func benchmarkImpl(
 	name string,
 	options core.Options,
@@ -150,7 +164,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-25s %5d batches, %4d spans/batch, %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.0f batches/cpusec, %4.0f batches/wallsec\n",
+	fmt.Printf("%-25s %5d batches, %4d spans/batch, %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
 		name,
 		options.Batches,
 		options.SpansPerBatch,
