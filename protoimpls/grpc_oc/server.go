@@ -13,6 +13,7 @@ import (
 
 type GrpcServer struct {
 	onReceive func(batch core.SpanBatch)
+	SendAck   bool
 }
 
 func (s *GrpcServer) SendBatch(stream octraceprotobuf.OCStreamTracer_SendBatchServer) error {
@@ -29,12 +30,16 @@ func (s *GrpcServer) SendBatch(stream octraceprotobuf.OCStreamTracer_SendBatchSe
 		// Process received batch.
 		s.onReceive(batch)
 
-		// Do not send any response to client.
+		if s.SendAck {
+			// Send response to client.
+			stream.Send(&octraceprotobuf.BatchResponse{})
+		}
 	}
 }
 
 type Server struct {
-	s *grpc.Server
+	s       *grpc.Server
+	SendAck bool
 }
 
 func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
@@ -43,7 +48,8 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch))
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	octraceprotobuf.RegisterOCStreamTracerServer(srv.s, &GrpcServer{onReceive})
+	octraceprotobuf.RegisterOCStreamTracerServer(srv.s,
+		&GrpcServer{onReceive, srv.SendAck})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

@@ -1,55 +1,61 @@
 ====================================================================================
 Legend:
-GRPC/OpenCensus           - GRPC, OpenCensus protocol, stream without ack
-GRPC/Unary                - GRPC, unary request per batch
-GRPC/Stream/NoLB          - GRPC, streaming, not load balancer friendly
-GRPC/Stream/LBAlways/Sync - GRPC, streaming, load balancer friendly, close stream after every batch
-GRPC/Stream/LBTimed/Sync  - GRPC, streaming, load balancer friendly, close stream every 30 sec
-GRPC/Stream/LBTimed/Async - GRPC, streaming, load balancer friendly, async ack, close stream every 30 sec
+GRPC/OpenCensus           - GRPC, OpenCensus protocol, streaming, not load balancer friendly, without ack
+GRPC/OpenCensusWithAck    - GRPC, OpenCensus-like protocol, streaming, not load balancer friendly, with ack
+GRPC/Unary                - GRPC, unary request per batch, load balancer friendly, with ack
+GRPC/Stream/NoLB          - GRPC, streaming, not load balancer friendly, with ack
+GRPC/Stream/LBAlways/Sync - GRPC, streaming, load balancer friendly, close stream after every batch, with ack
+GRPC/Stream/LBTimed/Sync  - GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack
+GRPC/Stream/LBTimed/Async - GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack
 
-[sudo] password for tigran:
 Small batches
-spans/batch=100, attrs/span=2
-GRPC/OpenCensus           40000 batches,  100 spans/batch, 4000000 spans, CPU time  40.8 sec, wall time  17.3 sec,  980 batches/cpusec, 2319 batches/wallsec
-GRPC/Unary                40000 batches,  100 spans/batch, 4000000 spans, CPU time  47.5 sec, wall time  30.7 sec,  843 batches/cpusec, 1305 batches/wallsec
-GRPC/Stream/NoLB          40000 batches,  100 spans/batch, 4000000 spans, CPU time  37.8 sec, wall time  27.0 sec, 1058 batches/cpusec, 1484 batches/wallsec
-GRPC/Stream/LBAlways/Sync 40000 batches,  100 spans/batch, 4000000 spans, CPU time  56.4 sec, wall time  32.6 sec,  709 batches/cpusec, 1226 batches/wallsec
-GRPC/Stream/LBTimed/Sync  40000 batches,  100 spans/batch, 4000000 spans, CPU time  38.0 sec, wall time  27.1 sec, 1053 batches/cpusec, 1477 batches/wallsec
-GRPC/Stream/LBTimed/Async 40000 batches,  100 spans/batch, 4000000 spans, CPU time  46.4 sec, wall time  18.8 sec,  863 batches/cpusec, 2125 batches/wallsec
+spans/batch=100, attrs/span=4
+GRPC/OpenCensus           40000 batches,  100 spans/batch, 4000000 spans, CPU time  82.8 sec, wall time  45.7 sec,  483 batches/cpusec,  875 batches/wallsec
+GRPC/OpenCensusWithAck    40000 batches,  100 spans/batch, 4000000 spans, CPU time  84.5 sec, wall time  69.5 sec,  474 batches/cpusec,  576 batches/wallsec
+GRPC/Unary                40000 batches,  100 spans/batch, 4000000 spans, CPU time  90.0 sec, wall time  67.2 sec,  444 batches/cpusec,  595 batches/wallsec
+GRPC/Stream/NoLB          40000 batches,  100 spans/batch, 4000000 spans, CPU time  78.9 sec, wall time  64.3 sec,  507 batches/cpusec,  622 batches/wallsec
+GRPC/Stream/LBAlways/Sync 40000 batches,  100 spans/batch, 4000000 spans, CPU time 100.2 sec, wall time  69.8 sec,  399 batches/cpusec,  573 batches/wallsec
+GRPC/Stream/LBTimed/Sync  40000 batches,  100 spans/batch, 4000000 spans, CPU time  79.2 sec, wall time  64.5 sec,  505 batches/cpusec,  620 batches/wallsec
+GRPC/Stream/LBTimed/Async 40000 batches,  100 spans/batch, 4000000 spans, CPU time  91.8 sec, wall time  47.6 sec,  436 batches/cpusec,  841 batches/wallsec
 
 Large batches
-spans/batch=500, attrs/span=5
-GRPC/OpenCensus            4000 batches,  500 spans/batch, 2000000 spans, CPU time  49.9 sec, wall time  32.3 sec,   80 batches/cpusec,  124 batches/wallsec
-GRPC/Unary                 4000 batches,  500 spans/batch, 2000000 spans, CPU time  40.9 sec, wall time  37.6 sec,   98 batches/cpusec,  106 batches/wallsec
-GRPC/Stream/NoLB           4000 batches,  500 spans/batch, 2000000 spans, CPU time  39.5 sec, wall time  37.2 sec,  101 batches/cpusec,  108 batches/wallsec
-GRPC/Stream/LBAlways/Sync  4000 batches,  500 spans/batch, 2000000 spans, CPU time  41.5 sec, wall time  37.9 sec,   96 batches/cpusec,  106 batches/wallsec
-GRPC/Stream/LBTimed/Sync   4000 batches,  500 spans/batch, 2000000 spans, CPU time  40.7 sec, wall time  38.4 sec,   98 batches/cpusec,  104 batches/wallsec
-GRPC/Stream/LBTimed/Async  4000 batches,  500 spans/batch, 2000000 spans, CPU time  46.2 sec, wall time  30.1 sec,   87 batches/cpusec,  133 batches/wallsec
+spans/batch=500, attrs/span=10
+GRPC/OpenCensus            4000 batches,  500 spans/batch, 2000000 spans, CPU time 108.0 sec, wall time  75.3 sec,   37 batches/cpusec,   53 batches/wallsec
+GRPC/OpenCensusWithAck     4000 batches,  500 spans/batch, 2000000 spans, CPU time  93.9 sec, wall time  90.5 sec,   43 batches/cpusec,   44 batches/wallsec
+GRPC/Unary                 4000 batches,  500 spans/batch, 2000000 spans, CPU time  86.2 sec, wall time  82.4 sec,   46 batches/cpusec,   49 batches/wallsec
+GRPC/Stream/NoLB           4000 batches,  500 spans/batch, 2000000 spans, CPU time  85.3 sec, wall time  82.2 sec,   47 batches/cpusec,   49 batches/wallsec
+GRPC/Stream/LBAlways/Sync  4000 batches,  500 spans/batch, 2000000 spans, CPU time  88.1 sec, wall time  83.2 sec,   45 batches/cpusec,   48 batches/wallsec
+GRPC/Stream/LBTimed/Sync   4000 batches,  500 spans/batch, 2000000 spans, CPU time  85.7 sec, wall time  82.5 sec,   47 batches/cpusec,   48 batches/wallsec
+GRPC/Stream/LBTimed/Async  4000 batches,  500 spans/batch, 2000000 spans, CPU time  98.6 sec, wall time  68.7 sec,   41 batches/cpusec,   58 batches/wallsec
 
 Large batches, 2ms network roundtrip latency
-spans/batch=500, attrs/span=5
-GRPC/OpenCensus            4000 batches,  500 spans/batch, 2000000 spans, CPU time  49.4 sec, wall time  32.0 sec,   81 batches/cpusec,  125 batches/wallsec
-GRPC/Unary                 4000 batches,  500 spans/batch, 2000000 spans, CPU time  40.2 sec, wall time  45.0 sec,   99 batches/cpusec,   89 batches/wallsec
-GRPC/Stream/NoLB           4000 batches,  500 spans/batch, 2000000 spans, CPU time  39.3 sec, wall time  44.8 sec,  102 batches/cpusec,   89 batches/wallsec
-GRPC/Stream/LBAlways/Sync  4000 batches,  500 spans/batch, 2000000 spans, CPU time  41.0 sec, wall time  45.3 sec,   97 batches/cpusec,   88 batches/wallsec
-GRPC/Stream/LBTimed/Sync   4000 batches,  500 spans/batch, 2000000 spans, CPU time  39.3 sec, wall time  44.8 sec,  102 batches/cpusec,   89 batches/wallsec
-GRPC/Stream/LBTimed/Async  4000 batches,  500 spans/batch, 2000000 spans, CPU time  47.6 sec, wall time  31.3 sec,   84 batches/cpusec,  128 batches/wallsec
+spans/batch=500, attrs/span=10
+[sudo] password for tigran:
+GRPC/OpenCensus            4000 batches,  500 spans/batch, 2000000 spans, CPU time 100.9 sec, wall time  69.6 sec,   40 batches/cpusec,   57 batches/wallsec
+GRPC/OpenCensusWithAck     4000 batches,  500 spans/batch, 2000000 spans, CPU time  88.6 sec, wall time  93.9 sec,   45 batches/cpusec,   43 batches/wallsec
+GRPC/Unary                 4000 batches,  500 spans/batch, 2000000 spans, CPU time  87.3 sec, wall time  92.3 sec,   46 batches/cpusec,   43 batches/wallsec
+GRPC/Stream/NoLB           4000 batches,  500 spans/batch, 2000000 spans, CPU time  83.3 sec, wall time  88.7 sec,   48 batches/cpusec,   45 batches/wallsec
+GRPC/Stream/LBAlways/Sync  4000 batches,  500 spans/batch, 2000000 spans, CPU time  86.2 sec, wall time  89.9 sec,   46 batches/cpusec,   45 batches/wallsec
+GRPC/Stream/LBTimed/Sync   4000 batches,  500 spans/batch, 2000000 spans, CPU time  86.3 sec, wall time  91.8 sec,   46 batches/cpusec,   44 batches/wallsec
+GRPC/Stream/LBTimed/Async  4000 batches,  500 spans/batch, 2000000 spans, CPU time 101.1 sec, wall time  71.7 sec,   40 batches/cpusec,   56 batches/wallsec
 
 Large batches, 20ms network roundtrip latency
-spans/batch=500, attrs/span=5
-GRPC/OpenCensus            2000 batches,  500 spans/batch, 1000000 spans, CPU time  24.2 sec, wall time  16.0 sec,   83 batches/cpusec,  125 batches/wallsec
-GRPC/Unary                 2000 batches,  500 spans/batch, 1000000 spans, CPU time  16.6 sec, wall time  55.8 sec,  121 batches/cpusec,   36 batches/wallsec
-GRPC/Stream/NoLB           2000 batches,  500 spans/batch, 1000000 spans, CPU time  15.8 sec, wall time  55.8 sec,  127 batches/cpusec,   36 batches/wallsec
-GRPC/Stream/LBAlways/Sync  2000 batches,  500 spans/batch, 1000000 spans, CPU time  16.8 sec, wall time  56.2 sec,  119 batches/cpusec,   36 batches/wallsec
-GRPC/Stream/LBTimed/Sync   2000 batches,  500 spans/batch, 1000000 spans, CPU time  15.7 sec, wall time  55.6 sec,  128 batches/cpusec,   36 batches/wallsec
-GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time  19.9 sec, wall time  13.2 sec,  101 batches/cpusec,  152 batches/wallsec
+spans/batch=500, attrs/span=10
+GRPC/OpenCensus            2000 batches,  500 spans/batch, 1000000 spans, CPU time  51.0 sec, wall time  35.4 sec,   39 batches/cpusec,   57 batches/wallsec
+GRPC/OpenCensusWithAck     2000 batches,  500 spans/batch, 1000000 spans, CPU time  35.7 sec, wall time  74.8 sec,   56 batches/cpusec,   27 batches/wallsec
+GRPC/Unary                 2000 batches,  500 spans/batch, 1000000 spans, CPU time  34.3 sec, wall time  72.8 sec,   58 batches/cpusec,   27 batches/wallsec
+GRPC/Stream/NoLB           2000 batches,  500 spans/batch, 1000000 spans, CPU time  33.2 sec, wall time  72.3 sec,   60 batches/cpusec,   28 batches/wallsec
+GRPC/Stream/LBAlways/Sync  2000 batches,  500 spans/batch, 1000000 spans, CPU time  34.5 sec, wall time  72.7 sec,   58 batches/cpusec,   28 batches/wallsec
+GRPC/Stream/LBTimed/Sync   2000 batches,  500 spans/batch, 1000000 spans, CPU time  33.2 sec, wall time  72.3 sec,   60 batches/cpusec,   28 batches/wallsec
+GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time  48.1 sec, wall time  33.8 sec,   42 batches/cpusec,   59 batches/wallsec
 
 Large batches, 200ms network roundtrip latency
-spans/batch=500, attrs/span=5
-GRPC/OpenCensus            2000 batches,  500 spans/batch, 1000000 spans, CPU time  16.2 sec, wall time  31.6 sec,  123 batches/cpusec,   63 batches/wallsec
-GRPC/Unary                  200 batches,  500 spans/batch,  100000 spans, CPU time   1.8 sec, wall time  42.8 sec,  113 batches/cpusec,    5 batches/wallsec
-GRPC/Stream/LBAlways/Sync   200 batches,  500 spans/batch,  100000 spans, CPU time   1.7 sec, wall time  42.3 sec,  117 batches/cpusec,    5 batches/wallsec
-GRPC/Stream/NoLB            200 batches,  500 spans/batch,  100000 spans, CPU time   1.6 sec, wall time  42.5 sec,  121 batches/cpusec,    5 batches/wallsec
-GRPC/Stream/LBTimed/Sync    200 batches,  500 spans/batch,  100000 spans, CPU time   1.7 sec, wall time  42.5 sec,  119 batches/cpusec,    5 batches/wallsec
-GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time  14.9 sec, wall time  30.4 sec,  134 batches/cpusec,   66 batches/wallsec
+spans/batch=500, attrs/span=10
+GRPC/OpenCensus            2000 batches,  500 spans/batch, 1000000 spans, CPU time  36.4 sec, wall time  61.0 sec,   55 batches/cpusec,   33 batches/wallsec
+GRPC/OpenCensusWithAck      200 batches,  500 spans/batch,  100000 spans, CPU time   3.6 sec, wall time  45.0 sec,   56 batches/cpusec,    4 batches/wallsec
+GRPC/Unary                  200 batches,  500 spans/batch,  100000 spans, CPU time   3.6 sec, wall time  45.1 sec,   56 batches/cpusec,    4 batches/wallsec
+GRPC/Stream/LBAlways/Sync   200 batches,  500 spans/batch,  100000 spans, CPU time   3.4 sec, wall time  44.8 sec,   58 batches/cpusec,    4 batches/wallsec
+GRPC/Stream/NoLB            200 batches,  500 spans/batch,  100000 spans, CPU time   3.4 sec, wall time  44.6 sec,   59 batches/cpusec,    4 batches/wallsec
+GRPC/Stream/LBTimed/Sync    200 batches,  500 spans/batch,  100000 spans, CPU time   3.4 sec, wall time  44.6 sec,   59 batches/cpusec,    4 batches/wallsec
+GRPC/Stream/LBTimed/Async  2000 batches,  500 spans/batch, 1000000 spans, CPU time  32.8 sec, wall time  57.5 sec,   61 batches/cpusec,   35 batches/wallsec
 ====================================================================================

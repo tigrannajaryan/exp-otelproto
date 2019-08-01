@@ -26,7 +26,7 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
@@ -47,6 +47,8 @@ func main() {
 	switch protocol {
 	case "opencensus":
 		benchmarkGRPCOpenCensus(options)
+	case "ocack":
+		benchmarkGRPCOpenCensusWithAck(options)
 	case "unary":
 		benchmarkGRPCUnary(options)
 	case "streamsync":
@@ -70,6 +72,16 @@ func benchmarkGRPCOpenCensus(options core.Options) {
 		options,
 		func() core.Client { return &grpc_oc.Client{} },
 		func() core.Server { return &grpc_oc.Server{} },
+		func() core.Generator { return &octraceprotobuf.Generator{} },
+	)
+}
+
+func benchmarkGRPCOpenCensusWithAck(options core.Options) {
+	benchmarkImpl(
+		"GRPC/OpenCensusWithAck",
+		options,
+		func() core.Client { return &grpc_oc.Client{WaitForAck: true} },
+		func() core.Server { return &grpc_oc.Server{SendAck: true} },
 		func() core.Generator { return &octraceprotobuf.Generator{} },
 	)
 }

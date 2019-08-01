@@ -12,8 +12,9 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client octraceprotobuf.OCStreamTracerClient
-	stream octraceprotobuf.OCStreamTracer_SendBatchClient
+	client     octraceprotobuf.OCStreamTracerClient
+	stream     octraceprotobuf.OCStreamTracer_SendBatchClient
+	WaitForAck bool
 }
 
 func (c *Client) Connect(server string) error {
@@ -37,5 +38,13 @@ func (c *Client) Export(batch core.SpanBatch) {
 	// Send the batch via stream.
 	c.stream.Send(batch.(*octraceprotobuf.SpanBatch))
 
-	// Do not expect a response from server.
+	if c.WaitForAck {
+		// Wait for response from server. This is full synchronous operation,
+		// we do not send batches concurrently.
+		_, err := c.stream.Recv()
+
+		if err != nil {
+			log.Fatal("Error from server when expecting batch response")
+		}
+	}
 }

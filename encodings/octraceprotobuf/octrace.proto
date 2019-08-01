@@ -17,7 +17,7 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 // OpenCensus-like tracer service definition.
 service OCStreamTracer {
   // Sends a batch
-  rpc SendBatch (stream SpanBatch) returns (BatchResponse) {}
+  rpc SendBatch (stream SpanBatch) returns (stream BatchResponse) {}
 }
 
 // The request message containing the user's name.
