@@ -2,7 +2,7 @@
 
 Run `make` to build.
 
-Run `make test` to run benchmarks.
+Run `sudo make benchmark` to run benchmarks.
 
 # Source code
 
