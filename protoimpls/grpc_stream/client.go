@@ -13,7 +13,7 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	client traceprotobuf.StreamTracerClient
-	stream traceprotobuf.StreamTracer_SendBatchClient
+	stream traceprotobuf.StreamTracer_ExportClient
 }
 
 func (c *Client) Connect(server string) error {
@@ -25,7 +25,7 @@ func (c *Client) Connect(server string) error {
 	c.client = traceprotobuf.NewStreamTracerClient(conn)
 
 	// Establish stream to server.
-	c.stream, err = c.client.SendBatch(context.Background())
+	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
 		return err
 	}
@@ -33,9 +33,9 @@ func (c *Client) Connect(server string) error {
 	return nil
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
+func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	c.stream.Send(batch.(*traceprotobuf.SpanBatch))
+	c.stream.Send(batch.(*traceprotobuf.ExportRequest))
 
 	// Wait for response from server. This is full synchronous operation,
 	// we do not send batches concurrently.

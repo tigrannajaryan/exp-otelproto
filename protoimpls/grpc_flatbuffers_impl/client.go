@@ -25,6 +25,6 @@ func (c *Client) Connect(server string) error {
 	return nil
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
+func (c *Client) Export(batch core.ExportRequest) {
 	c.client.SendBatch(context.Background(), batch.(*traceflatbuffers.BatchRequest))
 }

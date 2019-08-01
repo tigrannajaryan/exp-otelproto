@@ -16,7 +16,7 @@ echo
 tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=100
+MULTIPLIER=1
 
 cd bin
 

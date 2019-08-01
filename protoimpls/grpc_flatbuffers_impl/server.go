@@ -15,7 +15,7 @@ import (
 )
 
 type GrpcServer struct {
-	onReceive func(batch core.SpanBatch)
+	onReceive func(batch core.ExportRequest)
 }
 
 func (s *GrpcServer) SendBatch(ctx context.Context, batch *traceflatbuffers.BatchRequest) (*traceflatbuffers.BatchResponse, error) {
@@ -62,7 +62,7 @@ func (s *GrpcServer) SendBatch(ctx context.Context, batch *traceflatbuffers.Batc
 type Server struct {
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest)) error {
 	log.Println("Starting GRPC Server...")
 
 	lis, err := net.Listen("tcp", endpoint)

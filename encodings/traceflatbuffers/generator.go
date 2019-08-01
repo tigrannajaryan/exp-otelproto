@@ -12,13 +12,13 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-// Generator allows to generate a SpanBatch.
+// Generator allows to generate a ExportRequest.
 type Generator struct {
 	tracesSent uint64
 	spansSent  uint64
 }
 
-func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.SpanBatch {
+func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	builder := flatbuffers.NewBuilder(1024)

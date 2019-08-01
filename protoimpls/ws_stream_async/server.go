@@ -16,7 +16,7 @@ type Server struct {
 
 var upgrader = websocket.Upgrader{} // use default options
 
-func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(batch core.SpanBatch)) {
+func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(batch core.ExportRequest)) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal("upgrade:", err)
@@ -31,7 +31,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 		}
 		// log.Printf("recv: %s", message)
 
-		var spanBatch traceprotobuf.SpanBatch
+		var spanBatch traceprotobuf.ExportRequest
 		err = proto.Unmarshal(bytes, &spanBatch)
 		if err != nil {
 			log.Fatal("cannnot decode:", err)
@@ -40,7 +40,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		onReceive(spanBatch)
 
-		responseBytes, err := proto.Marshal(&traceprotobuf.BatchResponse{Id: spanBatch.Id})
+		responseBytes, err := proto.Marshal(&traceprotobuf.ExportResponse{Id: spanBatch.Id})
 		if err != nil {
 			log.Fatal("cannot encode:", err)
 			break
@@ -54,7 +54,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 	}
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest)) error {
 	http.HandleFunc(
 		"/telemetry",
 		func(w http.ResponseWriter, r *http.Request) { telemetryReceiver(w, r, onReceive) },

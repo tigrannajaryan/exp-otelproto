@@ -12,10 +12,10 @@ import (
 )
 
 type GrpcServer struct {
-	onReceive func(batch core.SpanBatch)
+	onReceive func(batch core.ExportRequest)
 }
 
-func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer) error {
+func (s *GrpcServer) Export(stream traceprotobuf.StreamTracer_ExportServer) error {
 	for {
 		// Wait for batch from client.
 		batch, err := stream.Recv()
@@ -30,7 +30,7 @@ func (s *GrpcServer) SendBatch(stream traceprotobuf.StreamTracer_SendBatchServer
 		s.onReceive(batch)
 
 		// Send response to client.
-		stream.Send(&traceprotobuf.BatchResponse{Id: batch.Id})
+		stream.Send(&traceprotobuf.ExportResponse{Id: batch.Id})
 	}
 }
 
@@ -38,7 +38,7 @@ type Server struct {
 	s *grpc.Server
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.SpanBatch)) error {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest)) error {
 	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

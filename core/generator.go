@@ -1,6 +1,6 @@
 package core
 
-// Generator allows to generate a SpanBatch.
+// Generator allows to generate a ExportRequest.
 type Generator interface {
-	GenerateBatch(spansPerBatch int, attrsPerSpan int) SpanBatch
+	GenerateBatch(spansPerBatch int, attrsPerSpan int) ExportRequest
 }

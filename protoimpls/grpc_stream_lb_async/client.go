@@ -17,9 +17,9 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	client          traceprotobuf.StreamTracerClient
-	stream          traceprotobuf.StreamTracer_SendBatchClient
+	stream          traceprotobuf.StreamTracer_ExportClient
 	lastStreamOpen  time.Time
-	pendingAck      map[uint64]core.SpanBatch
+	pendingAck      map[uint64]core.ExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 }
@@ -28,7 +28,7 @@ type Client struct {
 var streamReopenPeriod = 30 * time.Second
 
 func (c *Client) Connect(server string) error {
-	c.pendingAck = make(map[uint64]core.SpanBatch)
+	c.pendingAck = make(map[uint64]core.ExportRequest)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
@@ -43,7 +43,7 @@ func (c *Client) Connect(server string) error {
 
 func (c *Client) openStream() error {
 	var err error
-	c.stream, err = c.client.SendBatch(context.Background())
+	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream traceprotobuf.StreamTracer_SendBatchClient) {
+func (c *Client) readStream(stream traceprotobuf.StreamTracer_ExportClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {
@@ -77,16 +77,16 @@ func (c *Client) readStream(stream traceprotobuf.StreamTracer_SendBatchClient) {
 	}
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
+func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	sbatch := batch.(*traceprotobuf.SpanBatch)
-	sbatch.Id = atomic.AddUint64(&c.nextId, 1)
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	c.stream.Send(sbatch)
+	c.stream.Send(request)
 
 	// Add the ID to pendingAck map
 	c.pendingAckMutex.Lock()
-	c.pendingAck[sbatch.Id] = batch
+	c.pendingAck[request.Id] = batch
 	c.pendingAckMutex.Unlock()
 
 	// Check if time to re-establish the stream.

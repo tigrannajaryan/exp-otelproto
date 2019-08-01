@@ -16,30 +16,40 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 // The Unary tracer service definition.
 service UnaryTracer {
   // Sends a batch
-  rpc SendBatch (SpanBatch) returns (BatchResponse) {}
+  rpc Export (ExportRequest) returns (ExportResponse) {}
 }
 
 // The Streaming tracer service definition.
 service StreamTracer {
   // Sends a batch
-  rpc SendBatch (stream SpanBatch) returns (stream BatchResponse) {}
+  rpc Export (stream ExportRequest) returns (stream ExportResponse) {}
 }
 
-// A batch of spans
-message SpanBatch {
+message WSRequestHeader {
+  enum CompressionMethod {
+    NONE = 0;
+    LZ4 = 1;
+    ZLIB = 2;
+  }
+  CompressionMethod compression = 1;
+  int32 compression_level = 2;
+}
+
+// A request from client to server containing telemetry data to export.
+message ExportRequest {
   uint64 id = 1;
   repeated Span spans = 2;
 }
 
-// A response to SpanBatch
-message BatchResponse {
+// A response to ExportRequest
+message ExportResponse {
   uint64 id = 1;
 }
 
 // The tracer service definition that does not acknowledge every request.
 service NoAckStreamTracer {
   // Sends a batch
-  rpc SendBatch (stream SpanBatch) returns (BatchResponse) {}
+  rpc Export (stream ExportRequest) returns (ExportResponse) {}
 }
 
 

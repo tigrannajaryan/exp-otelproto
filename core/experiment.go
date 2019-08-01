@@ -10,7 +10,7 @@ import (
 	"github.com/shirou/gopsutil/process"
 )
 
-func onBatchReceive(batch SpanBatch) {
+func onBatchReceive(batch ExportRequest) {
 	log.Printf("Server received a batch")
 }
 
@@ -53,7 +53,7 @@ func BenchmarkLocalDelivery(
 	wg := sync.WaitGroup{}
 
 	// Server listen locally.
-	go srv.Listen(endpoint, func(batch SpanBatch) {
+	go srv.Listen(endpoint, func(batch ExportRequest) {
 		// Count delivered batch.
 		wg.Done()
 	})
@@ -113,7 +113,7 @@ func RunAgent(clnt Client, srv Server, listenAddress, destination string) {
 		log.Fatalf("Cannot connection to %v: %v", destination, err)
 	}
 
-	srv.Listen(listenAddress, func(batch SpanBatch) {
+	srv.Listen(listenAddress, func(batch ExportRequest) {
 		log.Printf("Agent: forwarding span batch")
 		clnt.Export(batch)
 	})

@@ -16,14 +16,14 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	conn            *websocket.Conn
-	pendingAck      map[uint64]core.SpanBatch
+	pendingAck      map[uint64]core.ExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 }
 
 func (c *Client) Connect(server string) error {
 	// Set up a connection to the server.
-	c.pendingAck = make(map[uint64]core.SpanBatch)
+	c.pendingAck = make(map[uint64]core.ExportRequest)
 
 	u := url.URL{Scheme: "ws", Host: server, Path: "/telemetry"}
 
@@ -46,7 +46,7 @@ func (c *Client) readStream() {
 			log.Fatal("read:", err)
 			return
 		}
-		var response traceprotobuf.BatchResponse
+		var response traceprotobuf.ExportResponse
 		err = proto.Unmarshal(bytes, &response)
 		if err != nil {
 			log.Fatal("cannnot decode:", err)
@@ -64,11 +64,11 @@ func (c *Client) readStream() {
 	}
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
-	sbatch := batch.(*traceprotobuf.SpanBatch)
-	sbatch.Id = atomic.AddUint64(&c.nextId, 1)
+func (c *Client) Export(batch core.ExportRequest) {
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	bytes, err := proto.Marshal(sbatch)
+	bytes, err := proto.Marshal(request)
 	if err != nil {
 		log.Fatal("cannot encode:", err)
 	}
@@ -80,6 +80,6 @@ func (c *Client) Export(batch core.SpanBatch) {
 
 	// Add the ID to pendingAck map
 	c.pendingAckMutex.Lock()
-	c.pendingAck[sbatch.Id] = batch
+	c.pendingAck[request.Id] = batch
 	c.pendingAckMutex.Unlock()
 }

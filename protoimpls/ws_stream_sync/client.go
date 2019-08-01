@@ -31,11 +31,11 @@ func (c *Client) Connect(server string) error {
 	return nil
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
-	sbatch := batch.(*traceprotobuf.SpanBatch)
-	sbatch.Id = atomic.AddUint64(&c.nextId, 1)
+func (c *Client) Export(batch core.ExportRequest) {
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	bytes, err := proto.Marshal(sbatch)
+	bytes, err := proto.Marshal(request)
 	if err != nil {
 		log.Fatal("cannot encode:", err)
 	}
@@ -50,7 +50,7 @@ func (c *Client) Export(batch core.SpanBatch) {
 		log.Fatal("read:", err)
 		return
 	}
-	var response traceprotobuf.BatchResponse
+	var response traceprotobuf.ExportResponse
 	err = proto.Unmarshal(bytes, &response)
 	if err != nil {
 		log.Fatal("cannnot decode:", err)

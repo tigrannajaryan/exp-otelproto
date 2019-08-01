@@ -10,10 +10,10 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
 
-// Client can connect to a server and send a batch of spans.
+// Client can connect to a server and send an export request.
 type Client struct {
 	client     octraceprotobuf.OCStreamTracerClient
-	stream     octraceprotobuf.OCStreamTracer_SendBatchClient
+	stream     octraceprotobuf.OCStreamTracer_ExportClient
 	WaitForAck bool
 }
 
@@ -26,7 +26,7 @@ func (c *Client) Connect(server string) error {
 	c.client = octraceprotobuf.NewOCStreamTracerClient(conn)
 
 	// Establish stream to server.
-	c.stream, err = c.client.SendBatch(context.Background())
+	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
 		return err
 	}
@@ -34,9 +34,9 @@ func (c *Client) Connect(server string) error {
 	return nil
 }
 
-func (c *Client) Export(batch core.SpanBatch) {
-	// Send the batch via stream.
-	c.stream.Send(batch.(*octraceprotobuf.SpanBatch))
+func (c *Client) Export(request core.ExportRequest) {
+	// Send the request via stream.
+	c.stream.Send(request.(*octraceprotobuf.ExportRequest))
 
 	if c.WaitForAck {
 		// Wait for response from server. This is full synchronous operation,
@@ -44,7 +44,7 @@ func (c *Client) Export(batch core.SpanBatch) {
 		_, err := c.stream.Recv()
 
 		if err != nil {
-			log.Fatal("Error from server when expecting batch response")
+			log.Fatal("Error from server when expecting request response")
 		}
 	}
 }
