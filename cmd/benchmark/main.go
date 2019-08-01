@@ -8,8 +8,6 @@ import (
 	"runtime"
 	"runtime/pprof"
 
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
-
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
@@ -18,6 +16,8 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamasync)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
@@ -61,8 +61,10 @@ func main() {
 		benchmarkGRPCStreamLBAlwaysSync(options)
 	case "streamlbasync":
 		benchmarkGRPCStreamLBAsync(options)
+	case "wsstreamsync":
+		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStream(options)
+		benchmarkWSStreamAsync(options)
 	default:
 		flag.Usage()
 	}
@@ -140,7 +142,17 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 	)
 }
 
-func benchmarkWSStream(options core.Options) {
+func benchmarkWSStreamSync(options core.Options) {
+	benchmarkImpl(
+		"WebSocket/Stream/Sync",
+		options,
+		func() core.Client { return &ws_stream_sync.Client{} },
+		func() core.Server { return &ws_stream_sync.Server{} },
+		func() core.Generator { return &traceprotobuf.Generator{} },
+	)
+}
+
+func benchmarkWSStreamAsync(options core.Options) {
 	benchmarkImpl(
 		"WebSocket/Stream/Async",
 		options,

@@ -2,6 +2,7 @@
 
 echo ====================================================================================
 echo Legend:
+echo "WebSocket/Stream/Sync     - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async    - WebSocket, streaming, unknown load balancer friendliness, with async ack"
 echo "GRPC/OpenCensus           - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck    - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
@@ -25,7 +26,6 @@ ATTRPERSPAN=4
 echo Small batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
-./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -33,6 +33,8 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
 let BATCHES=80*MULTIPLIER
@@ -41,7 +43,6 @@ ATTRPERSPAN=10
 echo Large batches
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
-./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -49,6 +50,8 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 
 echo
 let BATCHES=80*MULTIPLIER
@@ -58,8 +61,6 @@ echo Large batches, 2ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 tc qdisc add dev lo root netem delay 1ms
-
-./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -67,6 +68,8 @@ tc qdisc add dev lo root netem delay 1ms
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 tc qdisc delete dev lo root netem delay 1ms
 
 echo
@@ -77,8 +80,6 @@ echo Large batches, 20ms network roundtrip latency
 echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 
 tc qdisc add dev lo root netem delay 10ms
-
-./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -86,6 +87,8 @@ tc qdisc add dev lo root netem delay 10ms
 ./benchmark -protocol streamlbalwayssync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamasync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 tc qdisc delete dev lo root netem delay 10ms
 
 echo
@@ -98,7 +101,6 @@ echo spans/batch=${SPANSPERBATCH}, attrs/span=${ATTRPERSPAN}
 tc qdisc add dev lo root netem delay 100ms
 let ASYNCBATCHES=10*${BATCHES}
 
-./benchmark -protocol wsstreamasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol opencensus -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol ocack -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol unary -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
@@ -106,6 +108,8 @@ let ASYNCBATCHES=10*${BATCHES}
 ./benchmark -protocol streamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbtimedsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 ./benchmark -protocol streamlbasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamsync -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+./benchmark -protocol wsstreamasync -batches=${ASYNCBATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================
