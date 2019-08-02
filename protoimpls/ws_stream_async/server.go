@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	"github.com/golang/protobuf/proto"
-
 	"github.com/gorilla/websocket"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/wsframing"
 )
 
 type Server struct {
@@ -29,18 +30,12 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 			log.Fatal("read:", err)
 			break
 		}
-		// log.Printf("recv: %s", message)
 
-		var spanBatch traceprotobuf.ExportRequest
-		err = proto.Unmarshal(bytes, &spanBatch)
-		if err != nil {
-			log.Fatal("cannnot decode:", err)
-			break
-		}
+		request := wsframing.Decode(bytes)
 
-		onReceive(spanBatch)
+		onReceive(request)
 
-		responseBytes, err := proto.Marshal(&traceprotobuf.ExportResponse{Id: spanBatch.Id})
+		responseBytes, err := proto.Marshal(&traceprotobuf.ExportResponse{Id: request.Id})
 		if err != nil {
 			log.Fatal("cannot encode:", err)
 			break

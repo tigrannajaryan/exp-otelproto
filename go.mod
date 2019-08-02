@@ -3,6 +3,7 @@ module github.com/tigrannajaryan/exp-otelproto
 go 1.12
 
 require (
+	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/google/flatbuffers v1.11.0
 	github.com/gorilla/websocket v1.4.0

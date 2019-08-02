@@ -25,33 +25,33 @@ service StreamTracer {
   rpc Export (stream ExportRequest) returns (stream ExportResponse) {}
 }
 
-message WSRequestHeader {
+// Request sent via Websocket. Contains ExportRequest.
+message WSExportRequest {
   enum CompressionMethod {
-    NONE = 0;
-    LZ4 = 1;
-    ZLIB = 2;
+    NO_COMPRESSION = 0;
+    LZ4_COMPRESSION = 1;
+    ZLIB_COMPRESSION = 2;
   }
+
+  // Compression method used for body.
   CompressionMethod compression = 1;
   int32 compression_level = 2;
+
+  // ExportRequest encoded via Protobufs and compressed using specific compression.
+  bytes body = 3;
 }
 
 // A request from client to server containing telemetry data to export.
 message ExportRequest {
   uint64 id = 1;
   repeated Span spans = 2;
+  repeated Metric metrics = 3;
 }
 
 // A response to ExportRequest
 message ExportResponse {
   uint64 id = 1;
 }
-
-// The tracer service definition that does not acknowledge every request.
-service NoAckStreamTracer {
-  // Sends a batch
-  rpc Export (stream ExportRequest) returns (ExportResponse) {}
-}
-
 
 // A span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans
@@ -429,4 +429,8 @@ message Module {
   // A unique identifier for the module, usually a hash of its
   // contents.
   string build_id = 2;
+}
+
+message Metric {
+
 }

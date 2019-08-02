@@ -10,6 +10,7 @@ import (
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/wsframing"
 )
 
 // Client can connect to a server and send a batch of spans.
@@ -35,12 +36,8 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	bytes, err := proto.Marshal(request)
-	if err != nil {
-		log.Fatal("cannot encode:", err)
-	}
-
-	err = c.conn.WriteMessage(websocket.BinaryMessage, bytes)
+	bytes := wsframing.Encode(request)
+	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		log.Fatal("write:", err)
 	}
