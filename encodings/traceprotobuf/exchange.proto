@@ -76,7 +76,7 @@ message RequestHeader {
 // multiplexing such as WebSocket.
 message RequestBody {
   oneof body {
-      HelloRequest hello = 1;
+    HelloRequest hello = 1;
     ExportRequest export = 2;
   }
 }
