@@ -6,12 +6,13 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/wsframing"
 )
 
 // Client can connect to a server and send a batch of spans.
@@ -71,7 +72,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
 	body := &traceprotobuf.RequestBody{Body: &traceprotobuf.RequestBody_Export{request}}
-	bytes := wsframing.Encode(body, c.Compression)
+	bytes := encodings.Encode(body, c.Compression)
 
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {

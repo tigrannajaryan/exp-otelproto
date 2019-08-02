@@ -4,12 +4,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/wsframing"
 )
 
 type Server struct {
@@ -31,7 +32,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 			break
 		}
 
-		request := wsframing.Decode(bytes)
+		request := encodings.Decode(bytes)
 
 		onReceive(request)
 

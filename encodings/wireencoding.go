@@ -1,4 +1,4 @@
-package wsframing
+package encodings
 
 import (
 	"bytes"
