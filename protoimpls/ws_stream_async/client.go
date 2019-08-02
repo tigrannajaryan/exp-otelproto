@@ -20,6 +20,7 @@ type Client struct {
 	pendingAck      map[uint64]core.ExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
+	Compression     traceprotobuf.WSExportRequest_CompressionMethod
 }
 
 func (c *Client) Connect(server string) error {
@@ -69,7 +70,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	bytes := wsframing.Encode(request)
+	bytes := wsframing.Encode(request, c.Compression)
 
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {

@@ -28,7 +28,7 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync,wsstreamasynczlib)")
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
@@ -64,7 +64,9 @@ func main() {
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options)
+		benchmarkWSStreamAsync(options, traceprotobuf.WSExportRequest_NO_COMPRESSION)
+	case "wsstreamasynczlib":
+		benchmarkWSStreamAsync(options, traceprotobuf.WSExportRequest_ZLIB_COMPRESSION)
 	default:
 		flag.Usage()
 	}
@@ -152,12 +154,22 @@ func benchmarkWSStreamSync(options core.Options) {
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options) {
+func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.WSExportRequest_CompressionMethod) {
+	var suffix string
+	switch compression {
+	case traceprotobuf.WSExportRequest_NO_COMPRESSION:
+		suffix = ""
+	case traceprotobuf.WSExportRequest_ZLIB_COMPRESSION:
+		suffix = "/zlib"
+	case traceprotobuf.WSExportRequest_LZ4_COMPRESSION:
+		suffix = "/lz4"
+	}
+
 	benchmarkImpl(
-		"WebSocket/Stream/Async",
+		"WebSocket/Stream/Async"+suffix,
 		options,
-		func() core.Client { return &ws_stream_async.Client{} },
-		func() core.Server { return &ws_stream_async.Server{} },
+		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
+		func() core.Server { return &ws_stream_async.Server{Compression: compression} },
 		func() core.Generator { return &traceprotobuf.Generator{} },
 	)
 }
@@ -176,7 +188,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-25s %5d batches, %4d spans/batch, %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
+	fmt.Printf("%-27s %5d batches, %4d spans/batch, %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
 		name,
 		options.Batches,
 		options.SpansPerBatch,

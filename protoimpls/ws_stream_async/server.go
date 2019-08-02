@@ -13,6 +13,7 @@ import (
 )
 
 type Server struct {
+	Compression traceprotobuf.WSExportRequest_CompressionMethod
 }
 
 var upgrader = websocket.Upgrader{} // use default options
