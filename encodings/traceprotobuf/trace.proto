@@ -13,46 +13,6 @@ option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
-// The Unary tracer service definition.
-service UnaryTracer {
-  // Sends a batch
-  rpc Export (ExportRequest) returns (ExportResponse) {}
-}
-
-// The Streaming tracer service definition.
-service StreamTracer {
-  // Sends a batch
-  rpc Export (stream ExportRequest) returns (stream ExportResponse) {}
-}
-
-// Request sent via Websocket. Contains ExportRequest.
-message WSExportRequest {
-  enum CompressionMethod {
-    NO_COMPRESSION = 0;
-    LZ4_COMPRESSION = 1;
-    ZLIB_COMPRESSION = 2;
-  }
-
-  // Compression method used for body.
-  CompressionMethod compression = 1;
-  int32 compression_level = 2;
-
-  // ExportRequest encoded via Protobufs and compressed using specific compression.
-  bytes body = 3;
-}
-
-// A request from client to server containing telemetry data to export.
-message ExportRequest {
-  uint64 id = 1;
-  repeated Span spans = 2;
-  repeated Metric metrics = 3;
-}
-
-// A response to ExportRequest
-message ExportResponse {
-  uint64 id = 1;
-}
-
 // A span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans
 // from the same or different trace. And form graphs. Often, a trace
@@ -170,25 +130,14 @@ message Span {
   // This field is required.
   int64 end_time_unixnano = 6;
 
-//  // A set of attributes, each with a key and a value.
-//  message Attributes {
-//    // The set of attributes. The value can be a string, an integer, a double
-//    // or the Boolean values `true` or `false`. Note, global attributes like
-//    // server name can be set as tags using resource API. Examples of attributes:
-//    //
-//    //     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
-//    //     "/http/server_latency": 300
-//    //     "abc.com/myattribute": true
-//    //     "abc.com/score": 10.239
-//    map<string, AttributeValue> attribute_map = 1;
-//
-//    // The number of attributes that were discarded. Attributes can be discarded
-//    // because their keys are too long or because there are too many attributes.
-//    // If this value is 0, then no attributes were dropped.
-//    int32 dropped_attributes_count = 2;
-//  }
-
-  // A set of attributes on the span.
+  // The set of attributes. The value can be a string, an integer, a double
+  // or the Boolean values `true` or `false`. Note, global attributes like
+  // server name can be set as tags using resource API. Examples of attributes:
+  //
+  //     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
+  //     "/http/server_latency": 300
+  //     "abc.com/myattribute": true
+  //     "abc.com/score": 10.239
   map<string, AttributeValue> attributes = 7;
 
   // A stack trace captured at the start of the span.

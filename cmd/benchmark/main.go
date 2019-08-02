@@ -64,9 +64,9 @@ func main() {
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options, traceprotobuf.WSExportRequest_NO_COMPRESSION)
+		benchmarkWSStreamAsync(options, traceprotobuf.CompressionMethod_NONE)
 	case "wsstreamasynczlib":
-		benchmarkWSStreamAsync(options, traceprotobuf.WSExportRequest_ZLIB_COMPRESSION)
+		benchmarkWSStreamAsync(options, traceprotobuf.CompressionMethod_ZLIB)
 	default:
 		flag.Usage()
 	}
@@ -80,7 +80,7 @@ func benchmarkGRPCOpenCensus(options core.Options) {
 		options,
 		func() core.Client { return &grpc_oc.Client{} },
 		func() core.Server { return &grpc_oc.Server{} },
-		func() core.Generator { return &octraceprotobuf.Generator{} },
+		func() core.Generator { return octraceprotobuf.NewGenerator() },
 	)
 }
 
@@ -90,7 +90,7 @@ func benchmarkGRPCOpenCensusWithAck(options core.Options) {
 		options,
 		func() core.Client { return &grpc_oc.Client{WaitForAck: true} },
 		func() core.Server { return &grpc_oc.Server{SendAck: true} },
-		func() core.Generator { return &octraceprotobuf.Generator{} },
+		func() core.Generator { return octraceprotobuf.NewGenerator() },
 	)
 }
 
@@ -100,7 +100,7 @@ func benchmarkGRPCUnary(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
@@ -110,7 +110,7 @@ func benchmarkGRPCStreamLBTimedSync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
@@ -120,7 +120,7 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
@@ -130,7 +130,7 @@ func benchmarkGRPCStreamLBAsync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb_async.Client{} },
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
@@ -140,7 +140,7 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream.Client{} },
 		func() core.Server { return &grpc_stream.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
@@ -150,18 +150,18 @@ func benchmarkWSStreamSync(options core.Options) {
 		options,
 		func() core.Client { return &ws_stream_sync.Client{} },
 		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.WSExportRequest_CompressionMethod) {
+func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.CompressionMethod) {
 	var suffix string
 	switch compression {
-	case traceprotobuf.WSExportRequest_NO_COMPRESSION:
+	case traceprotobuf.CompressionMethod_NONE:
 		suffix = ""
-	case traceprotobuf.WSExportRequest_ZLIB_COMPRESSION:
+	case traceprotobuf.CompressionMethod_ZLIB:
 		suffix = "/zlib"
-	case traceprotobuf.WSExportRequest_LZ4_COMPRESSION:
+	case traceprotobuf.CompressionMethod_LZ4:
 		suffix = "/lz4"
 	}
 
@@ -170,7 +170,7 @@ func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.WSEx
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
 		func() core.Server { return &ws_stream_async.Server{Compression: compression} },
-		func() core.Generator { return &traceprotobuf.Generator{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
 

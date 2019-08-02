@@ -1,6 +1,7 @@
 package grpc_stream
 
 import (
+	"context"
 	"io"
 	"log"
 	"net"
@@ -13,6 +14,10 @@ import (
 
 type GrpcServer struct {
 	onReceive func(batch core.ExportRequest)
+}
+
+func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
+	return &traceprotobuf.HelloResponse{ServerVer: 1}, nil
 }
 
 func (s *GrpcServer) Export(stream traceprotobuf.StreamTracer_ExportServer) error {

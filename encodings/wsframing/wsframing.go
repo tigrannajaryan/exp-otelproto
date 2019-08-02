@@ -10,52 +10,67 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 )
 
+// Encode request body into a message of continuous bytes. The message starts with one by
+// specifying the length of the RequestHeader, followed by RequestHeader encoded in
+// Protobuf format, followed by RequestBody encoded in Protobuf format.
+// +--------------------+-------------------------------------------+-----------------------------------------+
+// + Header Length Byte | Variable length Header (Protobuf-encoded) | Variable length Body (Protobuf-encoded) |
+// +--------------------+-------------------------------------------+-----------------------------------------+
 func Encode(
-	request *traceprotobuf.ExportRequest,
-	compression traceprotobuf.WSExportRequest_CompressionMethod,
+	requestBody *traceprotobuf.RequestBody,
+	compression traceprotobuf.CompressionMethod,
 ) []byte {
-	body, err := proto.Marshal(request)
+	bodyBytes, err := proto.Marshal(requestBody)
 	if err != nil {
 		log.Fatal("cannot encode:", err)
 	}
 
 	switch compression {
-	case traceprotobuf.WSExportRequest_NO_COMPRESSION:
+	case traceprotobuf.CompressionMethod_NONE:
 		break
-	case traceprotobuf.WSExportRequest_ZLIB_COMPRESSION:
+	case traceprotobuf.CompressionMethod_ZLIB:
 		var b bytes.Buffer
 		w := zlib.NewWriter(&b)
-		w.Write(body)
+		w.Write(bodyBytes)
 		w.Close()
-		body = b.Bytes()
+		bodyBytes = b.Bytes()
 	}
 
-	wsRequest := &traceprotobuf.WSExportRequest{
+	header := &traceprotobuf.RequestHeader{
 		Compression: compression,
-		Body:        body,
 	}
-	frameBytes, err := proto.Marshal(wsRequest)
+	headerBytes, err := proto.Marshal(header)
 	if err != nil {
 		log.Fatal("cannot encode:", err)
 	}
 
-	return frameBytes
+	b := bytes.NewBuffer(make([]byte, 0, 1+len(headerBytes)+len(bodyBytes)))
+	b.WriteByte(byte(len(headerBytes)))
+	b.Write(headerBytes)
+	b.Write(bodyBytes)
+
+	return b.Bytes()
 }
 
-func Decode(frameBytes []byte) *traceprotobuf.ExportRequest {
-	var wsRequest traceprotobuf.WSExportRequest
-	err := proto.Unmarshal(frameBytes, &wsRequest)
+// Decode a continuous message of bytes into a RequestBody. This function perform the
+// reverse of Encode operation.
+func Decode(messageBytes []byte) *traceprotobuf.RequestBody {
+	headerLen := messageBytes[0]
+	headerBytes := messageBytes[1 : headerLen+1]
+	bodyBytes := messageBytes[headerLen+1:]
+
+	var header traceprotobuf.RequestHeader
+	err := proto.Unmarshal(headerBytes, &header)
 	if err != nil {
 		log.Fatal("cannot decode:", err)
 	}
 
-	var bodyBytes []byte
-	switch wsRequest.Compression {
-	case traceprotobuf.WSExportRequest_NO_COMPRESSION:
-		bodyBytes = wsRequest.Body
+	switch header.Compression {
+	case traceprotobuf.CompressionMethod_NONE:
+		break
 
-	case traceprotobuf.WSExportRequest_ZLIB_COMPRESSION:
-		b := bytes.NewBuffer(wsRequest.Body)
+	case traceprotobuf.CompressionMethod_ZLIB:
+		b := bytes.NewBuffer(bodyBytes)
 		r, err := zlib.NewReader(b)
 		if err != nil {
 			log.Fatal("cannot decode:", err)
@@ -67,11 +82,11 @@ func Decode(frameBytes []byte) *traceprotobuf.ExportRequest {
 		}
 	}
 
-	var request traceprotobuf.ExportRequest
-	err = proto.Unmarshal(bodyBytes, &request)
+	var body traceprotobuf.RequestBody
+	err = proto.Unmarshal(bodyBytes, &body)
 	if err != nil {
 		log.Fatal("cannot decode:", err)
 	}
 
-	return &request
+	return &body
 }

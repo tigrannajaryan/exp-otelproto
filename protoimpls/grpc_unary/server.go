@@ -15,6 +15,10 @@ type GrpcServer struct {
 	onReceive func(batch core.ExportRequest)
 }
 
+func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
+	return &traceprotobuf.HelloResponse{ServerVer: 1}, nil
+}
+
 func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequest) (*traceprotobuf.ExportResponse, error) {
 	// log.Printf("Received %d spans", len(batch.Spans))
 	s.onReceive(batch)

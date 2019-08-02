@@ -13,14 +13,21 @@ import (
 
 // Generator allows to generate a ExportRequest.
 type Generator struct {
+	random     *rand.Rand
 	tracesSent uint64
 	spansSent  uint64
 }
 
-func genRandByteString(len int) string {
+func NewGenerator() *Generator {
+	return &Generator{
+		random: rand.New(rand.NewSource(99)),
+	}
+}
+
+func (g *Generator) genRandByteString(len int) string {
 	b := make([]byte, len)
 	for i := range b {
-		b[i] = byte(rand.Intn(128))
+		b[i] = byte(g.random.Intn(128))
 	}
 	return string(b)
 }
@@ -54,10 +61,10 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			}
 
 			for j := len(span.Attributes.AttributeMap); j < attrsPerSpan; j++ {
-				attrName := genRandByteString(rand.Intn(50) + 1)
+				attrName := g.genRandByteString(g.random.Intn(50) + 1)
 				span.Attributes.AttributeMap[attrName] = &AttributeValue{
 					Value: &AttributeValue_StringValue{
-						StringValue: &TruncatableString{Value: genRandByteString(rand.Intn(100) + 1)},
+						StringValue: &TruncatableString{Value: g.genRandByteString(g.random.Intn(100) + 1)},
 					},
 				}
 			}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package traceprotobuf;
+
+import "exchange.proto";
+
+option java_multiple_files = true;
+option java_package = "io.opencensus.proto.trace.v1";
+option java_outer_classname = "TraceProto";
+
+option ruby_package = "OpenCensus.Proto.Trace.V1";
+
+// The Unary tracer service definition.
+service UnaryTracer {
+  // First request sent by client to server after connection is established.
+  rpc Hello(HelloRequest) returns (HelloResponse) {}
+  // Sends a batch of telemetry data.
+  rpc Export(ExportRequest) returns(ExportResponse) {}
+}
+
+// The Streaming tracer service definition.
+service StreamTracer {
+  // First request sent by client to server after connection is established.
+  rpc Hello(HelloRequest) returns (HelloResponse) {}
+  // Sends a batch of telemetry data.
+  rpc Export(stream ExportRequest) returns (stream ExportResponse) {}
+}
+

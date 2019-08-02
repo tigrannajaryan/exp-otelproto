@@ -17,7 +17,7 @@ import (
 type Client struct {
 	conn        *websocket.Conn
 	nextId      uint64
-	Compression traceprotobuf.WSExportRequest_CompressionMethod
+	Compression traceprotobuf.CompressionMethod
 }
 
 func (c *Client) Connect(server string) error {
@@ -37,7 +37,8 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	bytes := wsframing.Encode(request, c.Compression)
+	body := &traceprotobuf.RequestBody{Body: &traceprotobuf.RequestBody_Export{request}}
+	bytes := wsframing.Encode(body, c.Compression)
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		log.Fatal("write:", err)
