@@ -17,7 +17,10 @@ type GrpcServer struct {
 }
 
 func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
-	return &traceprotobuf.HelloResponse{ServerVer: 1}, nil
+	return &traceprotobuf.HelloResponse{
+		ServerVer:    1,
+		Capabilities: uint32(traceprotobuf.CompressionMethod_LZ4) | uint32(traceprotobuf.CompressionMethod_ZLIB),
+	}, nil
 }
 
 func (s *GrpcServer) Export(stream traceprotobuf.StreamTracer_ExportServer) error {
@@ -29,6 +32,10 @@ func (s *GrpcServer) Export(stream traceprotobuf.StreamTracer_ExportServer) erro
 		}
 		if err != nil {
 			return nil
+		}
+
+		if batch.Id == 0 {
+			log.Fatal("Received 0 Id")
 		}
 
 		// Process received batch.

@@ -49,20 +49,22 @@ func (c *Client) readStream() {
 			log.Fatal("read:", err)
 			return
 		}
-		var response traceprotobuf.ExportResponse
+		var response traceprotobuf.Response
 		err = proto.Unmarshal(bytes, &response)
 		if err != nil {
 			log.Fatal("cannnot decode:", err)
 			break
 		}
 
+		Id := response.GetExport().Id
+
 		c.pendingAckMutex.Lock()
-		_, ok := c.pendingAck[response.Id]
+		_, ok := c.pendingAck[Id]
 		if !ok {
 			c.pendingAckMutex.Unlock()
-			log.Fatalf("Received ack on batch ID that does not exist: %v", response.Id)
+			log.Fatalf("Received ack on batch ID that does not exist: %v", Id)
 		}
-		delete(c.pendingAck, response.Id)
+		delete(c.pendingAck, Id)
 		c.pendingAckMutex.Unlock()
 	}
 }

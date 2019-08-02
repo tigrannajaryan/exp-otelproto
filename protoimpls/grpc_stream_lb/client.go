@@ -3,6 +3,7 @@ package grpc_stream_lb
 import (
 	"context"
 	"log"
+	"sync/atomic"
 	"time"
 
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ type Client struct {
 	stream                  traceprotobuf.StreamTracer_ExportClient
 	lastStreamOpen          time.Time
 	ReopenAfterEveryRequest bool
+	nextId                  uint64
 }
 
 // How often to reopen the stream to help LB's rebalance traffic.
@@ -46,7 +48,9 @@ func (c *Client) openStream() error {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	c.stream.Send(batch.(*traceprotobuf.ExportRequest))
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
+	c.stream.Send(request)
 
 	// Wait for response from server. This is full synchronous operation,
 	// we do not send batches concurrently.

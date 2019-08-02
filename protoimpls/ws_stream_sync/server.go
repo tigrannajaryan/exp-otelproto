@@ -34,9 +34,18 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		request := encodings.Decode(bytes)
 
+		if request.GetExport().Id == 0 {
+			log.Fatal("Received 0 Id")
+		}
+
 		onReceive(request)
 
-		responseBytes, err := proto.Marshal(&traceprotobuf.ExportResponse{Id: request.GetExport().Id})
+		response := &traceprotobuf.Response{
+			Body: &traceprotobuf.Response_Export{
+				&traceprotobuf.ExportResponse{Id: request.GetExport().Id},
+			},
+		}
+		responseBytes, err := proto.Marshal(response)
 		if err != nil {
 			log.Fatal("cannot encode:", err)
 			break

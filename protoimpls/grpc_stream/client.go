@@ -3,6 +3,7 @@ package grpc_stream
 import (
 	"context"
 	"log"
+	"sync/atomic"
 
 	"google.golang.org/grpc"
 
@@ -14,6 +15,7 @@ import (
 type Client struct {
 	client traceprotobuf.StreamTracerClient
 	stream traceprotobuf.StreamTracer_ExportClient
+	nextId uint64
 }
 
 func (c *Client) Connect(server string) error {
@@ -35,7 +37,9 @@ func (c *Client) Connect(server string) error {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	c.stream.Send(batch.(*traceprotobuf.ExportRequest))
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
+	c.stream.Send(request)
 
 	// Wait for response from server. This is full synchronous operation,
 	// we do not send batches concurrently.

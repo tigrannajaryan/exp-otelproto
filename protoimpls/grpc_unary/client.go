@@ -3,6 +3,7 @@ package grpc_unary
 import (
 	"context"
 	"log"
+	"sync/atomic"
 
 	"google.golang.org/grpc"
 
@@ -13,6 +14,7 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	client traceprotobuf.UnaryTracerClient
+	nextId uint64
 }
 
 func (c *Client) Connect(server string) error {
@@ -26,5 +28,7 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	c.client.Export(context.Background(), batch.(*traceprotobuf.ExportRequest))
+	request := batch.(*traceprotobuf.ExportRequest)
+	request.Id = atomic.AddUint64(&c.nextId, 1)
+	c.client.Export(context.Background(), request)
 }

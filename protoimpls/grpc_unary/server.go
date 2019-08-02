@@ -16,11 +16,17 @@ type GrpcServer struct {
 }
 
 func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
-	return &traceprotobuf.HelloResponse{ServerVer: 1}, nil
+	return &traceprotobuf.HelloResponse{
+		ServerVer:    1,
+		Capabilities: uint32(traceprotobuf.CompressionMethod_LZ4) | uint32(traceprotobuf.CompressionMethod_ZLIB),
+	}, nil
 }
 
 func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequest) (*traceprotobuf.ExportResponse, error) {
-	// log.Printf("Received %d spans", len(batch.Spans))
+	if batch.Id == 0 {
+		log.Fatal("Received 0 Id")
+	}
+
 	s.onReceive(batch)
 	return &traceprotobuf.ExportResponse{Id: batch.Id}, nil
 }

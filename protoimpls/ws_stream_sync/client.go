@@ -50,9 +50,12 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("read:", err)
 		return
 	}
-	var response traceprotobuf.ExportResponse
+	var response traceprotobuf.Response
 	err = proto.Unmarshal(bytes, &response)
 	if err != nil {
 		log.Fatal("cannnot decode:", err)
+	}
+	if response.GetExport().Id != request.Id {
+		log.Fatal("received ack on unexpected ID")
 	}
 }

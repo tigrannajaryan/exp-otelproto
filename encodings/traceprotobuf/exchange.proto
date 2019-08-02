@@ -14,8 +14,15 @@ message HelloRequest {
   int32 client_ver = 1;
 }
 
+enum Capabilities {
+    SKIP = 0;
+    ZLIB_COMPRESSION = 1; // bit 0 of capabilities
+    LZ4_COMPRESSION = 2;  // bit 1 of capabilities
+}
+
 message HelloResponse {
   int32 server_ver = 1;
+  uint32 capabilities = 2; // bitwise OR of Capabilities
 }
 
 // A request from client to server containing telemetry data to export.
@@ -49,11 +56,20 @@ message RequestHeader {
   int32 compression_level = 2;
 }
 
-// RequestBody is used by transports that unlike gRPC don't have built-in request type
+// RequestBody is used by transports that unlike gRPC don't have built-in message type
 // multiplexing such as WebSocket.
 message RequestBody {
   oneof body {
-    ExportRequest export = 1;
-    HelloRequest hello = 2;
+      HelloRequest hello = 1;
+    ExportRequest export = 2;
   }
+}
+
+// Response is used by transports that unlike gRPC don't have built-in message type
+// multiplexing such as WebSocket.
+message Response {
+    oneof body {
+        HelloResponse hello = 1;
+        ExportResponse export = 2;
+    }
 }
