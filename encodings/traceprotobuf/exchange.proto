@@ -54,7 +54,7 @@ message ExportResponse {
     // for example can happen when the server is overloaded.
     FailedRetryable = 2;
   }
-  ResultCode result_code;
+  ResultCode result_code = 2;
 }
 
 enum CompressionMethod {
