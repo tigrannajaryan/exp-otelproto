@@ -16,9 +16,9 @@ genflatbuffers:
 	flatc --gen-object-api --go encodings/traceflatbuffers/trace.fbs
 
 build:
-	go build -o bin/grpc_protobuf cmd/grpc_protobuf/main.go
-	go build -o bin/grpc_protobuf_agent cmd/grpc_protobuf_agent/main.go
 	go build -o bin/benchmark cmd/benchmark/main.go
+	go build -o bin/loadgen cmd/loadgen/main.go
+	go build -o bin/server cmd/server/main.go
 
 benchmark:
 	./runbenchmarks.sh

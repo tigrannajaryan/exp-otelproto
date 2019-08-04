@@ -18,7 +18,7 @@ type Server struct {
 
 var upgrader = websocket.Upgrader{} // use default options
 
-func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(batch core.ExportRequest)) {
+func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(batch core.ExportRequest, spanCount int)) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal("upgrade:", err)
@@ -38,7 +38,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 			log.Fatal("Received 0 Id")
 		}
 
-		onReceive(request)
+		onReceive(request, len(request.GetExport().Spans))
 
 		response := &traceprotobuf.Response{
 			Body: &traceprotobuf.Response_Export{
@@ -59,7 +59,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 	}
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest)) error {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest, spanCount int)) error {
 	http.HandleFunc(
 		"/telemetry",
 		func(w http.ResponseWriter, r *http.Request) { telemetryReceiver(w, r, onReceive) },

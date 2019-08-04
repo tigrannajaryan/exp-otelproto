@@ -169,7 +169,7 @@ func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.Comp
 		"WebSocket/Stream/Async"+suffix,
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
-		func() core.Server { return &ws_stream_async.Server{Compression: compression} },
+		func() core.Server { return &ws_stream_async.Server{} },
 		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }

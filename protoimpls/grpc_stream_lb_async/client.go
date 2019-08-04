@@ -45,7 +45,7 @@ func (c *Client) openStream() error {
 	var err error
 	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
-		return err
+		log.Fatalf("cannot open stream: %v", err)
 	}
 	c.lastStreamOpen = time.Now()
 

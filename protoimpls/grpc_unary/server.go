@@ -12,7 +12,7 @@ import (
 )
 
 type GrpcServer struct {
-	onReceive func(batch core.ExportRequest)
+	onReceive func(batch core.ExportRequest, spanCount int)
 }
 
 func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
@@ -27,7 +27,7 @@ func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequ
 		log.Fatal("Received 0 Id")
 	}
 
-	s.onReceive(batch)
+	s.onReceive(batch, len(batch.Spans))
 	return &traceprotobuf.ExportResponse{Id: batch.Id}, nil
 }
 
@@ -35,7 +35,7 @@ type Server struct {
 	s *grpc.Server
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest)) error {
+func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest, spanCount int)) error {
 	// log.Println("Starting GRPC Server...")
 
 	lis, err := net.Listen("tcp", endpoint)

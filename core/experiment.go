@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -10,8 +11,8 @@ import (
 	"github.com/shirou/gopsutil/process"
 )
 
-func onBatchReceive(batch ExportRequest) {
-	log.Printf("Server received a batch")
+func onBatchReceive(batch ExportRequest, spanCount int) {
+	log.Printf("Server received a batch of %v spans", spanCount)
 }
 
 func RunTest(clnt Client, srv Server, gen Generator) {
@@ -53,7 +54,7 @@ func BenchmarkLocalDelivery(
 	wg := sync.WaitGroup{}
 
 	// Server listen locally.
-	go srv.Listen(endpoint, func(batch ExportRequest) {
+	go srv.Listen(endpoint, func(batch ExportRequest, spanCount int) {
 		// Count delivered batch.
 		wg.Done()
 	})
@@ -103,6 +104,53 @@ func BenchmarkLocalDelivery(
 	return
 }
 
+func LoadGenerator(
+	clientFactory func() Client,
+	generatorFactory func() Generator,
+	serverEndpoint string,
+	spansPerSecond int,
+) {
+	// Create client, server and generator from factories
+	clnt := clientFactory()
+	gen := generatorFactory()
+
+	// Client connect to the server.
+	clnt.Connect(serverEndpoint)
+
+	// Generate and send Batches.
+	totalSpans := 0
+	for {
+		startTime := time.Now()
+		ch := time.After(1 * time.Second)
+		batch := gen.GenerateBatch(spansPerSecond, 10)
+		clnt.Export(batch)
+		<-ch
+		wallSecs := time.Now().Sub(startTime).Seconds()
+		totalSpans += spansPerSecond
+		actualSpansPerSecond := float64(spansPerSecond) / wallSecs
+		fmt.Printf("Total spans sent %v, current rate %.1f spans/sec\n", totalSpans, actualSpansPerSecond)
+	}
+}
+
+func RunServer(srv Server, listenAddress string) {
+
+	log.Printf("Server: listening on %s", listenAddress)
+
+	totalSpans := 0
+	prevTime := time.Now()
+
+	srv.Listen(listenAddress, func(batch ExportRequest, spanCount int) {
+		t := time.Now()
+		d := t.Sub(prevTime)
+		prevTime = t
+
+		rate := float64(spanCount) / d.Seconds()
+
+		totalSpans += spanCount
+		log.Printf("Server: total spans received %v, current rate %.1f", totalSpans, rate)
+	})
+}
+
 func RunAgent(clnt Client, srv Server, listenAddress, destination string) {
 
 	log.Printf("Agent: listening on %s", listenAddress)
@@ -113,8 +161,8 @@ func RunAgent(clnt Client, srv Server, listenAddress, destination string) {
 		log.Fatalf("Cannot connection to %v: %v", destination, err)
 	}
 
-	srv.Listen(listenAddress, func(batch ExportRequest) {
-		log.Printf("Agent: forwarding span batch")
+	srv.Listen(listenAddress, func(batch ExportRequest, spanCount int) {
+		log.Printf("Agent: forwarding %d span batch", spanCount)
 		clnt.Export(batch)
 	})
 }
