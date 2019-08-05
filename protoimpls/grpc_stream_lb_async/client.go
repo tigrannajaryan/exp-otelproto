@@ -16,16 +16,14 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client          traceprotobuf.StreamTracerClient
-	stream          traceprotobuf.StreamTracer_ExportClient
-	lastStreamOpen  time.Time
-	pendingAck      map[uint64]core.ExportRequest
-	pendingAckMutex sync.Mutex
-	nextId          uint64
+	client             traceprotobuf.StreamTracerClient
+	stream             traceprotobuf.StreamTracer_ExportClient
+	lastStreamOpen     time.Time
+	pendingAck         map[uint64]core.ExportRequest
+	pendingAckMutex    sync.Mutex
+	StreamReopenPeriod time.Duration
+	nextId             uint64
 }
-
-// How often to reopen the stream to help LB's rebalance traffic.
-var streamReopenPeriod = 30 * time.Second
 
 func (c *Client) Connect(server string) error {
 	c.pendingAck = make(map[uint64]core.ExportRequest)
@@ -90,7 +88,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 	c.pendingAckMutex.Unlock()
 
 	// Check if time to re-establish the stream.
-	if time.Since(c.lastStreamOpen) > streamReopenPeriod {
+	if time.Since(c.lastStreamOpen) > c.StreamReopenPeriod {
 		// Close and reopen the stream.
 		c.lastStreamOpen = time.Now()
 		err := c.stream.CloseSend()

@@ -18,11 +18,9 @@ type Client struct {
 	stream                  traceprotobuf.StreamTracer_ExportClient
 	lastStreamOpen          time.Time
 	ReopenAfterEveryRequest bool
+	StreamReopenPeriod      time.Duration
 	nextId                  uint64
 }
-
-// How often to reopen the stream to help LB's rebalance traffic.
-var streamReopenPeriod = 30 * time.Second
 
 func (c *Client) Connect(server string) error {
 	// Set up a connection to the server.
@@ -60,7 +58,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("Error from server when expecting batch response")
 	}
 
-	if c.ReopenAfterEveryRequest || time.Since(c.lastStreamOpen) > streamReopenPeriod {
+	if c.ReopenAfterEveryRequest || time.Since(c.lastStreamOpen) > c.StreamReopenPeriod {
 		// Close and reopen the stream.
 		c.lastStreamOpen = time.Now()
 		err = c.stream.CloseSend()

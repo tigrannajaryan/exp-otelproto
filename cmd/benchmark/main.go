@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"time"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
@@ -34,6 +35,7 @@ func main() {
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
 	flag.IntVar(&options.AttrPerSpan, "attrperspan", 2, "attributes per span")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	var rebalancePeriodStr = flag.String("rebalance", "30s", "rebalance period (Valid time units are ns, us, ms, s, m, h)")
 
 	flag.Parse()
 
@@ -46,6 +48,11 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	rebalancePeriod, err := time.ParseDuration(*rebalancePeriodStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	switch protocol {
 	case "opencensus":
 		benchmarkGRPCOpenCensus(options)
@@ -56,11 +63,11 @@ func main() {
 	case "streamsync":
 		benchmarkGRPCStreamNoLB(options)
 	case "streamlbtimedsync":
-		benchmarkGRPCStreamLBTimedSync(options)
+		benchmarkGRPCStreamLBTimedSync(options, rebalancePeriod)
 	case "streamlbalwayssync":
 		benchmarkGRPCStreamLBAlwaysSync(options)
 	case "streamlbasync":
-		benchmarkGRPCStreamLBAsync(options)
+		benchmarkGRPCStreamLBAsync(options, rebalancePeriod)
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
@@ -104,11 +111,11 @@ func benchmarkGRPCUnary(options core.Options) {
 	)
 }
 
-func benchmarkGRPCStreamLBTimedSync(options core.Options) {
+func benchmarkGRPCStreamLBTimedSync(options core.Options, streamReopenPeriod time.Duration) {
 	benchmarkImpl(
 		"GRPC/Stream/LBTimed/Sync",
 		options,
-		func() core.Client { return &grpc_stream_lb.Client{} },
+		func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: streamReopenPeriod} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
 		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
@@ -124,11 +131,11 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 	)
 }
 
-func benchmarkGRPCStreamLBAsync(options core.Options) {
+func benchmarkGRPCStreamLBAsync(options core.Options, streamReopenPeriod time.Duration) {
 	benchmarkImpl(
 		"GRPC/Stream/LBTimed/Async",
 		options,
-		func() core.Client { return &grpc_stream_lb_async.Client{} },
+		func() core.Client { return &grpc_stream_lb_async.Client{StreamReopenPeriod: streamReopenPeriod} },
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
 		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)

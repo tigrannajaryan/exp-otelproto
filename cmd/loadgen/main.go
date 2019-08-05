@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
 
@@ -37,7 +38,14 @@ func main() {
 	var spansPerSecond int
 	flag.IntVar(&spansPerSecond, "spanspersec", 100, "spans per second")
 
+	var rebalancePeriodStr = flag.String("rebalance", "30s", "rebalance period (Valid time units are ns, us, ms, s, m, h)")
+
 	flag.Parse()
+
+	rebalancePeriod, err := time.ParseDuration(*rebalancePeriodStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	switch protocol {
 	case "opencensus":
@@ -74,7 +82,7 @@ func main() {
 
 	case "streamlbtimedsync":
 		core.LoadGenerator(
-			func() core.Client { return &grpc_stream_lb.Client{} },
+			func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: rebalancePeriod} },
 			func() core.Generator { return traceprotobuf.NewGenerator() },
 			destination,
 			spansPerSecond,
@@ -90,7 +98,7 @@ func main() {
 
 	case "streamlbasync":
 		core.LoadGenerator(
-			func() core.Client { return &grpc_stream_lb_async.Client{} },
+			func() core.Client { return &grpc_stream_lb_async.Client{StreamReopenPeriod: rebalancePeriod} },
 			func() core.Generator { return traceprotobuf.NewGenerator() },
 			destination,
 			spansPerSecond,
