@@ -1,3 +1,6 @@
+cmd/server/server
+cmd/loadgen/loadgen
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

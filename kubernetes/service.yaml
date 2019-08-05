@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: otpexp-server-${PROTOCOL}
+  namespace: ${K8S_NAMESPACE}
+spec:
+  selector:
+    component: otpexp-server-${PROTOCOL}
+  ports:
+  - name: main
+    port: 3465
+    protocol: TCP
+    targetPort: 3465
