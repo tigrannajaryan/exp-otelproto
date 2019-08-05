@@ -43,7 +43,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportReque
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	traceprotobuf.RegisterUnaryTracerServer(srv.s, &GrpcServer{onReceive})
+	traceprotobuf.RegisterUnaryExporterServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

@@ -13,7 +13,7 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client traceprotobuf.UnaryTracerClient
+	client traceprotobuf.UnaryExporterClient
 	nextId uint64
 }
 
@@ -23,7 +23,7 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewUnaryTracerClient(conn)
+	c.client = traceprotobuf.NewUnaryExporterClient(conn)
 	return nil
 }
 

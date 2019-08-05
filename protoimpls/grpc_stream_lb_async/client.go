@@ -16,8 +16,8 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client             traceprotobuf.StreamTracerClient
-	stream             traceprotobuf.StreamTracer_ExportClient
+	client             traceprotobuf.StreamExporterClient
+	stream             traceprotobuf.StreamExporter_ExportClient
 	lastStreamOpen     time.Time
 	pendingAck         map[uint64]core.ExportRequest
 	pendingAckMutex    sync.Mutex
@@ -33,7 +33,7 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewStreamTracerClient(conn)
+	c.client = traceprotobuf.NewStreamExporterClient(conn)
 
 	// Establish stream to server.
 	return c.openStream()
@@ -52,7 +52,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream traceprotobuf.StreamTracer_ExportClient) {
+func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {

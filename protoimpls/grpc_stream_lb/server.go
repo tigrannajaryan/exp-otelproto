@@ -23,7 +23,7 @@ func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*trace
 	}, nil
 }
 
-func (s *GrpcServer) Export(stream traceprotobuf.StreamTracer_ExportServer) error {
+func (s *GrpcServer) Export(stream traceprotobuf.StreamExporter_ExportServer) error {
 	for {
 		// Wait for batch from client.
 		batch, err := stream.Recv()
@@ -56,7 +56,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportReque
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	traceprotobuf.RegisterStreamTracerServer(srv.s, &GrpcServer{onReceive})
+	traceprotobuf.RegisterStreamExporterServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

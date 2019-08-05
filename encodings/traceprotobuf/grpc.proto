@@ -10,18 +10,14 @@ option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
-// The Unary tracer service definition.
-service UnaryTracer {
-  // First request sent by client to server after connection is established.
-  rpc Hello(HelloRequest) returns (HelloResponse) {}
+// Unary exporter service definition.
+service UnaryExporter {
   // Sends a batch of telemetry data.
   rpc Export(ExportRequest) returns(ExportResponse) {}
 }
 
-// The Streaming tracer service definition.
-service StreamTracer {
-  // First request sent by client to server after connection is established.
-  rpc Hello(HelloRequest) returns (HelloResponse) {}
+// Streaming exporter service definition.
+service StreamExporter {
   // Sends a batch of telemetry data.
   rpc Export(stream ExportRequest) returns (stream ExportResponse) {}
 }
