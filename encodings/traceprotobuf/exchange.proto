@@ -39,6 +39,7 @@ message ExportRequest {
 message ExportResponse {
   // ID of a response that the server acknowledges.
   uint64 id = 1;
+
   enum ResultCode {
     // Telemetry data is successfully processed by the server.
     Success = 0;
@@ -55,6 +56,10 @@ message ExportResponse {
     FailedRetryable = 2;
   }
   ResultCode result_code = 2;
+
+  // How long the client must wait before sending the next ExportRequest. 0 indicates
+  // that the client doesn't need to wait.
+  uint32 throttle_period_millisec = 3;
 }
 
 enum CompressionMethod {
@@ -68,6 +73,7 @@ enum CompressionMethod {
 message RequestHeader {
   // Compression method used for body.
   CompressionMethod compression = 1;
+
   // Compression level as defined by the compression method.
   int32 compression_level = 2;
 }
