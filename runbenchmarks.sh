@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=1
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
@@ -18,7 +18,7 @@ echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer 
 echo
 
 benchmark() {
-    ./benchmark -protocol $1 -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
+    nice -n -5 ./benchmark -protocol $1 -batches=${BATCHES} -spansperbatch=${SPANSPERBATCH} -attrperspan=${ATTRPERSPAN}
 }
 
 benchmark_all() {
@@ -44,6 +44,7 @@ benchmark_all_latency() {
     tc qdisc delete dev lo root netem delay ${1}ms
 }
 
+# Set performance governor for all CPUs
 cpufreq-set -g performance -c 0
 cpufreq-set -g performance -c 1
 cpufreq-set -g performance -c 2
@@ -52,6 +53,9 @@ cpufreq-set -g performance -c 4
 cpufreq-set -g performance -c 5
 cpufreq-set -g performance -c 6
 cpufreq-set -g performance -c 7
+
+# Disable turboboost (see https://easyperf.net/blog/2019/08/02/Perf-measurement-environment-on-Linux)
+echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
 
 tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 echo
@@ -100,7 +104,7 @@ tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================
 
-
+# Restore powersave governor
 cpufreq-set -g powersave -c 0
 cpufreq-set -g powersave -c 1
 cpufreq-set -g powersave -c 2
@@ -109,3 +113,6 @@ cpufreq-set -g powersave -c 4
 cpufreq-set -g powersave -c 5
 cpufreq-set -g powersave -c 6
 cpufreq-set -g powersave -c 0
+
+# Restore turboboost
+echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo
