@@ -132,7 +132,7 @@ func LoadGenerator(
 	}
 }
 
-func RunServer(srv Server, listenAddress string) {
+func RunServer(srv Server, listenAddress string, onReceive func(spanCount int)) {
 
 	log.Printf("Server: listening on %s", listenAddress)
 
@@ -148,6 +148,8 @@ func RunServer(srv Server, listenAddress string) {
 
 		totalSpans += spanCount
 		log.Printf("Server: total spans received %v, current rate %.1f", totalSpans, rate)
+
+		onReceive(spanCount)
 	})
 }
 
