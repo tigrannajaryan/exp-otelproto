@@ -5,8 +5,8 @@ GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load bala
 GRPC/Unary                  - GRPC, unary request per batch, load balancer friendly, with ack
 GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack
 GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack
-GRPC/Stream/LBTimed/Sync    - GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack
-GRPC/Stream/LBTimed/Async   - GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack
+GRPC/Stream/LBTimed/Sync    - OTLP Synchronous. GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack
+GRPC/Stream/LBTimed/Async   - OTLP Pipelined. GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack
 WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack
 WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack
 WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression
