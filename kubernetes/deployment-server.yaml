@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: omnition
+    component: otpexp-server-${PROTOCOL}
+  name: otpexp-server-${PROTOCOL}
+  namespace: ${K8S_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: otpexp-server-${PROTOCOL}
+  template:
+    metadata:
+      labels:
+        component: otpexp-server-${PROTOCOL}
+    spec:
+      containers:
+      - image: 592865182265.dkr.ecr.us-west-2.amazonaws.com/otpexp-server:latest
+        imagePullPolicy: Always
+        name: otpexp-server-${PROTOCOL}
+        args: ["/app/server", "-protocol", "${PROTOCOL}"]
+        env:
+          - name: METRICS_ENDPOINT
+            value: "http://prometheus-server.monitoring.svc.cluster.local"
+

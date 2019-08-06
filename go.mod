@@ -14,5 +14,3 @@ require (
 	google.golang.org/genproto v0.0.0-20190716160619-c506a9f90610 // indirect
 	google.golang.org/grpc v1.22.0
 )
-
-replace github.com/tigrannajaryan/exp-otelproto => ./
