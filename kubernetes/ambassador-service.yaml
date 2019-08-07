@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ambassador-otpexp
+  namespace: otpexp
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+   - port: 80
+     targetPort: 8080
+  selector:
+    service: ambassador-otpexp
