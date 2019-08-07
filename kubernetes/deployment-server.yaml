@@ -17,10 +17,19 @@ spec:
         component: otpexp-server-${PROTOCOL}
     spec:
       containers:
+      - image: crccheck/hello-world:latest
+        imagePullPolicy: Always
+        name: hello-world
+        ports:
+          - containerPort: 8000
+            name: main 
       - image: 592865182265.dkr.ecr.us-west-2.amazonaws.com/otpexp-server:latest
         imagePullPolicy: Always
         name: otpexp-server-${PROTOCOL}
-        args: ["/app/server", "-protocol", "${PROTOCOL}"]
+        args: ["/app/server", "-protocol", "${PROTOCOL}", "-listen", "0.0.0.0:3465"]
+        ports:
+          - containerPort: 3465
+            name: main 
         env:
           - name: METRICS_ENDPOINT
             value: "http://prometheus-server.monitoring.svc.cluster.local"

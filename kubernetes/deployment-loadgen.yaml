@@ -20,7 +20,7 @@ spec:
       - image: 592865182265.dkr.ecr.us-west-2.amazonaws.com/otpexp-loadgen:latest
         imagePullPolicy: Always
         name: otpexp-loadgen-${PROTOCOL}
-        command: ["/app/loadgen", "-protocol", "${PROTOCOL}", "-dest", "otpexp-server-${PROTOCOL}:3465"]
+        command: ["/app/loadgen", "-protocol", "${PROTOCOL}", "-dest", "a62da584bb89711e9869f06e53035821-1685553444.us-west-2.elb.amazonaws.com:80"]
         env:
           - name: METRICS_ENDPOINT
             value: "http://prometheus-server.monitoring.svc.cluster.local"
