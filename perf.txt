@@ -12,74 +12,74 @@ WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friend
 WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression
 
 
-40000 small batches, 100 spans per batch, 4 attrs per span
-GRPC/OpenCensus             4000000 spans, CPU time 105.1 sec, wall time  53.6 sec, 380.4 batches/cpusec, 746.6 batches/wallsec
-GRPC/OpenCensusWithAck      4000000 spans, CPU time 112.7 sec, wall time  89.5 sec, 354.8 batches/cpusec, 447.1 batches/wallsec
-GRPC/Unary                  4000000 spans, CPU time 117.5 sec, wall time  84.2 sec, 340.5 batches/cpusec, 475.3 batches/wallsec
-GRPC/Stream/NoLB            4000000 spans, CPU time 103.9 sec, wall time  81.3 sec, 384.9 batches/cpusec, 492.2 batches/wallsec
-GRPC/Stream/LBAlways/Sync   4000000 spans, CPU time 127.9 sec, wall time  86.4 sec, 312.7 batches/cpusec, 463.0 batches/wallsec
-GRPC/Stream/LBTimed/Sync    4000000 spans, CPU time 105.1 sec, wall time  82.4 sec, 380.4 batches/cpusec, 485.4 batches/wallsec
-GRPC/Stream/LBTimed/Async   4000000 spans, CPU time 103.5 sec, wall time  47.0 sec, 386.5 batches/cpusec, 850.4 batches/wallsec
-WebSocket/Stream/Sync       4000000 spans, CPU time  76.9 sec, wall time  75.4 sec, 520.0 batches/cpusec, 530.3 batches/wallsec
-WebSocket/Stream/Async      4000000 spans, CPU time  82.8 sec, wall time  48.0 sec, 483.0 batches/cpusec, 832.7 batches/wallsec
-WebSocket/Stream/Async/zlib 4000000 spans, CPU time 168.1 sec, wall time 112.0 sec, 238.0 batches/cpusec, 357.0 batches/wallsec
+80000 small batches, 100 spans per batch, 4 attrs per span
+GRPC/OpenCensus             8000000 spans, CPU time 207.0 sec, wall time 103.3 sec, 386.5 batches/cpusec, 774.5 batches/wallsec
+GRPC/OpenCensusWithAck      8000000 spans, CPU time 226.4 sec, wall time 179.7 sec, 353.3 batches/cpusec, 445.2 batches/wallsec
+GRPC/Unary                  8000000 spans, CPU time 237.1 sec, wall time 169.7 sec, 337.4 batches/cpusec, 471.3 batches/wallsec
+GRPC/Stream/NoLB            8000000 spans, CPU time 208.3 sec, wall time 163.0 sec, 384.0 batches/cpusec, 490.9 batches/wallsec
+GRPC/Stream/LBAlways/Sync   8000000 spans, CPU time 275.2 sec, wall time 175.0 sec, 290.7 batches/cpusec, 457.1 batches/wallsec
+GRPC/Stream/LBTimed/Sync    8000000 spans, CPU time 208.6 sec, wall time 163.3 sec, 383.6 batches/cpusec, 490.0 batches/wallsec
+GRPC/Stream/LBTimed/Async   8000000 spans, CPU time 211.4 sec, wall time  95.8 sec, 378.4 batches/cpusec, 835.3 batches/wallsec
+WebSocket/Stream/Sync       8000000 spans, CPU time 156.2 sec, wall time 153.1 sec, 512.2 batches/cpusec, 522.5 batches/wallsec
+WebSocket/Stream/Async      8000000 spans, CPU time 166.3 sec, wall time  95.8 sec, 480.9 batches/cpusec, 834.7 batches/wallsec
+WebSocket/Stream/Async/zlib 8000000 spans, CPU time 340.6 sec, wall time 227.5 sec, 234.9 batches/cpusec, 351.7 batches/wallsec
 
-4000 large batches, 500 spans per batch, 10 attrs per span
-GRPC/OpenCensus             2000000 spans, CPU time 121.7 sec, wall time  73.8 sec, 32.9 batches/cpusec, 54.2 batches/wallsec
-GRPC/OpenCensusWithAck      2000000 spans, CPU time 112.2 sec, wall time 106.2 sec, 35.6 batches/cpusec, 37.6 batches/wallsec
-GRPC/Unary                  2000000 spans, CPU time 104.1 sec, wall time  98.0 sec, 38.4 batches/cpusec, 40.8 batches/wallsec
-GRPC/Stream/NoLB            2000000 spans, CPU time 103.8 sec, wall time  98.3 sec, 38.5 batches/cpusec, 40.7 batches/wallsec
-GRPC/Stream/LBAlways/Sync   2000000 spans, CPU time 108.2 sec, wall time 100.2 sec, 37.0 batches/cpusec, 39.9 batches/wallsec
-GRPC/Stream/LBTimed/Sync    2000000 spans, CPU time 104.7 sec, wall time  99.1 sec, 38.2 batches/cpusec, 40.3 batches/wallsec
-GRPC/Stream/LBTimed/Async   2000000 spans, CPU time 111.6 sec, wall time  68.1 sec, 35.8 batches/cpusec, 58.7 batches/wallsec
-WebSocket/Stream/Sync       2000000 spans, CPU time 103.8 sec, wall time 101.9 sec, 38.5 batches/cpusec, 39.3 batches/wallsec
-WebSocket/Stream/Async      2000000 spans, CPU time 106.6 sec, wall time  68.6 sec, 37.5 batches/cpusec, 58.3 batches/wallsec
-WebSocket/Stream/Async/zlib 2000000 spans, CPU time 226.6 sec, wall time 155.2 sec, 17.7 batches/cpusec, 25.8 batches/wallsec
+8000 large batches, 500 spans per batch, 10 attrs per span
+GRPC/OpenCensus             4000000 spans, CPU time 241.4 sec, wall time 145.3 sec, 33.1 batches/cpusec, 55.1 batches/wallsec
+GRPC/OpenCensusWithAck      4000000 spans, CPU time 224.9 sec, wall time 213.0 sec, 35.6 batches/cpusec, 37.6 batches/wallsec
+GRPC/Unary                  4000000 spans, CPU time 209.7 sec, wall time 197.1 sec, 38.2 batches/cpusec, 40.6 batches/wallsec
+GRPC/Stream/NoLB            4000000 spans, CPU time 209.2 sec, wall time 198.0 sec, 38.2 batches/cpusec, 40.4 batches/wallsec
+GRPC/Stream/LBAlways/Sync   4000000 spans, CPU time 218.3 sec, wall time 200.1 sec, 36.6 batches/cpusec, 40.0 batches/wallsec
+GRPC/Stream/LBTimed/Sync    4000000 spans, CPU time 209.2 sec, wall time 198.0 sec, 38.2 batches/cpusec, 40.4 batches/wallsec
+GRPC/Stream/LBTimed/Async   4000000 spans, CPU time 222.7 sec, wall time 135.6 sec, 35.9 batches/cpusec, 59.0 batches/wallsec
+WebSocket/Stream/Sync       4000000 spans, CPU time 205.7 sec, wall time 201.9 sec, 38.9 batches/cpusec, 39.6 batches/wallsec
+WebSocket/Stream/Async      4000000 spans, CPU time 212.1 sec, wall time 136.2 sec, 37.7 batches/cpusec, 58.7 batches/wallsec
+WebSocket/Stream/Async/zlib 4000000 spans, CPU time 450.9 sec, wall time 308.1 sec, 17.7 batches/cpusec, 26.0 batches/wallsec
 
 2ms network roundtrip latency
-4000 large batches, 500 spans per batch, 10 attrs per span
-GRPC/OpenCensus             2000000 spans, CPU time 118.1 sec, wall time  71.8 sec, 33.9 batches/cpusec, 55.7 batches/wallsec
-GRPC/OpenCensusWithAck      2000000 spans, CPU time 112.9 sec, wall time 115.3 sec, 35.4 batches/cpusec, 34.7 batches/wallsec
-GRPC/Unary                  2000000 spans, CPU time 105.2 sec, wall time 107.3 sec, 38.0 batches/cpusec, 37.3 batches/wallsec
-GRPC/Stream/NoLB            2000000 spans, CPU time 104.1 sec, wall time 107.1 sec, 38.4 batches/cpusec, 37.3 batches/wallsec
-GRPC/Stream/LBAlways/Sync   2000000 spans, CPU time 107.9 sec, wall time 108.3 sec, 37.1 batches/cpusec, 36.9 batches/wallsec
-GRPC/Stream/LBTimed/Sync    2000000 spans, CPU time 103.9 sec, wall time 106.9 sec, 38.5 batches/cpusec, 37.4 batches/wallsec
-GRPC/Stream/LBTimed/Async   2000000 spans, CPU time 109.8 sec, wall time  67.2 sec, 36.4 batches/cpusec, 59.5 batches/wallsec
-WebSocket/Stream/Sync       2000000 spans, CPU time 104.3 sec, wall time 109.4 sec, 38.4 batches/cpusec, 36.6 batches/wallsec
-WebSocket/Stream/Async      2000000 spans, CPU time 107.4 sec, wall time  67.9 sec, 37.2 batches/cpusec, 58.9 batches/wallsec
-WebSocket/Stream/Async/zlib 2000000 spans, CPU time 225.7 sec, wall time 153.4 sec, 17.7 batches/cpusec, 26.1 batches/wallsec
+8000 large batches, 500 spans per batch, 10 attrs per span
+GRPC/OpenCensus             4000000 spans, CPU time 231.6 sec, wall time 140.4 sec, 34.5 batches/cpusec, 57.0 batches/wallsec
+GRPC/OpenCensusWithAck      4000000 spans, CPU time 225.9 sec, wall time 230.6 sec, 35.4 batches/cpusec, 34.7 batches/wallsec
+GRPC/Unary                  4000000 spans, CPU time 210.5 sec, wall time 214.6 sec, 38.0 batches/cpusec, 37.3 batches/wallsec
+GRPC/Stream/NoLB            4000000 spans, CPU time 207.9 sec, wall time 213.9 sec, 38.5 batches/cpusec, 37.4 batches/wallsec
+GRPC/Stream/LBAlways/Sync   4000000 spans, CPU time 219.9 sec, wall time 217.9 sec, 36.4 batches/cpusec, 36.7 batches/wallsec
+GRPC/Stream/LBTimed/Sync    4000000 spans, CPU time 208.8 sec, wall time 214.9 sec, 38.3 batches/cpusec, 37.2 batches/wallsec
+GRPC/Stream/LBTimed/Async   4000000 spans, CPU time 217.1 sec, wall time 132.5 sec, 36.8 batches/cpusec, 60.4 batches/wallsec
+WebSocket/Stream/Sync       4000000 spans, CPU time 208.3 sec, wall time 218.7 sec, 38.4 batches/cpusec, 36.6 batches/wallsec
+WebSocket/Stream/Async      4000000 spans, CPU time 213.8 sec, wall time 135.1 sec, 37.4 batches/cpusec, 59.2 batches/wallsec
+WebSocket/Stream/Async/zlib 4000000 spans, CPU time 451.5 sec, wall time 307.2 sec, 17.7 batches/cpusec, 26.0 batches/wallsec
 
 20ms network roundtrip latency
-2000 large batches, 500 spans per batch, 10 attrs per span
-GRPC/OpenCensus             1000000 spans, CPU time  58.0 sec, wall time  35.6 sec, 34.5 batches/cpusec, 56.3 batches/wallsec
-GRPC/OpenCensusWithAck      1000000 spans, CPU time  57.8 sec, wall time  95.8 sec, 34.6 batches/cpusec, 20.9 batches/wallsec
-GRPC/Unary                  1000000 spans, CPU time  54.3 sec, wall time  91.7 sec, 36.8 batches/cpusec, 21.8 batches/wallsec
-GRPC/Stream/NoLB            1000000 spans, CPU time  54.0 sec, wall time  91.8 sec, 37.1 batches/cpusec, 21.8 batches/wallsec
-GRPC/Stream/LBAlways/Sync   1000000 spans, CPU time  55.1 sec, wall time  92.2 sec, 36.3 batches/cpusec, 21.7 batches/wallsec
-GRPC/Stream/LBTimed/Sync    1000000 spans, CPU time  53.4 sec, wall time  91.3 sec, 37.4 batches/cpusec, 21.9 batches/wallsec
-GRPC/Stream/LBTimed/Async   1000000 spans, CPU time  54.8 sec, wall time  33.8 sec, 36.5 batches/cpusec, 59.2 batches/wallsec
-WebSocket/Stream/Sync       1000000 spans, CPU time  53.4 sec, wall time  92.6 sec, 37.5 batches/cpusec, 21.6 batches/wallsec
-WebSocket/Stream/Async      1000000 spans, CPU time  53.4 sec, wall time  34.1 sec, 37.5 batches/cpusec, 58.7 batches/wallsec
-WebSocket/Stream/Async/zlib 1000000 spans, CPU time 112.7 sec, wall time  76.7 sec, 17.7 batches/cpusec, 26.1 batches/wallsec
+4000 large batches, 500 spans per batch, 10 attrs per span
+GRPC/OpenCensus             2000000 spans, CPU time 116.2 sec, wall time  70.9 sec, 34.4 batches/cpusec, 56.4 batches/wallsec
+GRPC/OpenCensusWithAck      2000000 spans, CPU time 115.4 sec, wall time 191.6 sec, 34.7 batches/cpusec, 20.9 batches/wallsec
+GRPC/Unary                  2000000 spans, CPU time 108.4 sec, wall time 183.0 sec, 36.9 batches/cpusec, 21.9 batches/wallsec
+GRPC/Stream/NoLB            2000000 spans, CPU time 106.6 sec, wall time 181.6 sec, 37.5 batches/cpusec, 22.0 batches/wallsec
+GRPC/Stream/LBAlways/Sync   2000000 spans, CPU time 110.7 sec, wall time 183.1 sec, 36.1 batches/cpusec, 21.8 batches/wallsec
+GRPC/Stream/LBTimed/Sync    2000000 spans, CPU time 107.3 sec, wall time 182.9 sec, 37.3 batches/cpusec, 21.9 batches/wallsec
+GRPC/Stream/LBTimed/Async   2000000 spans, CPU time 109.0 sec, wall time  67.1 sec, 36.7 batches/cpusec, 59.6 batches/wallsec
+WebSocket/Stream/Sync       2000000 spans, CPU time 106.1 sec, wall time 183.0 sec, 37.7 batches/cpusec, 21.9 batches/wallsec
+WebSocket/Stream/Async      2000000 spans, CPU time 106.5 sec, wall time  67.7 sec, 37.6 batches/cpusec, 59.1 batches/wallsec
+WebSocket/Stream/Async/zlib 2000000 spans, CPU time 225.2 sec, wall time 153.3 sec, 17.8 batches/cpusec, 26.1 batches/wallsec
 
 200ms network roundtrip latency
-200 large batches, 500 spans per batch, 10 attrs per span
-GRPC/OpenCensus              100000 spans, CPU time   5.8 sec, wall time   8.6 sec, 34.3 batches/cpusec, 23.2 batches/wallsec
-GRPC/OpenCensusWithAck       100000 spans, CPU time   6.0 sec, wall time  47.3 sec, 33.4 batches/cpusec,  4.2 batches/wallsec
-GRPC/Unary                   100000 spans, CPU time   5.7 sec, wall time  47.0 sec, 35.4 batches/cpusec,  4.3 batches/wallsec
-GRPC/Stream/NoLB             100000 spans, CPU time   5.6 sec, wall time  46.6 sec, 35.8 batches/cpusec,  4.3 batches/wallsec
-GRPC/Stream/LBAlways/Sync    100000 spans, CPU time   5.6 sec, wall time  46.5 sec, 35.5 batches/cpusec,  4.3 batches/wallsec
-GRPC/Stream/LBTimed/Sync     100000 spans, CPU time   5.6 sec, wall time  46.7 sec, 35.7 batches/cpusec,  4.3 batches/wallsec
-GRPC/Stream/LBTimed/Async    100000 spans, CPU time   5.6 sec, wall time   8.3 sec, 35.9 batches/cpusec, 24.0 batches/wallsec
-WebSocket/Stream/Sync        100000 spans, CPU time   5.5 sec, wall time  49.6 sec, 36.2 batches/cpusec,  4.0 batches/wallsec
-WebSocket/Stream/Async       100000 spans, CPU time   5.5 sec, wall time   7.8 sec, 36.3 batches/cpusec, 25.7 batches/wallsec
-WebSocket/Stream/Async/zlib  100000 spans, CPU time  11.8 sec, wall time  13.8 sec, 17.0 batches/cpusec, 14.5 batches/wallsec
+400 large batches, 500 spans per batch, 10 attrs per span
+GRPC/OpenCensus              200000 spans, CPU time  11.6 sec, wall time  14.1 sec, 34.4 batches/cpusec, 28.3 batches/wallsec
+GRPC/OpenCensusWithAck       200000 spans, CPU time  11.9 sec, wall time  92.9 sec, 33.7 batches/cpusec,  4.3 batches/wallsec
+GRPC/Unary                   200000 spans, CPU time  11.1 sec, wall time  92.2 sec, 36.1 batches/cpusec,  4.3 batches/wallsec
+GRPC/Stream/NoLB             200000 spans, CPU time  10.9 sec, wall time  91.9 sec, 36.5 batches/cpusec,  4.4 batches/wallsec
+GRPC/Stream/LBAlways/Sync    200000 spans, CPU time  11.2 sec, wall time  92.0 sec, 35.6 batches/cpusec,  4.3 batches/wallsec
+GRPC/Stream/LBTimed/Sync     200000 spans, CPU time  10.9 sec, wall time  91.8 sec, 36.6 batches/cpusec,  4.4 batches/wallsec
+GRPC/Stream/LBTimed/Async    200000 spans, CPU time  11.1 sec, wall time  13.9 sec, 36.2 batches/cpusec, 28.8 batches/wallsec
+WebSocket/Stream/Sync        200000 spans, CPU time  10.8 sec, wall time  97.2 sec, 37.0 batches/cpusec,  4.1 batches/wallsec
+WebSocket/Stream/Async       200000 spans, CPU time  11.6 sec, wall time  17.2 sec, 34.5 batches/cpusec, 23.3 batches/wallsec
+WebSocket/Stream/Async/zlib  200000 spans, CPU time  22.9 sec, wall time  20.3 sec, 17.5 batches/cpusec, 19.7 batches/wallsec
 
 
-2000 large batches, 500 spans per batch, 10 attrs per span
+4000 large batches, 500 spans per batch, 10 attrs per span
 200ms network roundtrip latency
-GRPC/OpenCensus             1000000 spans, CPU time  56.9 sec, wall time  59.1 sec, 35.1 batches/cpusec, 33.8 batches/wallsec
-GRPC/Stream/LBTimed/Async   1000000 spans, CPU time  53.2 sec, wall time  56.8 sec, 37.6 batches/cpusec, 35.2 batches/wallsec
-WebSocket/Stream/Async      1000000 spans, CPU time  57.0 sec, wall time  66.5 sec, 35.1 batches/cpusec, 30.1 batches/wallsec
-WebSocket/Stream/Async/zlib 1000000 spans, CPU time 113.6 sec, wall time  81.0 sec, 17.6 batches/cpusec, 24.7 batches/wallsec
+GRPC/OpenCensus             2000000 spans, CPU time 112.7 sec, wall time 115.5 sec, 35.5 batches/cpusec, 34.6 batches/wallsec
+GRPC/Stream/LBTimed/Async   2000000 spans, CPU time 108.0 sec, wall time 110.8 sec, 37.1 batches/cpusec, 36.1 batches/wallsec
+WebSocket/Stream/Async      2000000 spans, CPU time 106.7 sec, wall time 126.7 sec, 37.5 batches/cpusec, 31.6 batches/wallsec
+WebSocket/Stream/Async/zlib 2000000 spans, CPU time 226.8 sec, wall time 160.7 sec, 17.6 batches/cpusec, 24.9 batches/wallsec
 ====================================================================================
