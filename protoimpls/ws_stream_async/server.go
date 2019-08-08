@@ -38,7 +38,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 			log.Fatal("Received 0 Id")
 		}
 
-		onReceive(request, len(request.GetExport().Spans))
+		onReceive(request, len(request.GetExport().NodeSpans[0].Spans))
 
 		response := &traceprotobuf.Response{
 			Body: &traceprotobuf.Response_Export{

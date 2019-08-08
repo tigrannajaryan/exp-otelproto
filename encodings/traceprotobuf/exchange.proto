@@ -31,7 +31,7 @@ message ExportRequest {
   uint64 id = 1;
 
   // Telemetry data.
-  repeated Span spans = 2;
+  repeated NodeSpans nodeSpans = 2;
   repeated Metric metrics = 3;
 }
 

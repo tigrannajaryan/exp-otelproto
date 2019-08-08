@@ -39,7 +39,7 @@ func (s *GrpcServer) Export(stream traceprotobuf.StreamExporter_ExportServer) er
 		}
 
 		// Process received batch.
-		s.onReceive(batch, len(batch.Spans))
+		s.onReceive(batch, len(batch.NodeSpans[0].Spans))
 
 		// Send response to client.
 		stream.Send(&traceprotobuf.ExportResponse{Id: batch.Id})

@@ -27,7 +27,7 @@ func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequ
 		log.Fatal("Received 0 Id")
 	}
 
-	s.onReceive(batch, len(batch.Spans))
+	s.onReceive(batch, len(batch.NodeSpans[0].Spans))
 	return &traceprotobuf.ExportResponse{Id: batch.Id}, nil
 }
 
