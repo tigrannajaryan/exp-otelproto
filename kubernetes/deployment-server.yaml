@@ -18,6 +18,7 @@ spec:
       annotations:
         prometheus.io/path: "/metrics"
         prometheus.io/scrape: "true"
+        version: "${VERSION}"
     spec:
       containers:
       - image: crccheck/hello-world:latest
@@ -33,4 +34,6 @@ spec:
         ports:
           - containerPort: 3465
             name: main 
+          - containerPort: 2112
+            name: metrics
 

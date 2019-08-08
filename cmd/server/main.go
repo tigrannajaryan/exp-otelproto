@@ -20,19 +20,21 @@ import (
 )
 
 var (
-	batchesReceived = promauto.NewCounter(prometheus.CounterOpts{
+	batchesReceived = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "otlp_server_batches_received",
 		Help: "The total number of received batches",
-	})
-	spansReceived = promauto.NewCounter(prometheus.CounterOpts{
+	}, []string{"protocol"})
+	spansReceived = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "otlp_server_spans_received",
 		Help: "The total number of received spans",
-	})
+	}, []string{"protocol"})
 )
 
-func onReceive(spanCount int) {
-	batchesReceived.Inc()
-	spansReceived.Add(float64(spanCount))
+func newOnReceive(protocol string) func(int) {
+	return func(spanCount int) {
+		batchesReceived.With(prometheus.Labels{"protocol": protocol}).Inc()
+		spansReceived.With(prometheus.Labels{"protocol": protocol}).Add(float64(spanCount))
+	}
 }
 
 func main() {
@@ -50,6 +52,7 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 	go http.ListenAndServe(":2112", nil)
 
+	onReceive := newOnReceive(protocol)
 	switch protocol {
 	case "opencensus":
 		core.RunServer(&grpc_oc.Server{}, listenAddress, onReceive)

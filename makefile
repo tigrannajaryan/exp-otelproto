@@ -4,7 +4,9 @@ K8S_NAMESPACE?=otpexp
 DOCKER_REGISTRY?=592865182265.dkr.ecr.us-west-2.amazonaws.com/
 IMAGE_NAME=
 PROTOCOL?=
+VERSION=1.1
 
+export VERSION
 export K8S_NAMESPACE
 export DOCKER_REGISTRY
 export IMAGE_NAME
@@ -49,10 +51,12 @@ build-image:
 	docker build -t otpexp-${IMAGE_NAME} ./cmd/${IMAGE_NAME}
 
 publish-image:
-	docker tag otpexp-${IMAGE_NAME} ${DOCKER_REGISTRY}otpexp-${IMAGE_NAME}:latest
-	docker push ${DOCKER_REGISTRY}otpexp-${IMAGE_NAME}:latest
+	docker tag otpexp-${IMAGE_NAME} ${DOCKER_REGISTRY}otpexp-${IMAGE_NAME}:${VERSION}
+	docker push ${DOCKER_REGISTRY}otpexp-${IMAGE_NAME}:${VERSION}
 
 deploy:
 	envsubst < kubernetes/service.yaml | kubectl apply -n ${K8S_NAMESPACE} -f - 
 	envsubst < kubernetes/deployment-server.yaml | kubectl apply -n ${K8S_NAMESPACE} -f - 
 	envsubst < kubernetes/deployment-loadgen.yaml | kubectl apply -n ${K8S_NAMESPACE} -f - 
+
+deploy-all: publish-images deploy

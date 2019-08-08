@@ -3,28 +3,6 @@ kind: Service
 metadata:
   name: otpexp-server-${PROTOCOL}
   namespace: ${K8S_NAMESPACE}
-  annotations:
-    getambassador.io/config: |
-      #---
-      #apiVersion: ambassador/v1
-      #kind: Mapping
-      #name: otpexp-hello-world-mapping
-      #host: a62da584bb89711e9869f06e53035821-1685553444.us-west-2.elb.amazonaws.com
-      #prefix: /
-      #service: otpexp-server-opencensus:8000
-      #resolver: endpoint
-      ---
-      apiVersion: ambassador/v1
-      kind: Mapping
-      name: otpexp-opencensus
-      headers:
-          :authority: a62da584bb89711e9869f06e53035821-1685553444.us-west-2.elb.amazonaws.com
-      prefix: /
-      #prefix: /octraceprotobuf.OCStreamTracer/Export
-      #rewrite: /octraceprotobuf.OCStreamTracer/Export
-      grpc: True
-      service: otpexp-server-opencensus:3465
-      resolver: endpoint
 spec:
   selector:
     component: otpexp-server-${PROTOCOL}

@@ -1,14 +1,54 @@
----
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    getambassador.io/config: |
+        ---
+        apiVersion: ambassador/v1
+        kind: Module
+        name: ambassador
+        ambassador_id: otpexp
+        config:
+          retry_policy:
+            retry_on: "5xx"
+            num_retries: 3
+        ---
+        apiVersion: ambassador/v1
+        kind: Mapping
+        name: otpexp-mapping-streamlbtimedsync
+        ambassador_id: otpexp
+        grpc: True
+        # prefix: ^/opencensus.proto.agent.(trace|metrics).v1.(TraceService|MetricsService)/(Export|ExportOne|Config)$
+        # prefix: /octraceprotobuf.OCStreamTracer/Export
+        #prefix_regex: True
+        prefix: /
+        rewrite: ""
+        headers:
+          #:authority: otpexp.dev.omnition.io:443
+          # :authority: a316afa5fba0d11e9b4fc0642263afd3-1611932511.us-west-2.elb.amazonaws.com
+            :authority: a153973ccba1811e9b4fc0642263afd3-203573157.us-west-2.elb.amazonaws.com:80
+        resolver: endpoint
+        service: otpexp-server-streamlbtimedsync.otpexp:3465
+        timeout_ms: 0
+        load_balancer:
+          policy: round_robin
+        idle_timeout_ms: 60000
+    service.beta.kubernetes.io/aws-load-balancer-access-log-emit-interval: "5"
+    service.beta.kubernetes.io/aws-load-balancer-access-log-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-name: cloudfront.omnition.io
+    service.beta.kubernetes.io/aws-load-balancer-access-log-s3-bucket-prefix: development
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "5"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "3"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
   name: ambassador-otpexp
-  namespace: otpexp
+  namespace: omnition
 spec:
-  type: LoadBalancer
-  externalTrafficPolicy: Local
+  externalTrafficPolicy: Cluster
   ports:
-   - port: 80
-     targetPort: 8080
+  - port: 80 
+    protocol: TCP
+    targetPort: 8080
   selector:
-    service: ambassador-otpexp
+    app: ambassador-otpexp
+  sessionAffinity: None
+  type: LoadBalancer
