@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         component: otpexp-server-${PROTOCOL}
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "true"
+        version: "${VERSION}"
     spec:
       containers:
       - image: crccheck/hello-world:latest
@@ -30,7 +34,6 @@ spec:
         ports:
           - containerPort: 3465
             name: main 
-        env:
-          - name: METRICS_ENDPOINT
-            value: "http://prometheus-server.monitoring.svc.cluster.local"
+          - containerPort: 2112
+            name: metrics
 

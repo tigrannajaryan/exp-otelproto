@@ -7,7 +7,7 @@ metadata:
   name: otpexp-loadgen-${PROTOCOL}
   namespace: ${K8S_NAMESPACE}
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       component: otpexp-loadgen-${PROTOCOL}
@@ -15,12 +15,14 @@ spec:
     metadata:
       labels:
         component: otpexp-loadgen-${PROTOCOL}
+      annotations:
+        version: "${VERSION}"
     spec:
       containers:
       - image: 592865182265.dkr.ecr.us-west-2.amazonaws.com/otpexp-loadgen:latest
         imagePullPolicy: Always
         name: otpexp-loadgen-${PROTOCOL}
-        command: ["/app/loadgen", "-protocol", "${PROTOCOL}", "-dest", "a62da584bb89711e9869f06e53035821-1685553444.us-west-2.elb.amazonaws.com:80"]
+        command: ["/app/loadgen", "-protocol", "${PROTOCOL}", "-spanspersec", "100", "-dest", "a153973ccba1811e9b4fc0642263afd3-203573157.us-west-2.elb.amazonaws.com:80"]
         env:
           - name: METRICS_ENDPOINT
             value: "http://prometheus-server.monitoring.svc.cluster.local"
