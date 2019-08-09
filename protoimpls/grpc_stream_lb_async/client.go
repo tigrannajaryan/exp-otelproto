@@ -19,14 +19,14 @@ type Client struct {
 	client             traceprotobuf.StreamExporterClient
 	stream             traceprotobuf.StreamExporter_ExportClient
 	lastStreamOpen     time.Time
-	pendingAck         map[uint64]core.ExportRequest
+	pendingAck         map[uint64]*traceprotobuf.ExportRequest
 	pendingAckMutex    sync.Mutex
 	StreamReopenPeriod time.Duration
 	nextId             uint64
 }
 
 func (c *Client) Connect(server string) error {
-	c.pendingAck = make(map[uint64]core.ExportRequest)
+	c.pendingAck = make(map[uint64]*traceprotobuf.ExportRequest)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
@@ -83,10 +83,12 @@ func (c *Client) Export(batch core.ExportRequest) {
 	if err := c.stream.Send(request); err != nil {
 		if err == io.EOF {
 			// Server closed the stream or disconnected. Try reopening the stream once.
+			log.Print("Reopening stream")
 			time.Sleep(1 * time.Second)
 			if err = c.openStream(); err != nil {
 				log.Fatal("Error opening stream")
 			}
+			c.resendPending()
 		} else {
 			log.Fatalf("cannot send request: %v", err)
 		}
@@ -94,7 +96,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 
 	// Add the ID to pendingAck map
 	c.pendingAckMutex.Lock()
-	c.pendingAck[request.Id] = batch
+	c.pendingAck[request.Id] = request
 	c.pendingAckMutex.Unlock()
 
 	// Check if time to re-establish the stream.
@@ -107,6 +109,22 @@ func (c *Client) Export(batch core.ExportRequest) {
 		}
 		if err = c.openStream(); err != nil {
 			log.Fatal("Error opening stream")
+		}
+	}
+}
+
+func (c *Client) resendPending() {
+	var requests []*traceprotobuf.ExportRequest
+	c.pendingAckMutex.Lock()
+	for _, request := range c.pendingAck {
+		requests = append(requests, request)
+	}
+	c.pendingAckMutex.Unlock()
+
+	log.Printf("Resending %d requests", len(requests))
+	for _, request := range requests {
+		if err := c.stream.Send(request); err != nil {
+			log.Fatalf("cannot send request: %v", err)
 		}
 	}
 }
