@@ -80,7 +80,17 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	c.stream.Send(request)
+	if err := c.stream.Send(request); err != nil {
+		if err == io.EOF {
+			// Server closed the stream or disconnected. Try reopening the stream once.
+			time.Sleep(1 * time.Second)
+			if err = c.openStream(); err != nil {
+				log.Fatal("Error opening stream")
+			}
+		} else {
+			log.Fatalf("cannot send request: %v", err)
+		}
+	}
 
 	// Add the ID to pendingAck map
 	c.pendingAckMutex.Lock()

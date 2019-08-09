@@ -59,8 +59,10 @@ func BenchmarkLocalDelivery(
 		wg.Done()
 	})
 
-	// Clietn connect to the server.
-	clnt.Connect(endpoint)
+	// Client connect to the server.
+	if err := clnt.Connect(endpoint); err != nil {
+		log.Fatalf("cannot connect: %v", err)
+	}
 
 	// Begin measuring CPU time.
 	proc, err := process.NewProcess(int32(os.Getpid()))
