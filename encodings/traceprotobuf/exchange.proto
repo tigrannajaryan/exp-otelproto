@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package traceprotobuf;
 
-import "trace.proto";
+import "telemetry_data.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";
@@ -32,7 +32,7 @@ message ExportRequest {
 
   // Telemetry data.
   repeated NodeSpans nodeSpans = 2;
-  repeated Metric metrics = 3;
+  repeated NodeMetrics nodeMetrics = 3;
 }
 
 // A response to ExportRequest.
