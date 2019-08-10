@@ -16,9 +16,7 @@ type GrpcServer struct {
 }
 
 func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
-	return &traceprotobuf.HelloResponse{
-		Capabilities: uint32(traceprotobuf.CompressionMethod_LZ4) | uint32(traceprotobuf.CompressionMethod_ZLIB),
-	}, nil
+	return &traceprotobuf.HelloResponse{}, nil
 }
 
 func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequest) (*traceprotobuf.ExportResponse, error) {

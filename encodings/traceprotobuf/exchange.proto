@@ -10,17 +10,16 @@ option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
-message HelloRequest {
-}
-
 enum Capabilities {
     SKIP = 0;
     ZLIB_COMPRESSION = 1; // bit 0 of capabilities
     LZ4_COMPRESSION = 2;  // bit 1 of capabilities
 }
 
+message HelloRequest {
+}
+
 message HelloResponse {
-  uint32 capabilities = 2; // bitwise OR of Capabilities
 }
 
 // A request from client to server containing telemetry data to export.
