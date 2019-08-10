@@ -17,7 +17,6 @@ type GrpcServer struct {
 
 func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
 	return &traceprotobuf.HelloResponse{
-		ServerVer:    1,
 		Capabilities: uint32(traceprotobuf.CompressionMethod_LZ4) | uint32(traceprotobuf.CompressionMethod_ZLIB),
 	}, nil
 }
