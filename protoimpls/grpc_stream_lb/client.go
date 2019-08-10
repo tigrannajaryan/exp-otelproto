@@ -35,7 +35,11 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) openStream() error {
-	var err error
+	response, err := c.client.Hello(context.Background(), &traceprotobuf.HelloRequest{})
+	if response == nil || err != nil {
+		log.Fatalf("No response on Hello: %v", err)
+	}
+
 	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
 		log.Fatalf("Cannot open stream: %v", err)

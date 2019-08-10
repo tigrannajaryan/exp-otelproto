@@ -16,10 +16,14 @@ enum Capabilities {
     LZ4_COMPRESSION = 2;  // bit 1 of capabilities
 }
 
+// Hello is the first request from client to server.
 message HelloRequest {
+    // Empty in initial version of OTLP.
 }
 
+// Response to Hello request.
 message HelloResponse {
+    // Empty in initial version of OTLP.
 }
 
 // A request from client to server containing telemetry data to export.

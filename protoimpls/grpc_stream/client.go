@@ -26,6 +26,11 @@ func (c *Client) Connect(server string) error {
 	}
 	c.client = traceprotobuf.NewStreamExporterClient(conn)
 
+	response, err := c.client.Hello(context.Background(), &traceprotobuf.HelloRequest{})
+	if response == nil || err != nil {
+		log.Fatalf("No response on Hello: %v", err)
+	}
+
 	// Establish stream to server.
 	c.stream, err = c.client.Export(context.Background())
 	if err != nil {

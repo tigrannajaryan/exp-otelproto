@@ -112,6 +112,7 @@ func (ExportResponse_ResultCode) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_e0328a4f16f87ea1, []int{3, 0}
 }
 
+// Hello is the first request from client to server.
 type HelloRequest struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -143,6 +144,7 @@ func (m *HelloRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_HelloRequest proto.InternalMessageInfo
 
+// Response to Hello request.
 type HelloResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

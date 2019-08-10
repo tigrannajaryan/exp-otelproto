@@ -18,6 +18,9 @@ service UnaryExporter {
 
 // Streaming exporter service definition.
 service StreamExporter {
+  // Hello handshake.
+  rpc Hello(HelloRequest) returns (HelloResponse) {}
+
   // Sends a batch of telemetry data.
   rpc Export(stream ExportRequest) returns (stream ExportResponse) {}
 }
