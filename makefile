@@ -35,6 +35,9 @@ build:
 benchmark:
 	./runbenchmarks.sh
 
+benchmark-encoding:
+	go test -v -bench . ./encodings
+
 run:
 	go run cmd/grpc-protobuf.go
 
