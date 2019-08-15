@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
+
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
 
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
@@ -33,12 +35,15 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync,wsstreamasynczlib)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,"+
+			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasynczlib)",
+	)
 
 	var spansPerSecond int
 	flag.IntVar(&spansPerSecond, "spanspersec", 100, "spans per second")
 
 	var rebalancePeriodStr = flag.String("rebalance", "30s", "rebalance period (Valid time units are ns, us, ms, s, m, h)")
+	var rebalanceRequestLimit = *flag.Uint("rebalance-request", 1000, "rebalance after specified number of requests")
 
 	flag.Parse()
 
@@ -98,7 +103,20 @@ func main() {
 
 	case "streamlbasync":
 		core.LoadGenerator(
-			func() core.Client { return &grpc_stream_lb_async.Client{StreamReopenPeriod: rebalancePeriod} },
+			func() core.Client {
+				return &grpc_stream_lb_async.Client{
+					StreamReopenPeriod:       rebalancePeriod,
+					StreamReopenRequestCount: uint32(rebalanceRequestLimit),
+				}
+			},
+			func() core.Generator { return traceprotobuf.NewGenerator() },
+			destination,
+			spansPerSecond,
+		)
+
+	case "streamlbsrv":
+		core.LoadGenerator(
+			func() core.Client { return &grpc_stream_lb_srv.Client{} },
 			func() core.Generator { return traceprotobuf.NewGenerator() },
 			destination,
 			spansPerSecond,

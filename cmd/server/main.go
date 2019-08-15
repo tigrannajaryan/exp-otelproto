@@ -4,6 +4,9 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -45,9 +48,18 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync,wsstreamasynczlib)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,"+
+			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasynczlib)",
+	)
 
+	var rebalancePeriodStr = flag.String("rebalance", "30s", "rebalance period (Valid time units are ns, us, ms, s, m, h)")
+	var rebalanceRequestLimit = *flag.Uint("rebalance-request", 1000, "rebalance after specified number of requests")
 	flag.Parse()
+
+	rebalancePeriod, err := time.ParseDuration(*rebalancePeriodStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	http.Handle("/metrics", promhttp.Handler())
 	go http.ListenAndServe(":2112", nil)
@@ -68,6 +80,11 @@ func main() {
 		core.RunServer(&grpc_stream_lb.Server{}, listenAddress, onReceive)
 	case "streamlbasync":
 		core.RunServer(&grpc_stream_lb_async.Server{}, listenAddress, onReceive)
+	case "streamlbsrv":
+		core.RunServer(&grpc_stream_lb_srv.Server{
+			StreamReopenPeriod:       rebalancePeriod,
+			StreamReopenRequestCount: rebalanceRequestLimit,
+		}, listenAddress, onReceive)
 	case "wsstreamsync":
 		core.RunServer(&ws_stream_sync.Server{}, listenAddress, onReceive)
 	case "wsstreamasync":

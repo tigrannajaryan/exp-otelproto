@@ -9,6 +9,8 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
@@ -29,13 +31,16 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,streamlbalwayssync,streamlbasync,wsstreamsync,wsstreamasync,wsstreamasynczlib)")
+		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,"+
+			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasynczlib)",
+	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
 	flag.IntVar(&options.SpansPerBatch, "spansperbatch", 100, "spans per batch")
 	flag.IntVar(&options.AttrPerSpan, "attrperspan", 2, "attributes per span")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	var rebalancePeriodStr = flag.String("rebalance", "30s", "rebalance period (Valid time units are ns, us, ms, s, m, h)")
+	var rebalanceRequestLimit = uint(*flag.Uint("rebalance-request", 1000, "rebalance after specified number of requests"))
 
 	flag.Parse()
 
@@ -67,7 +72,9 @@ func main() {
 	case "streamlbalwayssync":
 		benchmarkGRPCStreamLBAlwaysSync(options)
 	case "streamlbasync":
-		benchmarkGRPCStreamLBAsync(options, rebalancePeriod)
+		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit)
+	case "streamlbsrv":
+		benchmarkGRPCStreamLBSrv(options, rebalancePeriod, rebalanceRequestLimit)
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
@@ -131,12 +138,32 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 	)
 }
 
-func benchmarkGRPCStreamLBAsync(options core.Options, streamReopenPeriod time.Duration) {
+func benchmarkGRPCStreamLBAsync(options core.Options, streamReopenPeriod time.Duration, rebalanceRequestLimit uint) {
 	benchmarkImpl(
 		"GRPC/Stream/LBTimed/Async",
 		options,
-		func() core.Client { return &grpc_stream_lb_async.Client{StreamReopenPeriod: streamReopenPeriod} },
+		func() core.Client {
+			return &grpc_stream_lb_async.Client{
+				StreamReopenPeriod:       streamReopenPeriod,
+				StreamReopenRequestCount: uint32(rebalanceRequestLimit),
+			}
+		},
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
+	)
+}
+
+func benchmarkGRPCStreamLBSrv(options core.Options, streamReopenPeriod time.Duration, rebalanceRequestLimit uint) {
+	benchmarkImpl(
+		"GRPC/Stream/LBSrv/Async",
+		options,
+		func() core.Client { return &grpc_stream_lb_srv.Client{} },
+		func() core.Server {
+			return &grpc_stream_lb_srv.Server{
+				StreamReopenPeriod:       streamReopenPeriod,
+				StreamReopenRequestCount: rebalanceRequestLimit,
+			}
+		},
 		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }

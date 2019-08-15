@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=1
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
@@ -12,6 +12,7 @@ echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly,
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
 echo "GRPC/Stream/LBTimed/Sync    - OTLP Synchronous. GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
 echo "GRPC/Stream/LBTimed/Async   - OTLP Pipelined. GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack"
+echo "GRPC/Stream/LBSrv/Async     - OTLP Pipelined. GRPC, streaming, load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
@@ -30,6 +31,7 @@ benchmark_all() {
     benchmark streamlbalwayssync
     benchmark streamlbtimedsync
     benchmark streamlbasync
+    benchmark streamlbsrv
     benchmark wsstreamsync
     benchmark wsstreamasync
     benchmark wsstreamasynczlib
@@ -44,18 +46,7 @@ benchmark_all_latency() {
     tc qdisc delete dev lo root netem delay ${1}ms
 }
 
-# Set performance governor for all CPUs
-cpufreq-set -g performance -c 0
-cpufreq-set -g performance -c 1
-cpufreq-set -g performance -c 2
-cpufreq-set -g performance -c 3
-cpufreq-set -g performance -c 4
-cpufreq-set -g performance -c 5
-cpufreq-set -g performance -c 6
-cpufreq-set -g performance -c 7
-
-# Disable turboboost (see https://easyperf.net/blog/2019/08/02/Perf-measurement-environment-on-Linux)
-echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
+./beforebenchmarks.sh
 
 tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 echo
@@ -104,15 +95,4 @@ tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================
 
-# Restore powersave governor
-cpufreq-set -g powersave -c 0
-cpufreq-set -g powersave -c 1
-cpufreq-set -g powersave -c 2
-cpufreq-set -g powersave -c 3
-cpufreq-set -g powersave -c 4
-cpufreq-set -g powersave -c 5
-cpufreq-set -g powersave -c 6
-cpufreq-set -g powersave -c 0
-
-# Restore turboboost
-echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo
+./afterbenchmarks.sh

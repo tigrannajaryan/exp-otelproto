@@ -1,4 +1,4 @@
-package grpc_stream_lb_async
+package grpc_stream_lb_srv
 
 import (
 	"context"
@@ -16,15 +16,11 @@ import (
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client                      traceprotobuf.StreamExporterClient
-	stream                      traceprotobuf.StreamExporter_ExportClient
-	lastStreamOpen              time.Time
-	pendingAck                  map[uint64]*traceprotobuf.ExportRequest
-	pendingAckMutex             sync.Mutex
-	StreamReopenPeriod          time.Duration
-	StreamReopenRequestCount    uint32
-	nextId                      uint64
-	requestsSentSinceStreamOpen uint32
+	client          traceprotobuf.StreamExporterClient
+	stream          traceprotobuf.StreamExporter_ExportClient
+	pendingAck      map[uint64]*traceprotobuf.ExportRequest
+	pendingAckMutex sync.Mutex
+	nextId          uint64
 }
 
 func (c *Client) Connect(server string) error {
@@ -51,8 +47,6 @@ func (c *Client) openStream() error {
 	if err != nil {
 		log.Fatalf("cannot open stream: %v", err)
 	}
-	c.lastStreamOpen = time.Now()
-	atomic.StoreUint32(&c.requestsSentSinceStreamOpen, 0)
 
 	go c.readStream(c.stream)
 
@@ -87,10 +81,14 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
+	// Add the ID to pendingAck map
+	c.pendingAckMutex.Lock()
+	c.pendingAck[request.Id] = request
+	c.pendingAckMutex.Unlock()
+
 	if err := c.stream.Send(request); err != nil {
 		if err == io.EOF {
 			// Server closed the stream or disconnected. Try reopening the stream once.
-			log.Print("Reopening stream")
 			time.Sleep(1 * time.Second)
 			if err = c.openStream(); err != nil {
 				log.Fatal("Error opening stream")
@@ -98,26 +96,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 			c.resendPending()
 		} else {
 			log.Fatalf("cannot send request: %v", err)
-		}
-	}
-
-	// Add the ID to pendingAck map
-	c.pendingAckMutex.Lock()
-	c.pendingAck[request.Id] = request
-	c.pendingAckMutex.Unlock()
-
-	requestsSent := atomic.AddUint32(&c.requestsSentSinceStreamOpen, 1)
-
-	// Check if time to re-establish the stream.
-	if requestsSent > c.StreamReopenRequestCount || time.Since(c.lastStreamOpen) > c.StreamReopenPeriod {
-		// Close and reopen the stream.
-		c.lastStreamOpen = time.Now()
-		err := c.stream.CloseSend()
-		if err != nil {
-			log.Fatal("Error closing stream")
-		}
-		if err = c.openStream(); err != nil {
-			log.Fatal("Error opening stream")
 		}
 	}
 }
@@ -130,7 +108,6 @@ func (c *Client) resendPending() {
 	}
 	c.pendingAckMutex.Unlock()
 
-	log.Printf("Resending %d requests", len(requests))
 	for _, request := range requests {
 		if err := c.stream.Send(request); err != nil {
 			log.Fatalf("cannot send request: %v", err)

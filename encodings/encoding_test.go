@@ -13,27 +13,36 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
 
-func BenchmarkEncoding(b *testing.B) {
-	tests := []struct {
-		name string
-		gen  func() core.Generator
-	}{
-		{
-			name: "opencensus",
-			gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-		},
-		{
-			name: "OTLP1",
-			gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
-		},
-	}
+var tests = []struct {
+	name string
+	gen  func() core.Generator
+}{
+	{
+		name: "opencensus",
+		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	},
+	{
+		name: "OTLP_A    ",
+		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
+	},
+	{
+		name: "OTLP_B    ",
+		gen:  func() core.Generator { return traceprotobuf.NewGeneratorB() },
+	},
+}
 
+func BenchmarkEncode(b *testing.B) {
 	for _, test := range tests {
 		b.Run(test.name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				generateAndEncode(test.gen())
 			}
 		})
+	}
+}
+
+func BenchmarkEncodeDecode(b *testing.B) {
+	for _, test := range tests {
 		b.Run(test.name+"+decode", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				batch, bytes := generateAndEncode(test.gen())

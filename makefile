@@ -1,5 +1,7 @@
 .PHONY: all genprotobuf genflatbuffers build build-image build-images publish-images
 
+GO=$(shell which go)
+
 K8S_NAMESPACE?=otpexp
 DOCKER_REGISTRY?=592865182265.dkr.ecr.us-west-2.amazonaws.com/
 IMAGE_NAME=
@@ -36,7 +38,11 @@ benchmark:
 	./runbenchmarks.sh
 
 benchmark-encoding:
-	go test -v -bench . ./encodings
+	sudo ./beforebenchmarks.sh
+	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/opencensus" ./encodings
+	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/OTLP_A" ./encodings
+	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/OTLP_B" ./encodings
+	sudo ./afterbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go
