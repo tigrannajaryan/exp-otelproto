@@ -4,9 +4,6 @@ import (
 	"context"
 	"log"
 	"net"
-	"time"
-
-	flatbuffers "github.com/google/flatbuffers/go"
 
 	"google.golang.org/grpc"
 
@@ -19,44 +16,45 @@ type GrpcServer struct {
 }
 
 func (s *GrpcServer) SendBatch(ctx context.Context, batch *traceflatbuffers.BatchRequest) (*traceflatbuffers.BatchResponse, error) {
-	spanBatch := traceflatbuffers.GetRootAsSpanBatch(batch.EncodedSpans, 0)
-
-	log.Printf("Received %d spans", spanBatch.SpansLength())
-
-	for i := 0; i < spanBatch.SpansLength(); i++ {
-		var span traceflatbuffers.Span
-		if !spanBatch.Spans(&span, i) {
-			log.Fatalf("Cannot decode span %d", i)
-		}
-		startTime := time.Unix(0, span.StartTime())
-		endTime := time.Unix(0, span.EndTime())
-		log.Printf("Span name=%s, traceid=%v, spanid=%v, start time=%s, end time=%s",
-			span.Name(), span.TraceIdLo(), span.SpanId(), startTime.String(), endTime.String())
-
-		for j := 0; j < span.AttributesLength(); j++ {
-			var attribute traceflatbuffers.Attribute
-			if !span.Attributes(&attribute, j) {
-				log.Fatalf("Cannot decode attributes of span %d", i)
-			}
-
-			key := string(attribute.Key())
-			log.Printf("Attribute %d, key=%v", j, key)
-
-			unionTable := new(flatbuffers.Table)
-			if attribute.Value(unionTable) {
-				unionType := attribute.ValueType()
-				if unionType == traceflatbuffers.AttributeValueInt64Value {
-					attrVal := new(traceflatbuffers.Int64Value)
-					attrVal.Init(unionTable.Bytes, unionTable.Pos)
-					log.Printf("Value of key=%d", attrVal.Int64Value())
-				}
-			}
-
-		}
-	}
-
-	s.onReceive(spanBatch)
-	return &traceflatbuffers.BatchResponse{}, nil
+	//spanBatch := traceflatbuffers.GetRootAsSpanBatch(batch.EncodedSpans, 0)
+	//
+	//log.Printf("Received %d spans", spanBatch.SpansLength())
+	//
+	//for i := 0; i < spanBatch.SpansLength(); i++ {
+	//	var span traceflatbuffers.Span
+	//	if !spanBatch.Spans(&span, i) {
+	//		log.Fatalf("Cannot decode span %d", i)
+	//	}
+	//	startTime := time.Unix(0, span.StartTime())
+	//	endTime := time.Unix(0, span.EndTime())
+	//	log.Printf("Span name=%s, traceid=%v, spanid=%v, start time=%s, end time=%s",
+	//		span.Name(), span.TraceIdLo(), span.SpanId(), startTime.String(), endTime.String())
+	//
+	//	for j := 0; j < span.AttributesLength(); j++ {
+	//		var attribute traceflatbuffers.Attribute
+	//		if !span.Attributes(&attribute, j) {
+	//			log.Fatalf("Cannot decode attributes of span %d", i)
+	//		}
+	//
+	//		key := string(attribute.Key())
+	//		log.Printf("Attribute %d, key=%v", j, key)
+	//
+	//		unionTable := new(flatbuffers.Table)
+	//		if attribute.Value(unionTable) {
+	//			unionType := attribute.ValueType()
+	//			if unionType == traceflatbuffers.AttributeValueInt64Value {
+	//				attrVal := new(traceflatbuffers.Int64Value)
+	//				attrVal.Init(unionTable.Bytes, unionTable.Pos)
+	//				log.Printf("Value of key=%d", attrVal.Int64Value())
+	//			}
+	//		}
+	//
+	//	}
+	//}
+	//
+	//s.onReceive(spanBatch)
+	//return &traceflatbuffers.BatchResponse{}, nil
+	return nil, nil
 }
 
 type Server struct {

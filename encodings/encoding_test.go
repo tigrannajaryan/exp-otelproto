@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobufb"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 
@@ -27,7 +28,7 @@ var tests = []struct {
 	},
 	{
 		name: "OTLP_B    ",
-		gen:  func() core.Generator { return traceprotobuf.NewGeneratorB() },
+		gen:  func() core.Generator { return traceprotobufb.NewGenerator() },
 	},
 }
 

@@ -14,13 +14,18 @@ export DOCKER_REGISTRY
 export IMAGE_NAME
 export PROTOCOL
 
-all: genprotobuf build
+all: genprotobuf build test
 
 genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/resource.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/exchange.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/grpc.proto --go_out=plugins=grpc:encodings/traceprotobuf
+
+	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
+	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/resource.proto --go_out=plugins=grpc:encodings/traceprotobufb
+	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
+	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/grpc.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/octrace.proto --go_out=plugins=grpc:encodings/octraceprotobuf
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/resource.proto --go_out=plugins=grpc:encodings/octraceprotobuf
@@ -46,6 +51,9 @@ benchmark-encoding:
 
 run:
 	go run cmd/grpc-protobuf.go
+
+test:
+	go test ./...
 
 build-images: build
 	$(MAKE) build-image IMAGE_NAME=server

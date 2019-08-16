@@ -1,7 +1,6 @@
 package traceprotobuf
 
 import (
-	"encoding/binary"
 	"math/rand"
 	"sync/atomic"
 	"time"
@@ -40,12 +39,12 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 
 		// Create a span.
 		span := &Span{
-			TraceId:           generateTraceID(traceID),
-			SpanId:            generateSpanID(spanID),
+			TraceId:           core.GenerateTraceID(traceID),
+			SpanId:            core.GenerateSpanID(spanID),
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
-			StartTimeUnixnano: timeToTimestamp(startTime),
-			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			StartTimeUnixnano: core.TimeToTimestamp(startTime),
+			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -71,20 +70,4 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 		batch.NodeSpans[0].Spans = append(batch.NodeSpans[0].Spans, span)
 	}
 	return batch
-}
-
-func generateTraceID(id uint64) []byte {
-	var traceID [16]byte
-	binary.PutUvarint(traceID[:], id)
-	return traceID[:]
-}
-
-func generateSpanID(id uint64) []byte {
-	var spanID [8]byte
-	binary.PutUvarint(spanID[:], id)
-	return spanID[:]
-}
-
-func timeToTimestamp(t time.Time) int64 {
-	return t.UnixNano()
 }

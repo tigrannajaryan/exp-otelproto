@@ -1,4 +1,4 @@
-package traceprotobuf
+package traceprotobufb
 
 import (
 	"math/rand"
@@ -8,20 +8,20 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-// GeneratorB allows to generate a ExportRequest.
-type GeneratorB struct {
+// Generator allows to generate a ExportRequest.
+type Generator struct {
 	random     *rand.Rand
 	tracesSent uint64
 	spansSent  uint64
 }
 
-func NewGeneratorB() *GeneratorB {
-	return &GeneratorB{
+func NewGenerator() *Generator {
+	return &Generator{
 		random: rand.New(rand.NewSource(99)),
 	}
 }
 
-func (g *GeneratorB) genRandByteString(len int) string {
+func (g *Generator) genRandByteString(len int) string {
 	b := make([]byte, len)
 	for i := range b {
 		b[i] = byte(g.random.Intn(128))
@@ -29,22 +29,22 @@ func (g *GeneratorB) genRandByteString(len int) string {
 	return string(b)
 }
 
-func (g *GeneratorB) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.ExportRequest {
+func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
-	batch := &ExportRequestB{NodeSpans: []*NodeSpansB{{}}}
+	batch := &ExportRequest{NodeSpans: []*NodeSpans{{}}}
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Now()
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
 		// Create a span.
-		span := &SpanB{
-			TraceId:           generateTraceID(traceID),
-			SpanId:            generateSpanID(spanID),
-			Name:              "load-GeneratorB-span",
-			Kind:              SpanB_CLIENT,
-			StartTimeUnixnano: timeToTimestamp(startTime),
-			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+		span := &Span{
+			TraceId:           core.GenerateTraceID(traceID),
+			SpanId:            core.GenerateTraceID(spanID),
+			Name:              "load-Generator-span",
+			Kind:              Span_CLIENT,
+			StartTimeUnixnano: core.TimeToTimestamp(startTime),
+			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -52,8 +52,8 @@ func (g *GeneratorB) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Exp
 			span.Attributes = map[string]*AttributeValue{}
 
 			if attrsPerSpan >= 2 {
-				span.Attributes["load_GeneratorB.span_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}}
-				span.Attributes["load_GeneratorB.trace_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}}
+				span.Attributes["load_Generator.span_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}}
+				span.Attributes["load_Generator.trace_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}}
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
