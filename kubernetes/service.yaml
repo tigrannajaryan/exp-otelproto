@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: otpexp-server-${PROTOCOL}
+  name: otpexp-server
   namespace: ${K8S_NAMESPACE}
 spec:
   selector:

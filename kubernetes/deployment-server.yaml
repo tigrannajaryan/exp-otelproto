@@ -19,6 +19,7 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/scrape: "true"
         version: "${VERSION}"
+        restart: "1"
     spec:
       containers:
       - image: crccheck/hello-world:latest

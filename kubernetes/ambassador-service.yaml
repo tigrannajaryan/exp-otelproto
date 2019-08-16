@@ -15,7 +15,7 @@ metadata:
         ---
         apiVersion: ambassador/v1
         kind: Mapping
-        name: otpexp-mapping-streamlbtimedsync
+        name: otpexp-mapping
         ambassador_id: otpexp
         grpc: True
         # prefix: ^/opencensus.proto.agent.(trace|metrics).v1.(TraceService|MetricsService)/(Export|ExportOne|Config)$
@@ -28,7 +28,7 @@ metadata:
           # :authority: a316afa5fba0d11e9b4fc0642263afd3-1611932511.us-west-2.elb.amazonaws.com
             :authority: a153973ccba1811e9b4fc0642263afd3-203573157.us-west-2.elb.amazonaws.com:80
         resolver: endpoint
-        service: otpexp-server-streamlbtimedsync.otpexp:3465
+        service: otpexp-server.otpexp:3465
         timeout_ms: 0
         load_balancer:
           policy: round_robin
