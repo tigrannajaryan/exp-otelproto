@@ -7,6 +7,13 @@ import (
 	"net"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/duration"
+
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -54,7 +61,14 @@ func (s *GrpcServer) Export(stream traceprotobuf.StreamExporter_ExportServer) er
 			break
 		}
 	}
-	return nil
+
+	st, err := status.New(codes.Unavailable, "Server is unavailable").
+		WithDetails(&errdetails.RetryInfo{RetryDelay: &duration.Duration{Seconds: 0}})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return st.Err()
 }
 
 type Server struct {

@@ -67,10 +67,6 @@ message ExportResponse {
     FailedRetryable = 2;
   }
   ResultCode result_code = 2;
-
-  // How long the client must wait before sending the next ExportRequest. 0 indicates
-  // that the client doesn't need to wait.
-  uint32 throttle_period_millisec = 3;
 }
 
 enum CompressionMethod {

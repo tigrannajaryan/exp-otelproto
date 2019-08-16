@@ -2,11 +2,15 @@ package grpc_stream_lb_srv
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/status"
 
 	"google.golang.org/grpc"
 
@@ -38,11 +42,7 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) openStream() error {
-	response, err := c.client.Hello(context.Background(), &traceprotobuf.HelloRequest{})
-	if response == nil || err != nil {
-		log.Fatalf("No response on Hello: %v", err)
-	}
-
+	var err error
 	c.stream, err = c.client.Export(context.Background())
 	if err != nil {
 		log.Fatalf("cannot open stream: %v", err)
@@ -61,7 +61,17 @@ func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
 			return
 		}
 		if err != nil {
-			// log.Printf("Failed to read from stream: %v", err)
+			st := status.Convert(err)
+			for _, detail := range st.Details() {
+				switch t := detail.(type) {
+				case *errdetails.RetryInfo:
+					if t.RetryDelay.Seconds > 0 {
+						// TODO: Need to wait before retrying.
+						fmt.Printf("Request was rejected by the server. Retry after %v sec\n",
+							t.RetryDelay.Seconds)
+					}
+				}
+			}
 			return
 		}
 
