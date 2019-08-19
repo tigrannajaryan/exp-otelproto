@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package traceprotobufb;
+package attrlist;
 
 // option go_package = "github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1";
 

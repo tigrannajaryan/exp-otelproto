@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package traceprotobufb;
+package attrlist;
 
 import "telemetry_data.proto";
 
@@ -32,8 +32,8 @@ message ExportRequest {
     uint64 id = 1;
 
     // Telemetry data.
-    repeated SpanBatch spanBatch = 2;
-    repeated MetricBatch metricBatch = 3;
+    repeated NodeSpans nodeSpans = 2;
+    repeated NodeMetrics nodeMetrics = 3;
 }
 
 // A response to ExportRequest.

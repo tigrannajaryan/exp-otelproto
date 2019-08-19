@@ -1,4 +1,4 @@
-package traceprotobuf
+package attrlist
 
 import (
 	"math/rand"
@@ -58,22 +58,20 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 
 		if attrsPerSpan >= 0 {
 			// Append attributes.
-			span.Attributes = map[string]*AttributeValue{}
+			span.Attributes = []*AttributeKeyValue{}
 
 			if attrsPerSpan >= 2 {
-				span.Attributes["load_generator.span_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(spanID)}}
-				span.Attributes["load_generator.trace_seq_num"] = &AttributeValue{Value: &AttributeValue_IntValue{IntValue: int64(traceID)}}
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: ValueType_INT64, IntValue: int64(spanID)})
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: ValueType_INT64, IntValue: int64(traceID)})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(50) + 1)
-				span.Attributes[attrName] = &AttributeValue{
-					Value: &AttributeValue_StringValue{
-						StringValue: g.genRandByteString(g.random.Intn(100) + 1),
-					},
-				}
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(100) + 1)})
 			}
-
 		}
 
 		batch.NodeSpans[0].Spans = append(batch.NodeSpans[0].Spans, span)

@@ -1,7 +1,8 @@
 syntax = "proto3";
 
-package traceprotobufb;
+package attrlist;
 
+import "resource.proto";
 import "google/protobuf/wrappers.proto";
 
 option java_multiple_files = true;
@@ -11,15 +12,39 @@ option java_outer_classname = "TraceProto";
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
 // A list of spans from a Node.
-message SpanBatch {
-  Resource resource = 1;
-  repeated Span spans = 2;
+message NodeSpans {
+  Node node = 1;
+  Resource resource = 2;
+  repeated Span spans = 3;
 }
 
 // A list of metrics from a Node.
-message MetricBatch {
-  Resource resource = 1;
-  repeated Metric metrics = 2;
+message NodeMetrics {
+  Node node = 1;
+  Resource resource = 2;
+  repeated Metric metrics = 3;
+}
+
+enum ValueType {
+  STRING  = 0;
+  BOOL    = 1;
+  INT64   = 2;
+  FLOAT64 = 3;
+  BINARY  = 4;
+};
+
+message AttributeKeyValue {
+  string key = 1;
+  // The type of the value.
+  ValueType type = 2;
+  // A string up to 256 bytes long.
+  string string_value = 3;
+  // A 64-bit signed integer.
+  int64 int_value = 4;
+  // A Boolean value represented by `true` or `false`.
+  bool bool_value = 5;
+  // A double value.
+  double double_value = 6;
 }
 
 // Identifier metadata of the Node that produces the span or tracing data.
@@ -37,7 +62,7 @@ message Node {
   ServiceInfo service_info = 3;
 
   // Additional attributes.
-  map<string, AttributeValue> attributes = 4;
+  repeated AttributeKeyValue attributes = 4;
 }
 
 // Identifier that uniquely identifies a process within a VM/container.
@@ -215,7 +240,7 @@ message Span {
   //     "/http/server_latency": 300
   //     "abc.com/myattribute": true
   //     "abc.com/score": 10.239
-  map<string, AttributeValue> attributes = 7;
+  repeated AttributeKeyValue attributes = 7;
 
   // A stack trace captured at the start of the span.
   StackTrace stack_trace = 8;
@@ -231,7 +256,7 @@ message Span {
       string description = 1;
 
       // A set of attributes on the annotation.
-      map<string, AttributeValue> attributes = 2;
+      repeated AttributeKeyValue attributes = 2;
     }
 
     // An event describing a message sent/received between Spans.
@@ -322,7 +347,7 @@ message Span {
     Type type = 3;
 
     // A set of attributes on the link.
-    map<string, AttributeValue> attributes = 4;
+    repeated AttributeKeyValue attributes = 4;
 
     // The Tracestate associated with the link.
     Tracestate tracestate = 5;
@@ -459,16 +484,4 @@ message Module {
 
 message Metric {
 
-}
-
-// Resource information.
-message Resource {
-  // Identifier that uniquely identifies a process within a VM/container.
-  ProcessIdentifier identifier = 1;
-
-  // Additional information on service.
-  ServiceInfo service_info = 3;
-
-  // Set of labels that describe the resource.
-  map<string, AttributeValue> attributes = 4;
 }

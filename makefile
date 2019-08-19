@@ -23,9 +23,11 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/grpc.proto --go_out=plugins=grpc:encodings/traceprotobuf
 
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
-	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/resource.proto --go_out=plugins=grpc:encodings/traceprotobufb
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
-	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/grpc.proto --go_out=plugins=grpc:encodings/traceprotobufb
+
+	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/telemetry_data.proto --go_out=plugins=grpc:encodings/attrlist
+	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/resource.proto --go_out=plugins=grpc:encodings/attrlist
+	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/exchange.proto --go_out=plugins=grpc:encodings/attrlist
 
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/octrace.proto --go_out=plugins=grpc:encodings/octraceprotobuf
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/resource.proto --go_out=plugins=grpc:encodings/octraceprotobuf
@@ -44,16 +46,14 @@ benchmark:
 
 benchmark-encoding:
 	sudo ./beforebenchmarks.sh
-	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/opencensus" ./encodings
-	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/OTLP_A" ./encodings
-	sudo nice -n -5 ${GO} test -bench "BenchmarkEncode/OTLP_B" ./encodings
+	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 5s
 	sudo ./afterbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go
 
 test:
-	go test ./...
+	go test -v ./...
 
 build-images: build
 	$(MAKE) build-image IMAGE_NAME=server
