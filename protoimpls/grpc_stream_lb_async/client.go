@@ -1,6 +1,7 @@
 package grpc_stream_lb_async
 
 import (
+	"container/list"
 	"context"
 	"io"
 	"log"
@@ -19,16 +20,23 @@ type Client struct {
 	client                      traceprotobuf.StreamExporterClient
 	stream                      traceprotobuf.StreamExporter_ExportClient
 	lastStreamOpen              time.Time
-	pendingAck                  map[uint64]*traceprotobuf.ExportRequest
+	pendingAckMap               map[uint64]*list.Element
 	pendingAckMutex             sync.Mutex
+	pendingAckList              *list.List
 	StreamReopenPeriod          time.Duration
 	StreamReopenRequestCount    uint32
 	nextId                      uint64
 	requestsSentSinceStreamOpen uint32
 }
 
+type pendingRequest struct {
+	request  *traceprotobuf.ExportRequest
+	deadline time.Time
+}
+
 func (c *Client) Connect(server string) error {
-	c.pendingAck = make(map[uint64]*traceprotobuf.ExportRequest)
+	c.pendingAckMap = make(map[uint64]*list.Element)
+	c.pendingAckList = list.New()
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
@@ -36,6 +44,8 @@ func (c *Client) Connect(server string) error {
 		log.Fatalf("did not connect: %v", err)
 	}
 	c.client = traceprotobuf.NewStreamExporterClient(conn)
+
+	go c.processTimeouts()
 
 	// Establish stream to server.
 	return c.openStream()
@@ -68,13 +78,38 @@ func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
 		}
 
 		c.pendingAckMutex.Lock()
-		_, ok := c.pendingAck[response.Id]
+		elem, ok := c.pendingAckMap[response.Id]
 		if !ok {
 			c.pendingAckMutex.Unlock()
 			log.Fatalf("Received ack on batch ID that does not exist: %v", response.Id)
 		}
-		delete(c.pendingAck, response.Id)
+		delete(c.pendingAckMap, response.Id)
+		c.pendingAckList.Remove(elem)
 		c.pendingAckMutex.Unlock()
+	}
+}
+
+func (c *Client) processTimeouts() {
+	ch := time.Tick(1 * time.Second)
+	for now := range ch {
+		for {
+			c.pendingAckMutex.Lock()
+			elem := c.pendingAckList.Back()
+			if elem == nil {
+				c.pendingAckMutex.Unlock()
+				break
+			}
+			pr := elem.Value.(pendingRequest)
+			if pr.deadline.Before(now) {
+				c.pendingAckList.Remove(elem)
+				delete(c.pendingAckMap, pr.request.Id)
+			} else {
+				c.pendingAckMutex.Unlock()
+				break
+			}
+			c.pendingAckMutex.Unlock()
+			log.Printf("Request %v timed out", pr.request.Id)
+		}
 	}
 }
 
@@ -82,6 +117,14 @@ func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
 	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
+
+	pr := pendingRequest{request: request, deadline: time.Now().Add(30 * time.Second)}
+
+	// Add the ID to pendingAckMap map
+	c.pendingAckMutex.Lock()
+	elem := c.pendingAckList.PushFront(pr)
+	c.pendingAckMap[request.Id] = elem
+	c.pendingAckMutex.Unlock()
 
 	if err := c.stream.Send(request); err != nil {
 		if err == io.EOF {
@@ -96,11 +139,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 			log.Fatalf("cannot send request: %v", err)
 		}
 	}
-
-	// Add the ID to pendingAck map
-	c.pendingAckMutex.Lock()
-	c.pendingAck[request.Id] = request
-	c.pendingAckMutex.Unlock()
 
 	requestsSent := atomic.AddUint32(&c.requestsSentSinceStreamOpen, 1)
 
@@ -121,8 +159,8 @@ func (c *Client) Export(batch core.ExportRequest) {
 func (c *Client) resendPending() {
 	var requests []*traceprotobuf.ExportRequest
 	c.pendingAckMutex.Lock()
-	for _, request := range c.pendingAck {
-		requests = append(requests, request)
+	for _, request := range c.pendingAckMap {
+		requests = append(requests, request.Value.(*traceprotobuf.ExportRequest))
 	}
 	c.pendingAckMutex.Unlock()
 
