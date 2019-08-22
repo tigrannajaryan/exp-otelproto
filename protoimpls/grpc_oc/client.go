@@ -48,3 +48,6 @@ func (c *Client) Export(request core.ExportRequest) {
 		}
 	}
 }
+
+func (c *Client) Shutdown() {
+}

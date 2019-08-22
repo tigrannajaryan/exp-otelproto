@@ -124,3 +124,6 @@ func (c *Client) resendPending() {
 		}
 	}
 }
+
+func (c *Client) Shutdown() {
+}

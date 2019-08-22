@@ -70,3 +70,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 		}
 	}
 }
+
+func (c *Client) Shutdown() {
+}

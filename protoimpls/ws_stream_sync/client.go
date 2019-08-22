@@ -59,3 +59,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("received ack on unexpected ID")
 	}
 }
+
+func (c *Client) Shutdown() {
+}

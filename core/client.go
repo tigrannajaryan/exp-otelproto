@@ -4,4 +4,5 @@ package core
 type Client interface {
 	Connect(server string) error
 	Export(batch ExportRequest)
+	Shutdown()
 }

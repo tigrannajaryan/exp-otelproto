@@ -86,3 +86,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 	c.pendingAck[request.Id] = batch
 	c.pendingAckMutex.Unlock()
 }
+
+func (c *Client) Shutdown() {
+}

@@ -49,3 +49,6 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("Error from server when expecting batch response")
 	}
 }
+
+func (c *Client) Shutdown() {
+}

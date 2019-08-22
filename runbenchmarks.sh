@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=1
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
 echo "GRPC/OpenCensus             - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
 echo "GRPC/Unary                  - GRPC, unary request per batch, load balancer friendly, with ack"
+echo "GRPC/Unary/Async            - GRPC, unary async request per batch, load balancer friendly, with ack"
 echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
 echo "GRPC/Stream/LBTimed/Sync    - OTLP Synchronous. GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
@@ -27,6 +28,7 @@ benchmark_all() {
     benchmark opencensus
     benchmark ocack
     benchmark unary
+    benchmark unaryasync
     benchmark streamsync
     benchmark streamlbalwayssync
     benchmark streamlbtimedsync
@@ -89,6 +91,7 @@ echo 200ms network roundtrip latency
 tc qdisc add dev lo root netem delay 100ms
 benchmark opencensus
 benchmark streamlbasync
+benchmark unaryasync
 benchmark wsstreamasync
 benchmark wsstreamasynczlib
 tc qdisc delete dev lo root netem delay 100ms

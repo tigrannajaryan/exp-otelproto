@@ -1,4 +1,4 @@
-package grpc_unary
+package grpc_unary_async
 
 import (
 	"context"
@@ -15,7 +15,10 @@ import (
 type Client struct {
 	client traceprotobuf.UnaryExporterClient
 	nextId uint64
+	sem    chan bool
 }
+
+const CONCURRENCY = 10
 
 func (c *Client) Connect(server string) error {
 	// Set up a connection to the server.
@@ -24,14 +27,28 @@ func (c *Client) Connect(server string) error {
 		log.Fatalf("did not connect: %v", err)
 	}
 	c.client = traceprotobuf.NewUnaryExporterClient(conn)
+	c.sem = make(chan bool, CONCURRENCY)
 	return nil
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	request := batch.(*traceprotobuf.ExportRequest)
-	request.Id = atomic.AddUint64(&c.nextId, 1)
-	c.client.Export(context.Background(), request)
+	c.sem <- true
+	go func() {
+		defer func() { <-c.sem }()
+		request := batch.(*traceprotobuf.ExportRequest)
+		request.Id = atomic.AddUint64(&c.nextId, 1)
+		response, err := c.client.Export(context.Background(), request)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if response.Id != request.Id {
+			log.Fatal("ack id mismatch")
+		}
+	}()
 }
 
 func (c *Client) Shutdown() {
+	for i := 0; i < CONCURRENCY; i++ {
+		c.sem <- true
+	}
 }

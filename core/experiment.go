@@ -89,6 +89,8 @@ func BenchmarkLocalDelivery(
 	// Wait until all Batches are delivered.
 	wg.Wait()
 
+	clnt.Shutdown()
+
 	// Measure used CPU time.
 	endCPUTimes, err := proc.Times()
 	if err != nil {

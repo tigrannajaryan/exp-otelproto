@@ -9,6 +9,8 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary_async"
+
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -31,8 +33,9 @@ func main() {
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
-		"protocol to benchmark (opencensus,ocack,unary,streamsync,streamlbtimedsync,"+
-			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasynczlib)",
+		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
+			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,"+
+			"wsstreamasynczlib)",
 	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
@@ -65,6 +68,8 @@ func main() {
 		benchmarkGRPCOpenCensusWithAck(options)
 	case "unary":
 		benchmarkGRPCUnary(options)
+	case "unaryasync":
+		benchmarkGRPCUnaryAsync(options)
 	case "streamsync":
 		benchmarkGRPCStreamNoLB(options)
 	case "streamlbtimedsync":
@@ -114,6 +119,16 @@ func benchmarkGRPCUnary(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
+		func() core.Generator { return traceprotobuf.NewGenerator() },
+	)
+}
+
+func benchmarkGRPCUnaryAsync(options core.Options) {
+	benchmarkImpl(
+		"GRPC/Unary/Async",
+		options,
+		func() core.Client { return &grpc_unary_async.Client{} },
+		func() core.Server { return &grpc_unary_async.Server{} },
 		func() core.Generator { return traceprotobuf.NewGenerator() },
 	)
 }
