@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 // Encode request body into a message of continuous bytes. The message starts with one by
@@ -17,8 +17,8 @@ import (
 // + Header Length Byte | Variable length Header (Protobuf-encoded) | Variable length Body (Protobuf-encoded) |
 // +--------------------+-------------------------------------------+-----------------------------------------+
 func Encode(
-	requestBody *traceprotobuf.RequestBody,
-	compression traceprotobuf.CompressionMethod,
+	requestBody *otlp.RequestBody,
+	compression otlp.CompressionMethod,
 ) []byte {
 	bodyBytes, err := proto.Marshal(requestBody)
 	if err != nil {
@@ -26,9 +26,9 @@ func Encode(
 	}
 
 	switch compression {
-	case traceprotobuf.CompressionMethod_NONE:
+	case otlp.CompressionMethod_NONE:
 		break
-	case traceprotobuf.CompressionMethod_ZLIB:
+	case otlp.CompressionMethod_ZLIB:
 		var b bytes.Buffer
 		w := zlib.NewWriter(&b)
 		w.Write(bodyBytes)
@@ -36,7 +36,7 @@ func Encode(
 		bodyBytes = b.Bytes()
 	}
 
-	header := &traceprotobuf.RequestHeader{
+	header := &otlp.RequestHeader{
 		Compression: compression,
 	}
 	headerBytes, err := proto.Marshal(header)
@@ -54,22 +54,22 @@ func Encode(
 
 // Decode a continuous message of bytes into a RequestBody. This function perform the
 // reverse of Encode operation.
-func Decode(messageBytes []byte) *traceprotobuf.RequestBody {
+func Decode(messageBytes []byte) *otlp.RequestBody {
 	headerLen := messageBytes[0]
 	headerBytes := messageBytes[1 : headerLen+1]
 	bodyBytes := messageBytes[headerLen+1:]
 
-	var header traceprotobuf.RequestHeader
+	var header otlp.RequestHeader
 	err := proto.Unmarshal(headerBytes, &header)
 	if err != nil {
 		log.Fatal("cannot decode:", err)
 	}
 
 	switch header.Compression {
-	case traceprotobuf.CompressionMethod_NONE:
+	case otlp.CompressionMethod_NONE:
 		break
 
-	case traceprotobuf.CompressionMethod_ZLIB:
+	case otlp.CompressionMethod_ZLIB:
 		b := bytes.NewBuffer(bodyBytes)
 		r, err := zlib.NewReader(b)
 		if err != nil {
@@ -82,7 +82,7 @@ func Decode(messageBytes []byte) *traceprotobuf.RequestBody {
 		}
 	}
 
-	var body traceprotobuf.RequestBody
+	var body otlp.RequestBody
 	err = proto.Unmarshal(bodyBytes, &body)
 	if err != nil {
 		log.Fatal("cannot decode:", err)

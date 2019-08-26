@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package attrlist;
+package otlp;
 
 // option go_package = "github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1";
 

@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 type Server struct {
@@ -40,9 +40,9 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		onReceive(request, len(request.GetExport().NodeSpans[0].Spans))
 
-		response := &traceprotobuf.Response{
-			Body: &traceprotobuf.Response_Export{
-				&traceprotobuf.ExportResponse{Id: request.GetExport().Id},
+		response := &otlp.Response{
+			Body: &otlp.Response_Export{
+				&otlp.ExportResponse{Id: request.GetExport().Id},
 			},
 		}
 		responseBytes, err := proto.Marshal(response)

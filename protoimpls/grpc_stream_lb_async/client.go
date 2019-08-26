@@ -12,48 +12,78 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client                      traceprotobuf.StreamExporterClient
-	stream                      traceprotobuf.StreamExporter_ExportClient
+	client                   otlp.StreamExporterClient
+	clientStreams            []*clientStream
+	Concurrency              int
+	requestsCh               chan *otlp.TraceExportRequest
+	sentCh                   chan bool
+	nextStream               int
+	nextStreamMux            sync.Mutex
+	StreamReopenPeriod       time.Duration
+	StreamReopenRequestCount uint32
+}
+
+type clientStream struct {
+	client                      *Client
+	stream                      otlp.StreamExporter_ExportClient
 	lastStreamOpen              time.Time
 	pendingAckMap               map[uint64]*list.Element
 	pendingAckMutex             sync.Mutex
 	pendingAckList              *list.List
-	StreamReopenPeriod          time.Duration
-	StreamReopenRequestCount    uint32
 	nextId                      uint64
 	requestsSentSinceStreamOpen uint32
+	requestsCh                  chan *otlp.TraceExportRequest
+	sentCh                      chan bool
+}
+
+func newClientStream(client *Client) *clientStream {
+	c := clientStream{}
+	c.client = client
+	c.requestsCh = client.requestsCh
+	c.sentCh = client.sentCh
+	c.pendingAckMap = make(map[uint64]*list.Element)
+	c.pendingAckList = list.New()
+	go c.processTimeouts()
+	if err := c.openStream(); err != nil {
+		log.Fatal(err)
+	}
+	go c.processSendRequests()
+	return &c
 }
 
 type pendingRequest struct {
-	request  *traceprotobuf.ExportRequest
+	request  *otlp.TraceExportRequest
 	deadline time.Time
 }
 
 func (c *Client) Connect(server string) error {
-	c.pendingAckMap = make(map[uint64]*list.Element)
-	c.pendingAckList = list.New()
-
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewStreamExporterClient(conn)
+	c.client = otlp.NewStreamExporterClient(conn)
 
-	go c.processTimeouts()
+	if c.Concurrency < 1 {
+		c.Concurrency = 1
+	}
+	c.requestsCh = make(chan *otlp.TraceExportRequest, c.Concurrency)
+	c.sentCh = make(chan bool, c.Concurrency)
 
-	// Establish stream to server.
-	return c.openStream()
+	for i := 0; i < c.Concurrency; i++ {
+		c.clientStreams = append(c.clientStreams, newClientStream(c))
+	}
+	return nil
 }
 
-func (c *Client) openStream() error {
+func (c *clientStream) openStream() error {
 	var err error
-	c.stream, err = c.client.Export(context.Background())
+	c.stream, err = c.client.client.Export(context.Background())
 	if err != nil {
 		log.Fatalf("cannot open stream: %v", err)
 	}
@@ -65,7 +95,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
+func (c *clientStream) readStream(stream otlp.StreamExporter_ExportClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {
@@ -89,7 +119,7 @@ func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
 	}
 }
 
-func (c *Client) processTimeouts() {
+func (c *clientStream) processTimeouts() {
 	ch := time.Tick(1 * time.Second)
 	for now := range ch {
 		for {
@@ -113,9 +143,17 @@ func (c *Client) processTimeouts() {
 	}
 }
 
-func (c *Client) Export(batch core.ExportRequest) {
+func (c *clientStream) processSendRequests() {
+	for request := range c.requestsCh {
+		c.sendRequest(request)
+		//c.sentCh <- true
+	}
+}
+
+func (c *clientStream) sendRequest(
+	request *otlp.TraceExportRequest,
+) {
 	// Send the batch via stream.
-	request := batch.(*traceprotobuf.ExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
 	pr := pendingRequest{request: request, deadline: time.Now().Add(30 * time.Second)}
@@ -143,7 +181,8 @@ func (c *Client) Export(batch core.ExportRequest) {
 	requestsSent := atomic.AddUint32(&c.requestsSentSinceStreamOpen, 1)
 
 	// Check if time to re-establish the stream.
-	if requestsSent > c.StreamReopenRequestCount || time.Since(c.lastStreamOpen) > c.StreamReopenPeriod {
+	if requestsSent > c.client.StreamReopenRequestCount ||
+		time.Since(c.lastStreamOpen) > c.client.StreamReopenPeriod {
 		// Close and reopen the stream.
 		c.lastStreamOpen = time.Now()
 		err := c.stream.CloseSend()
@@ -156,11 +195,41 @@ func (c *Client) Export(batch core.ExportRequest) {
 	}
 }
 
-func (c *Client) resendPending() {
-	var requests []*traceprotobuf.ExportRequest
+func (c *Client) Export(batch core.ExportRequest) {
+	if c.Concurrency == 1 {
+		c.clientStreams[0].sendRequest(batch.(*otlp.TraceExportRequest))
+		return
+	}
+
+	// Make sure we have only up to c.Concurrency Export calls in progress
+	// concurrently. It means no single stream has concurrent sendRequests
+	// in progress, so sendRequest does not need to be safe for concurrent call.
+	c.requestsCh <- batch.(*otlp.TraceExportRequest)
+
+	// Wait until it is sent
+	// <-c.sentCh
+
+	//go func() {
+	//	defer func() { <-c.concurrencySem }()
+	//
+	//	// Find a stream to send via. Use list of stream circularly.
+	//	c.nextStreamMux.Lock()
+	//	c.nextStream++
+	//	if c.nextStream >= c.Concurrency {
+	//		c.nextStream = 0
+	//	}
+	//	streamIndex := c.nextStream
+	//	c.nextStreamMux.Unlock()
+	//
+	//	c.clientStreams[streamIndex].sendRequest(batch.(*attrlist.TraceExportRequest))
+	//}()
+}
+
+func (c *clientStream) resendPending() {
+	var requests []*otlp.TraceExportRequest
 	c.pendingAckMutex.Lock()
 	for _, request := range c.pendingAckMap {
-		requests = append(requests, request.Value.(*traceprotobuf.ExportRequest))
+		requests = append(requests, request.Value.(*otlp.TraceExportRequest))
 	}
 	c.pendingAckMutex.Unlock()
 
@@ -173,4 +242,5 @@ func (c *Client) resendPending() {
 }
 
 func (c *Client) Shutdown() {
+
 }

@@ -5,23 +5,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
-
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
-
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
-
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
-
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_oc"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
 )
 
 func main() {
@@ -72,7 +67,7 @@ func main() {
 	case "unary":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_unary.Client{} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -80,7 +75,7 @@ func main() {
 	case "streamsync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream.Client{} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -88,7 +83,7 @@ func main() {
 	case "streamlbtimedsync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: rebalancePeriod} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -96,7 +91,7 @@ func main() {
 	case "streamlbalwayssync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -109,7 +104,7 @@ func main() {
 					StreamReopenRequestCount: uint32(rebalanceRequestLimit),
 				}
 			},
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -117,7 +112,7 @@ func main() {
 	case "streamlbsrv":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb_srv.Client{} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -125,23 +120,23 @@ func main() {
 	case "wsstreamsync":
 		core.LoadGenerator(
 			func() core.Client { return &ws_stream_sync.Client{} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
 
 	case "wsstreamasync":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: traceprotobuf.CompressionMethod_NONE} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_NONE} },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
 
 	case "wsstreamasynczlib":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: traceprotobuf.CompressionMethod_ZLIB} },
-			func() core.Generator { return traceprotobuf.NewGenerator() },
+			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_ZLIB} },
+			func() core.Generator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)

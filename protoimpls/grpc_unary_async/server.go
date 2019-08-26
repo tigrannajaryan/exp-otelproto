@@ -8,24 +8,24 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 type GrpcServer struct {
 	onReceive func(batch core.ExportRequest, spanCount int)
 }
 
-func (s *GrpcServer) Hello(context.Context, *traceprotobuf.HelloRequest) (*traceprotobuf.HelloResponse, error) {
-	return &traceprotobuf.HelloResponse{}, nil
+func (s *GrpcServer) Hello(context.Context, *otlp.HelloRequest) (*otlp.HelloResponse, error) {
+	return &otlp.HelloResponse{}, nil
 }
 
-func (s *GrpcServer) Export(ctx context.Context, batch *traceprotobuf.ExportRequest) (*traceprotobuf.ExportResponse, error) {
+func (s *GrpcServer) Export(ctx context.Context, batch *otlp.TraceExportRequest) (*otlp.ExportResponse, error) {
 	if batch.Id == 0 {
 		log.Fatal("Received 0 Id")
 	}
 
 	s.onReceive(batch, len(batch.NodeSpans[0].Spans))
-	return &traceprotobuf.ExportResponse{Id: batch.Id}, nil
+	return &otlp.ExportResponse{Id: batch.Id}, nil
 }
 
 type Server struct {
@@ -40,7 +40,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportReque
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	traceprotobuf.RegisterUnaryExporterServer(srv.s, &GrpcServer{onReceive})
+	otlp.RegisterUnaryExporterServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

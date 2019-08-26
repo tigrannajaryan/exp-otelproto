@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=1
+MULTIPLIER=5
 
 echo ====================================================================================
 echo Legend:
@@ -12,7 +12,7 @@ echo "GRPC/Unary/Async            - GRPC, unary async request per batch, load ba
 echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
 echo "GRPC/Stream/LBTimed/Sync    - OTLP Synchronous. GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
-echo "GRPC/Stream/LBTimed/Async   - OTLP Pipelined. GRPC, streaming, load balancer friendly, close stream every 30 sec, with async ack"
+echo "GRPC/Stream/LBTimed/Async/N - OTLP Pipelined. GRPC, N streams, load balancer friendly, close stream every 30 sec, with async ack"
 echo "GRPC/Stream/LBSrv/Async     - OTLP Pipelined. GRPC, streaming, load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack"
@@ -25,14 +25,15 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
-    benchmark opencensus
-    benchmark ocack
+    benchmark streamlbasync
+    benchmark streamlbconc
     benchmark unary
     benchmark unaryasync
+    benchmark opencensus
+    benchmark ocack
     benchmark streamsync
     benchmark streamlbalwayssync
     benchmark streamlbtimedsync
-    benchmark streamlbasync
     benchmark streamlbsrv
     benchmark wsstreamsync
     benchmark wsstreamasync
@@ -91,6 +92,7 @@ echo 200ms network roundtrip latency
 tc qdisc add dev lo root netem delay 100ms
 benchmark opencensus
 benchmark streamlbasync
+benchmark streamlbconc
 benchmark unaryasync
 benchmark wsstreamasync
 benchmark wsstreamasynczlib

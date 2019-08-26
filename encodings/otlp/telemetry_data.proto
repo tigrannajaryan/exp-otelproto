@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package attrlist;
+package otlp;
 
 import "resource.proto";
 import "google/protobuf/wrappers.proto";

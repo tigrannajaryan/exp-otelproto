@@ -11,14 +11,14 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	conn        *websocket.Conn
 	nextId      uint64
-	Compression traceprotobuf.CompressionMethod
+	Compression otlp.CompressionMethod
 }
 
 func (c *Client) Connect(server string) error {
@@ -35,10 +35,10 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	request := batch.(*traceprotobuf.ExportRequest)
+	request := batch.(*otlp.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	body := &traceprotobuf.RequestBody{Body: &traceprotobuf.RequestBody_Export{request}}
+	body := &otlp.RequestBody{Body: &otlp.RequestBody_Export{request}}
 	bytes := encodings.Encode(body, c.Compression)
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("read:", err)
 		return
 	}
-	var response traceprotobuf.Response
+	var response otlp.Response
 	err = proto.Unmarshal(bytes, &response)
 	if err != nil {
 		log.Fatal("cannnot decode:", err)

@@ -1,4 +1,4 @@
-package attrlist
+package otlp
 
 import (
 	"math/rand"
@@ -40,7 +40,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 		},
 	}
 
-	batch := &ExportRequest{NodeSpans: []*NodeSpans{{Node: &node}}}
+	batch := &TraceExportRequest{NodeSpans: []*NodeSpans{{Node: &node}}}
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Now()
 

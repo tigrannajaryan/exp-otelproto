@@ -70,6 +70,12 @@ func BenchmarkLocalDelivery(
 		log.Fatal(err)
 	}
 
+	//var batches []ExportRequest
+	//for i := 0; i < options.Batches; i++ {
+	//	batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan)
+	//	batches = append(batches, batch)
+	//}
+
 	startCPUTimes, err := proc.Times()
 	if err != nil {
 		log.Fatal(err)

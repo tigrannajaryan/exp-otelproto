@@ -15,27 +15,27 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client          traceprotobuf.StreamExporterClient
-	stream          traceprotobuf.StreamExporter_ExportClient
-	pendingAck      map[uint64]*traceprotobuf.ExportRequest
+	client          otlp.StreamExporterClient
+	stream          otlp.StreamExporter_ExportClient
+	pendingAck      map[uint64]*otlp.TraceExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 }
 
 func (c *Client) Connect(server string) error {
-	c.pendingAck = make(map[uint64]*traceprotobuf.ExportRequest)
+	c.pendingAck = make(map[uint64]*otlp.TraceExportRequest)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = traceprotobuf.NewStreamExporterClient(conn)
+	c.client = otlp.NewStreamExporterClient(conn)
 
 	// Establish stream to server.
 	return c.openStream()
@@ -53,7 +53,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
+func (c *Client) readStream(stream otlp.StreamExporter_ExportClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {
@@ -88,7 +88,7 @@ func (c *Client) readStream(stream traceprotobuf.StreamExporter_ExportClient) {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	request := batch.(*traceprotobuf.ExportRequest)
+	request := batch.(*otlp.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
 	// Add the ID to pendingAck map
@@ -111,7 +111,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 }
 
 func (c *Client) resendPending() {
-	var requests []*traceprotobuf.ExportRequest
+	var requests []*otlp.TraceExportRequest
 	c.pendingAckMutex.Lock()
 	for _, request := range c.pendingAck {
 		requests = append(requests, request)

@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary_async"
@@ -15,7 +16,7 @@ import (
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_oc"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
@@ -28,13 +29,13 @@ import (
 func main() {
 	options := core.Options{}
 
-	ballastSizeBytes := uint64(500) * 1024 * 1024
+	ballastSizeBytes := uint64(4000) * 1024 * 1024
 	ballast := make([]byte, ballastSizeBytes)
 
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
-			"streamlbalwayssync,streamlbasync,streamlbsrv,wsstreamsync,wsstreamasync,"+
+			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,"+
 			"wsstreamasynczlib)",
 	)
 
@@ -77,15 +78,17 @@ func main() {
 	case "streamlbalwayssync":
 		benchmarkGRPCStreamLBAlwaysSync(options)
 	case "streamlbasync":
-		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit)
+		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit, 1)
+	case "streamlbconc":
+		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit, 10)
 	case "streamlbsrv":
 		benchmarkGRPCStreamLBSrv(options, rebalancePeriod, rebalanceRequestLimit)
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options, traceprotobuf.CompressionMethod_NONE)
+		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE)
 	case "wsstreamasynczlib":
-		benchmarkWSStreamAsync(options, traceprotobuf.CompressionMethod_ZLIB)
+		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB)
 	default:
 		flag.Usage()
 	}
@@ -119,7 +122,7 @@ func benchmarkGRPCUnary(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -129,7 +132,7 @@ func benchmarkGRPCUnaryAsync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary_async.Client{} },
 		func() core.Server { return &grpc_unary_async.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -139,7 +142,7 @@ func benchmarkGRPCStreamLBTimedSync(options core.Options, streamReopenPeriod tim
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: streamReopenPeriod} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -149,22 +152,28 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
-func benchmarkGRPCStreamLBAsync(options core.Options, streamReopenPeriod time.Duration, rebalanceRequestLimit uint) {
+func benchmarkGRPCStreamLBAsync(
+	options core.Options,
+	streamReopenPeriod time.Duration,
+	rebalanceRequestLimit uint,
+	concurrency int,
+) {
 	benchmarkImpl(
-		"GRPC/Stream/LBTimed/Async",
+		"GRPC/Stream/LBTimed/Async/"+strconv.Itoa(concurrency),
 		options,
 		func() core.Client {
 			return &grpc_stream_lb_async.Client{
+				Concurrency:              concurrency,
 				StreamReopenPeriod:       streamReopenPeriod,
 				StreamReopenRequestCount: uint32(rebalanceRequestLimit),
 			}
 		},
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -179,7 +188,7 @@ func benchmarkGRPCStreamLBSrv(options core.Options, streamReopenPeriod time.Dura
 				StreamReopenRequestCount: rebalanceRequestLimit,
 			}
 		},
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -189,7 +198,7 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream.Client{} },
 		func() core.Server { return &grpc_stream.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -199,18 +208,18 @@ func benchmarkWSStreamSync(options core.Options) {
 		options,
 		func() core.Client { return &ws_stream_sync.Client{} },
 		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.CompressionMethod) {
+func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMethod) {
 	var suffix string
 	switch compression {
-	case traceprotobuf.CompressionMethod_NONE:
+	case otlp.CompressionMethod_NONE:
 		suffix = ""
-	case traceprotobuf.CompressionMethod_ZLIB:
+	case otlp.CompressionMethod_ZLIB:
 		suffix = "/zlib"
-	case traceprotobuf.CompressionMethod_LZ4:
+	case otlp.CompressionMethod_LZ4:
 		suffix = "/lz4"
 	}
 
@@ -219,7 +228,7 @@ func benchmarkWSStreamAsync(options core.Options, compression traceprotobuf.Comp
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
 		func() core.Server { return &ws_stream_async.Server{} },
-		func() core.Generator { return traceprotobuf.NewGenerator() },
+		func() core.Generator { return otlp.NewGenerator() },
 	)
 }
 
@@ -237,7 +246,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-27s %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
+	fmt.Printf("%-28s %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
 		name,
 		options.Batches*options.SpansPerBatch,
 		cpuSecs,

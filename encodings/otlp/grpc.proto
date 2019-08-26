@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package otlp;
+
+import "exchange.proto";
+
+option java_multiple_files = true;
+option java_package = "io.opencensus.proto.trace.v1";
+option java_outer_classname = "TraceProto";
+
+option ruby_package = "OpenCensus.Proto.Trace.V1";
+
+// Unary exporter service definition.
+service UnaryExporter {
+  // Sends a batch of telemetry data.
+  rpc Export(TraceExportRequest) returns(ExportResponse) {}
+}
+
+// Streaming exporter service definition.
+service StreamExporter {
+  // Sends a batch of telemetry data.
+  rpc Export(stream TraceExportRequest) returns (stream ExportResponse) {}
+}
+

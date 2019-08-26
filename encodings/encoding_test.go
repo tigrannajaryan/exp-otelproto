@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/attrlist"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 
 	"github.com/golang/protobuf/proto"
@@ -33,7 +33,7 @@ var tests = []struct {
 	//},
 	{
 		name: "OTLP/AttrList",
-		gen:  func() core.Generator { return attrlist.NewGenerator() },
+		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 }
 

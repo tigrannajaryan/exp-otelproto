@@ -25,9 +25,10 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
-	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/telemetry_data.proto --go_out=plugins=grpc:encodings/attrlist
-	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/resource.proto --go_out=plugins=grpc:encodings/attrlist
-	protoc -I/usr/local/include -I encodings/attrlist/ encodings/attrlist/exchange.proto --go_out=plugins=grpc:encodings/attrlist
+	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/telemetry_data.proto --go_out=plugins=grpc:encodings/otlp
+	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/resource.proto --go_out=plugins=grpc:encodings/otlp
+	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/exchange.proto --go_out=plugins=grpc:encodings/otlp
+	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/grpc.proto --go_out=plugins=grpc:encodings/otlp
 
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/octrace.proto --go_out=plugins=grpc:encodings/octraceprotobuf
 	protoc -I/usr/local/include -I encodings/octraceprotobuf/ encodings/octraceprotobuf/resource.proto --go_out=plugins=grpc:encodings/octraceprotobuf
