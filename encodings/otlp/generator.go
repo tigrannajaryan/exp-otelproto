@@ -24,7 +24,7 @@ func NewGenerator() *Generator {
 func (g *Generator) genRandByteString(len int) string {
 	b := make([]byte, len)
 	for i := range b {
-		b[i] = byte(g.random.Intn(128))
+		b[i] = byte(g.random.Intn(10) + 33)
 	}
 	return string(b)
 }
@@ -71,7 +71,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(50) + 1)
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(100) + 1)})
+					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 			}
 		}
 

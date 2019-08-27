@@ -1,6 +1,8 @@
 package encodings
 
 import (
+	"bytes"
+	"compress/zlib"
 	"fmt"
 	"log"
 	"runtime"
@@ -100,12 +102,20 @@ func TestEncodeSize(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gen := test.gen()
-			batch := gen.GenerateBatch(100, 3)
-			bytes, err := proto.Marshal(batch.(proto.Message))
+			batch := gen.GenerateBatch(300, 3)
+			bodyBytes, err := proto.Marshal(batch.(proto.Message))
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("%v size %v bytes\n", test.name, len(bytes))
+
+			// Try to compress
+			var b bytes.Buffer
+			w := zlib.NewWriter(&b)
+			w.Write(bodyBytes)
+			w.Close()
+			compressedBytes := b.Bytes()
+
+			fmt.Printf("%-15v size %5d bytes, gzip size %5d\n", test.name, len(bodyBytes), len(compressedBytes))
 		})
 	}
 }
