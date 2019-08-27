@@ -21,7 +21,7 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	client          otlp.StreamExporterClient
-	stream          otlp.StreamExporter_ExportClient
+	stream          otlp.StreamExporter_ExportTracesClient
 	pendingAck      map[uint64]*otlp.TraceExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
@@ -43,7 +43,7 @@ func (c *Client) Connect(server string) error {
 
 func (c *Client) openStream() error {
 	var err error
-	c.stream, err = c.client.Export(context.Background())
+	c.stream, err = c.client.ExportTraces(context.Background())
 	if err != nil {
 		log.Fatalf("cannot open stream: %v", err)
 	}
@@ -53,7 +53,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream otlp.StreamExporter_ExportClient) {
+func (c *Client) readStream(stream otlp.StreamExporter_ExportTracesClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {

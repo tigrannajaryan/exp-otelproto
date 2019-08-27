@@ -37,7 +37,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 		defer func() { <-c.sem }()
 		request := batch.(*otlp.TraceExportRequest)
 		request.Id = atomic.AddUint64(&c.nextId, 1)
-		response, err := c.client.Export(context.Background(), request)
+		response, err := c.client.ExportTraces(context.Background(), request)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -15,7 +15,7 @@ import (
 // Client can connect to a server and send a batch of spans.
 type Client struct {
 	client                  otlp.StreamExporterClient
-	stream                  otlp.StreamExporter_ExportClient
+	stream                  otlp.StreamExporter_ExportTracesClient
 	lastStreamOpen          time.Time
 	ReopenAfterEveryRequest bool
 	StreamReopenPeriod      time.Duration
@@ -36,7 +36,7 @@ func (c *Client) Connect(server string) error {
 
 func (c *Client) openStream() error {
 	var err error
-	c.stream, err = c.client.Export(context.Background())
+	c.stream, err = c.client.ExportTraces(context.Background())
 	if err != nil {
 		log.Fatalf("Cannot open stream: %v", err)
 	}

@@ -15,7 +15,7 @@ type GrpcServer struct {
 	onReceive func(batch core.ExportRequest, spanCount int)
 }
 
-func (s *GrpcServer) Export(stream otlp.StreamExporter_ExportServer) error {
+func (s *GrpcServer) ExportTraces(stream otlp.StreamExporter_ExportTracesServer) error {
 	for {
 		// Wait for batch from client.
 		batch, err := stream.Recv()

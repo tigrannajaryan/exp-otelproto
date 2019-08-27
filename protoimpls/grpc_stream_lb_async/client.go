@@ -30,7 +30,7 @@ type Client struct {
 
 type clientStream struct {
 	client                      *Client
-	stream                      otlp.StreamExporter_ExportClient
+	stream                      otlp.StreamExporter_ExportTracesClient
 	lastStreamOpen              time.Time
 	pendingAckMap               map[uint64]*list.Element
 	pendingAckMutex             sync.Mutex
@@ -83,7 +83,7 @@ func (c *Client) Connect(server string) error {
 
 func (c *clientStream) openStream() error {
 	var err error
-	c.stream, err = c.client.client.Export(context.Background())
+	c.stream, err = c.client.client.ExportTraces(context.Background())
 	if err != nil {
 		log.Fatalf("cannot open stream: %v", err)
 	}
@@ -95,7 +95,7 @@ func (c *clientStream) openStream() error {
 	return nil
 }
 
-func (c *clientStream) readStream(stream otlp.StreamExporter_ExportClient) {
+func (c *clientStream) readStream(stream otlp.StreamExporter_ExportTracesClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {

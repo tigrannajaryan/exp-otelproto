@@ -12,13 +12,13 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 
 // Unary exporter service definition.
 service UnaryExporter {
-  // Sends a batch of telemetry data.
-  rpc Export(TraceExportRequest) returns(ExportResponse) {}
+  rpc ExportTraces(TraceExportRequest) returns (ExportResponse) {}
+  //rpc ExportMetrics(MetricExportRequest) returns (ExportResponse) {}
 }
 
 // Streaming exporter service definition.
 service StreamExporter {
-  // Sends a batch of telemetry data.
-  rpc Export(stream TraceExportRequest) returns (stream ExportResponse) {}
+  rpc ExportTraces(stream TraceExportRequest) returns (stream ExportResponse) {}
+  //rpc ExportMetrics(stream MetricExportRequest) returns (stream ExportResponse) {}
 }
 

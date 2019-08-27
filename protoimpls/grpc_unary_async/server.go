@@ -19,7 +19,7 @@ func (s *GrpcServer) Hello(context.Context, *otlp.HelloRequest) (*otlp.HelloResp
 	return &otlp.HelloResponse{}, nil
 }
 
-func (s *GrpcServer) Export(ctx context.Context, batch *otlp.TraceExportRequest) (*otlp.ExportResponse, error) {
+func (s *GrpcServer) ExportTraces(ctx context.Context, batch *otlp.TraceExportRequest) (*otlp.ExportResponse, error) {
 	if batch.Id == 0 {
 		log.Fatal("Received 0 Id")
 	}

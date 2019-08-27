@@ -30,7 +30,7 @@ func (c *Client) Connect(server string) error {
 func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*otlp.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
-	c.client.Export(context.Background(), request)
+	c.client.ExportTraces(context.Background(), request)
 }
 
 func (c *Client) Shutdown() {

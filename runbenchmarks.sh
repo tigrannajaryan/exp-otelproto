@@ -5,15 +5,15 @@ MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
+echo "GRPC/Stream/LBTimed/Sync    - GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
+echo "GRPC/Stream/LBTimed/Async/N - OTLP Streaming. GRPC, N streams, load balancer friendly, close stream every 30 sec, with async ack"
+echo "GRPC/Unary                  - OTLP Unary. One request per batch, load balancer friendly, with ack"
+echo "GRPC/Unary/Async            - GRPC, unary async request per batch, load balancer friendly, with ack"
 echo "GRPC/OpenCensus             - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
-echo "GRPC/Unary                  - GRPC, unary request per batch, load balancer friendly, with ack"
-echo "GRPC/Unary/Async            - GRPC, unary async request per batch, load balancer friendly, with ack"
 echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
-echo "GRPC/Stream/LBTimed/Sync    - OTLP Synchronous. GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
-echo "GRPC/Stream/LBTimed/Async/N - OTLP Pipelined. GRPC, N streams, load balancer friendly, close stream every 30 sec, with async ack"
-echo "GRPC/Stream/LBSrv/Async     - OTLP Pipelined. GRPC, streaming, load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
+echo "GRPC/Stream/LBSrv/Async     - OTLP Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"

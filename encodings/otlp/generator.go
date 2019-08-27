@@ -63,15 +63,15 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: ValueType_INT64, IntValue: int64(spanID)})
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT64, IntValue: int64(spanID)})
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: ValueType_INT64, IntValue: int64(traceID)})
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT64, IntValue: int64(traceID)})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(50) + 1)
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 			}
 		}
 
