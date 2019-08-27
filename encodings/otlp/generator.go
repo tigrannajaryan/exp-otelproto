@@ -38,9 +38,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			Pid:               1234,
 			HostName:          "fakehost",
 		},
-		ServiceInfo: &ServiceInfo{
-			Name: "generator",
-		},
+		ServiceName: "generator",
 	}
 
 	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: &resource}}}

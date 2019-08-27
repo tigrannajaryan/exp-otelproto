@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=5
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:

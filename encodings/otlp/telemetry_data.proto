@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package otlp;
 
-import "google/protobuf/wrappers.proto";
-
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
@@ -44,32 +42,13 @@ message AttributeKeyValue {
   double double_value = 6;
 }
 
-// Identifier metadata of the Node that produces the span or tracing data.
-// Note, this is not the metadata about the Node or service that is described by associated spans.
-// In the future we plan to extend the identifier proto definition to support
-// additional information (e.g cloud id, etc.)
-message Node {
-  // Identifier that uniquely identifies a process within a VM/container.
-  ProcessIdentifier identifier = 1;
-
-  // Information on the OpenCensus Library that initiates the stream.
-  LibraryInfo library_info = 2;
-
-  // Additional information on service.
-  ServiceInfo service_info = 3;
-
-  // Additional attributes.
-  repeated AttributeKeyValue attributes = 4;
-}
-
-
-// Resource information.
+// Resource information. This describes the source of telemetry data.
 message Resource {
   // Identifier that uniquely identifies a process within a VM/container.
   ProcessIdentifier identifier = 1;
 
-  // Additional information on service.
-  ServiceInfo service_info = 3;
+  // Name of the service.
+  string service_name = 3;
 
   // Set of labels that describe the resource.
   repeated AttributeKeyValue attributes = 2;
@@ -89,40 +68,10 @@ message ProcessIdentifier {
   int64 start_time_unixnano = 3;
 }
 
-// Information on OpenCensus Library.
-message LibraryInfo {
-
-  enum Language {
-    LANGUAGE_UNSPECIFIED = 0;
-    CPP = 1;
-    C_SHARP = 2;
-    ERLANG = 3;
-    GO_LANG = 4;
-    JAVA = 5;
-    NODE_JS = 6;
-    PHP = 7;
-    PYTHON = 8;
-    RUBY = 9;
-    WEB_JS = 10;
-  }
-
-  // Language of OpenCensus Library.
-  Language language = 1;
-
-  // Version of Agent exporter of Library.
-  string exporter_version = 2;
-
-  // Version of OpenCensus Library.
-  string core_library_version = 3;
-}
-
 // Additional service information.
 message ServiceInfo {
-
   // Name of the service.
   string name = 1;
-
-  // TODO(songya): add more fields as needed.
 }
 
 // A span represents a single operation within a trace. Spans can be
@@ -134,7 +83,6 @@ message ServiceInfo {
 // contiguous - there may be gaps or overlaps between spans in a trace.
 //
 // The next id is 17.
-// TODO(bdrutu): Add an example.
 message Span {
   // A unique identifier for a trace. All spans from the same trace share
   // the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes
@@ -383,7 +331,7 @@ message Span {
   Status status = 11;
 
   // An optional resource that is associated with this span. If not set, this span
-  // should be part of a batch that does include the resource information, unless resource
+  // should be part of a ResourceSpan that does include the resource information, unless resource
   // information is unknown.
   Resource resource = 16;
 
@@ -392,11 +340,11 @@ message Span {
   // to the same process as the current span. This flag is most commonly
   // used to indicate the need to adjust time as clocks in different
   // processes may not be synchronized.
-  google.protobuf.BoolValue same_process_as_parent_span = 12;
+  bool same_process_as_parent_span = 12;
 
   // An optional number of child spans that were generated while this span
   // was active. If set, allows an implementation to detect missing child spans.
-  google.protobuf.UInt32Value child_span_count = 13;
+  uint32 child_span_count = 13;
 }
 
 // The `Status` type defines a logical error model that is suitable for different
