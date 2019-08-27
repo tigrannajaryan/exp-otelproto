@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlptimewrapped"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
@@ -32,6 +34,10 @@ var tests = []struct {
 	{
 		name: "OTLP/AttrList",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
+	},
+	{
+		name: "OTLP/AttrList/TimeWrapped",
+		gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
 	},
 }
 
