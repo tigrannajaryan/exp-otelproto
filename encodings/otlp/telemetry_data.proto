@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package otlp;
 
-import "resource.proto";
 import "google/protobuf/wrappers.proto";
 
 option java_multiple_files = true;
@@ -11,18 +10,16 @@ option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
-// A list of spans from a Node.
-message NodeSpans {
-  Node node = 1;
-  Resource resource = 2;
-  repeated Span spans = 3;
+// A list of spans from a Resource.
+message ResourceSpans {
+  Resource resource = 1;
+  repeated Span spans = 2;
 }
 
-// A list of metrics from a Node.
-message NodeMetrics {
-  Node node = 1;
-  Resource resource = 2;
-  repeated Metric metrics = 3;
+// A list of metrics from a Resource.
+message ResouceMetrics {
+  Resource resource = 1;
+  repeated Metric metrics = 2;
 }
 
 enum ValueType {
@@ -63,6 +60,19 @@ message Node {
 
   // Additional attributes.
   repeated AttributeKeyValue attributes = 4;
+}
+
+
+// Resource information.
+message Resource {
+  // Identifier that uniquely identifies a process within a VM/container.
+  ProcessIdentifier identifier = 1;
+
+  // Additional information on service.
+  ServiceInfo service_info = 3;
+
+  // Set of labels that describe the resource.
+  repeated AttributeKeyValue attributes = 2;
 }
 
 // Identifier that uniquely identifies a process within a VM/container.

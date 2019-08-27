@@ -32,15 +32,18 @@ func (g *Generator) genRandByteString(len int) string {
 func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	node := Node{
+	resource := Resource{
 		Identifier: &ProcessIdentifier{
 			StartTimeUnixnano: 12345678,
 			Pid:               1234,
 			HostName:          "fakehost",
 		},
+		ServiceInfo: &ServiceInfo{
+			Name: "generator",
+		},
 	}
 
-	batch := &TraceExportRequest{NodeSpans: []*NodeSpans{{Node: &node}}}
+	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: &resource}}}
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Now()
 
@@ -74,7 +77,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			}
 		}
 
-		batch.NodeSpans[0].Spans = append(batch.NodeSpans[0].Spans, span)
+		batch.ResourceSpans[0].Spans = append(batch.ResourceSpans[0].Spans, span)
 	}
 	return batch
 }

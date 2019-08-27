@@ -26,7 +26,6 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/telemetry_data.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/resource.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/exchange.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/grpc.proto --go_out=plugins=grpc:encodings/otlp
 

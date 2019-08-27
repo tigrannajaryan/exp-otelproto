@@ -47,7 +47,7 @@ func (s *GrpcServer) Export(stream otlp.StreamExporter_ExportServer) error {
 		}
 
 		// Process received batch.
-		s.onReceive(batch, len(batch.NodeSpans[0].Spans))
+		s.onReceive(batch, len(batch.ResourceSpans[0].Spans))
 
 		// Send response to client.
 		stream.Send(&otlp.ExportResponse{Id: batch.Id})
