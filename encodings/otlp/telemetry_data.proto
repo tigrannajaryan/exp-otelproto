@@ -15,7 +15,7 @@ message ResourceSpans {
 }
 
 // A list of metrics from a Resource.
-message ResouceMetrics {
+message ResourceMetrics {
   Resource resource = 1;
   repeated Metric metrics = 2;
 }
@@ -40,12 +40,14 @@ message AttributeKeyValue {
   bool bool_value = 5;
   // A double value.
   double double_value = 6;
+  // A binary value of bytes.
+  bytes bunary_value = 7;
 }
 
 // Resource information. This describes the source of telemetry data.
 message Resource {
   // Identifier that uniquely identifies a process within a VM/container.
-  ProcessIdentifier identifier = 1;
+  Process process = 1;
 
   // Name of the service.
   string service_name = 3;
@@ -54,8 +56,8 @@ message Resource {
   repeated AttributeKeyValue attributes = 2;
 }
 
-// Identifier that uniquely identifies a process within a VM/container.
-message ProcessIdentifier {
+// Identifies a process within a VM/container.
+message Process {
 
   // The host name. Usually refers to the machine/container name.
   // For example: os.Hostname() in Go, socket.gethostname() in Python.
@@ -64,14 +66,8 @@ message ProcessIdentifier {
   // Process id.
   uint32 pid = 2;
 
-  // Start time of this ProcessIdentifier. Represented in epoch time.
+  // Start time of this process. Represented in epoch time.
   int64 start_time_unixnano = 3;
-}
-
-// Additional service information.
-message ServiceInfo {
-  // Name of the service.
-  string name = 1;
 }
 
 // A span represents a single operation within a trace. Spans can be
@@ -126,11 +122,11 @@ message Span {
   }
 
   // The Tracestate on the span.
-  Tracestate tracestate = 15;
+  Tracestate tracestate = 3;
 
   // The `span_id` of this span's parent span. If this is a root span, then this
   // field must be empty. The ID is an 8-byte array.
-  bytes parent_span_id = 3;
+  bytes parent_span_id = 4;
 
   // A description of the span's operation.
   //
@@ -145,7 +141,7 @@ message Span {
   // receiver to fix the empty span name.
   //
   // This field is required.
-  string name = 4;
+  string name = 5;
 
   // Type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
@@ -165,7 +161,7 @@ message Span {
   // Distinguishes between spans generated in a particular context. For example,
   // two spans with the same name may be distinguished using `CLIENT` (caller)
   // and `SERVER` (callee) to identify queueing latency associated with the span.
-  SpanKind kind = 14;
+  SpanKind kind = 6;
 
   // The start time of the span. On the client side, this is the time kept by
   // the local machine where the span execution starts. On the server side, this
@@ -177,7 +173,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 start_time_unixnano = 5;
+  int64 start_time_unixnano = 7;
 
   // The end time of the span. On the client side, this is the time kept by
   // the local machine where the span execution ends. On the server side, this
@@ -188,7 +184,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 end_time_unixnano = 6;
+  int64 end_time_unixnano = 8;
 
   // The set of attributes. The value can be a string, an integer, a double
   // or the Boolean values `true` or `false`. Note, global attributes like
@@ -198,10 +194,10 @@ message Span {
   //     "/http/server_latency": 300
   //     "abc.com/myattribute": true
   //     "abc.com/score": 10.239
-  repeated AttributeKeyValue attributes = 7;
+  repeated AttributeKeyValue attributes = 9;
 
   // A stack trace captured at the start of the span.
-  StackTrace stack_trace = 8;
+  StackTrace stack_trace = 10;
 
   // A time-stamped annotation or message event in the Span.
   message TimeEvent {
@@ -275,7 +271,7 @@ message Span {
   }
 
   // The included time events.
-  TimeEvents time_events = 9;
+  TimeEvents time_events = 11;
 
   // A pointer from the current span to another span in the same trace or in a
   // different trace. For example, this can be used in batching operations,
@@ -323,28 +319,28 @@ message Span {
   }
 
   // The included links.
-  Links links = 10;
+  Links links = 12;
 
   // An optional final status for this span. Semantically when Status
   // wasn't set it is means span ended without errors and assume
   // Status.Ok (code = 0).
-  Status status = 11;
+  Status status = 13;
 
   // An optional resource that is associated with this span. If not set, this span
   // should be part of a ResourceSpan that does include the resource information, unless resource
   // information is unknown.
-  Resource resource = 16;
+  Resource resource = 14;
 
   // A highly recommended but not required flag that identifies when a
   // trace crosses a process boundary. True when the parent_span belongs
   // to the same process as the current span. This flag is most commonly
   // used to indicate the need to adjust time as clocks in different
   // processes may not be synchronized.
-  bool same_process_as_parent_span = 12;
+  bool same_process_as_parent_span = 15;
 
   // An optional number of child spans that were generated while this span
   // was active. If set, allows an implementation to detect missing child spans.
-  uint32 child_span_count = 13;
+  uint32 child_span_count = 16;
 }
 
 // The `Status` type defines a logical error model that is suitable for different

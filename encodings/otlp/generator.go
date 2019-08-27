@@ -33,7 +33,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	resource := Resource{
-		Identifier: &ProcessIdentifier{
+		Process: &Process{
 			StartTimeUnixnano: 12345678,
 			Pid:               1234,
 			HostName:          "fakehost",

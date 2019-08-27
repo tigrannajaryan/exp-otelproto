@@ -27,10 +27,6 @@ var tests = []struct {
 		name: "OTLP/AttrMap",
 		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
 	},
-	//{
-	//	name: "OTLP_B",
-	//	gen:  func() core.Generator { return traceprotobufb.NewGenerator() },
-	//},
 	{
 		name: "OTLP/AttrList",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
