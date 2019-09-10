@@ -130,6 +130,11 @@ message Span {
   // field must be empty. The ID is an 8-byte array.
   bytes parent_span_id = 4;
 
+  // An optional resource that is associated with this span. If not set, this span
+  // should be part of a ResourceSpan that does include the resource information, unless resource
+  // information is unknown.
+  Resource resource = 5;
+
   // A description of the span's operation.
   //
   // For example, the name can be a qualified method name or a file name
@@ -143,27 +148,41 @@ message Span {
   // receiver to fix the empty span name.
   //
   // This field is required.
-  string name = 5;
+  string name = 6;
 
   // Type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
   enum SpanKind {
-    // Unspecified.
+    // Unspecified. Do NOT use as default.
+    // Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
     SPAN_KIND_UNSPECIFIED = 0;
+
+    // Indicates that the span is used internally. Default value.
+    INTERNAL = 1;
 
     // Indicates that the span covers server-side handling of an RPC or other
     // remote network request.
-    SERVER = 1;
+    SERVER = 2;
 
     // Indicates that the span covers the client-side wrapper around an RPC or
     // other remote request.
-    CLIENT = 2;
+    CLIENT = 3;
+
+    // Indicates that the span describes producer sending a message to a broker.
+    // Unlike client and  server, there is no direct critical path latency relationship
+    // between producer and consumer spans.
+    PRODUCER = 4;
+
+    // Indicates that the span describes consumer recieving a message from a broker.
+    // Unlike client and  server, there is no direct critical path latency relationship
+    // between producer and consumer spans.
+    CONSUMER = 5;
   }
 
   // Distinguishes between spans generated in a particular context. For example,
   // two spans with the same name may be distinguished using `CLIENT` (caller)
   // and `SERVER` (callee) to identify queueing latency associated with the span.
-  SpanKind kind = 6;
+  SpanKind kind = 7;
 
   // The start time of the span. On the client side, this is the time kept by
   // the local machine where the span execution starts. On the server side, this
@@ -175,7 +194,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 start_time_unixnano = 7;
+  int64 start_time_unixnano = 8;
 
   // The end time of the span. On the client side, this is the time kept by
   // the local machine where the span execution ends. On the server side, this
@@ -186,7 +205,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 end_time_unixnano = 8;
+  int64 end_time_unixnano = 9;
 
   // The set of attributes. The value can be a string, an integer, a double
   // or the Boolean values `true` or `false`. Note, global attributes like
@@ -196,84 +215,33 @@ message Span {
   //     "/http/server_latency": 300
   //     "abc.com/myattribute": true
   //     "abc.com/score": 10.239
-  repeated AttributeKeyValue attributes = 9;
+  repeated AttributeKeyValue attributes = 10;
 
-  // A stack trace captured at the start of the span.
-  StackTrace stack_trace = 10;
-
-  // A time-stamped annotation or message event in the Span.
-  message TimeEvent {
+  // A time-stamped event in the Span.
+  message TimedEvent {
     // The time the event occurred.
     int64 time_unixnano = 1;
 
-    // A text annotation with a set of attributes.
-    message Annotation {
-      // A user-supplied message describing the event.
-      string description = 1;
+    // A user-supplied name describing the event.
+    string name = 2;
 
-      // A set of attributes on the annotation.
-      repeated AttributeKeyValue attributes = 2;
-    }
-
-    // An event describing a message sent/received between Spans.
-    message MessageEvent {
-      // Indicates whether the message was sent or received.
-      enum Type {
-        // Unknown event type.
-        TYPE_UNSPECIFIED = 0;
-        // Indicates a sent message.
-        SENT = 1;
-        // Indicates a received message.
-        RECEIVED = 2;
-      }
-
-      // The type of MessageEvent. Indicates whether the message was sent or
-      // received.
-      Type type = 1;
-
-      // An identifier for the MessageEvent's message that can be used to match
-      // SENT and RECEIVED MessageEvents. For example, this field could
-      // represent a sequence ID for a streaming RPC. It is recommended to be
-      // unique within a Span.
-      uint64 id = 2;
-
-      // The number of uncompressed bytes sent or received.
-      uint64 uncompressed_size = 3;
-
-      // The number of compressed bytes sent or received. If zero, assumed to
-      // be the same size as uncompressed.
-      uint64 compressed_size = 4;
-    }
-
-    // A `TimeEvent` can contain either an `Annotation` object or a
-    // `MessageEvent` object, but not both.
-    oneof value {
-      // A text annotation with a set of attributes.
-      Annotation annotation = 2;
-
-      // An event describing a message sent/received between Spans.
-      MessageEvent message_event = 3;
-    }
+    // A set of attributes on the event.
+    repeated AttributeKeyValue attributes = 3;
   }
 
-  // A collection of `TimeEvent`s. A `TimeEvent` is a time-stamped annotation
+  // A collection of `TimedEvent`s. A `TimedEvent` is a time-stamped annotation
   // on the span, consisting of either user-supplied key-value pairs, or
   // details of a message sent/received between Spans.
-  message TimeEvents {
-    // A collection of `TimeEvent`s.
-    repeated TimeEvent time_event = 1;
+  message TimedEvents {
+    // A collection of `TimedEvent`s.
+    repeated TimedEvent timed_event = 1;
 
-    // The number of dropped annotations in all the included time events.
-    // If the value is 0, then no annotations were dropped.
-    int32 dropped_annotations_count = 2;
-
-    // The number of dropped message events in all the included time events.
-    // If the value is 0, then no message events were dropped.
-    int32 dropped_message_events_count = 3;
+    // The number of dropped timed events. If the value is 0, then no events were dropped.
+    int32 dropped_timed_events_count = 2;
   }
 
-  // The included time events.
-  TimeEvents time_events = 11;
+  // The included timed events.
+  TimedEvents timed_events = 11;
 
   // A pointer from the current span to another span in the same trace or in a
   // different trace. For example, this can be used in batching operations,
@@ -328,21 +296,9 @@ message Span {
   // Status.Ok (code = 0).
   Status status = 13;
 
-  // An optional resource that is associated with this span. If not set, this span
-  // should be part of a ResourceSpan that does include the resource information, unless resource
-  // information is unknown.
-  Resource resource = 14;
-
-  // A highly recommended but not required flag that identifies when a
-  // trace crosses a process boundary. True when the parent_span belongs
-  // to the same process as the current span. This flag is most commonly
-  // used to indicate the need to adjust time as clocks in different
-  // processes may not be synchronized.
-  google.protobuf.BoolValue same_process_as_parent_span = 15;
-
   // An optional number of child spans that were generated while this span
   // was active. If set, allows an implementation to detect missing child spans.
-  google.protobuf.UInt32Value child_span_count = 16;
+  google.protobuf.UInt32Value child_span_count = 14;
 }
 
 // The `Status` type defines a logical error model that is suitable for different
@@ -357,58 +313,6 @@ message Status {
 
   // A developer-facing error message, which should be in English.
   string message = 2;
-}
-
-// The call stack which originated this span.
-message StackTrace {
-  // A single stack frame in a stack trace.
-  message StackFrame {
-    // The fully-qualified name that uniquely identifies the function or
-    // method that is active in this frame.
-    string function_name = 1;
-    // An un-mangled function name, if `function_name` is
-    // [mangled](http://www.avabodh.com/cxxin/namemangling.html). The name can
-    // be fully qualified.
-    string original_function_name = 2;
-    // The name of the source file where the function call appears.
-    string file_name = 3;
-    // The line number in `file_name` where the function call appears.
-    int64 line_number = 4;
-    // The column number where the function call appears, if available.
-    // This is important in JavaScript because of its anonymous functions.
-    int64 column_number = 5;
-    // The binary module from where the code was loaded.
-    Module load_module = 6;
-    // The version of the deployed source code.
-    string source_version = 7;
-  }
-
-  // A collection of stack frames, which can be truncated.
-  message StackFrames {
-    // Stack frames in this call stack.
-    repeated StackFrame frame = 1;
-    // The number of stack frames that were dropped because there
-    // were too many stack frames.
-    // If this value is 0, then no stack frames were dropped.
-    int32 dropped_frames_count = 2;
-  }
-
-  // Stack frames in this stack trace.
-  StackFrames stack_frames = 1;
-
-  // The hash ID is used to conserve network bandwidth for duplicate
-  // stack traces within a single trace.
-  //
-  // Often multiple spans will have identical stack traces.
-  // The first occurrence of a stack trace should contain both
-  // `stack_frames` and a value in `stack_trace_hash_id`.
-  //
-  // Subsequent spans within the same request can refer
-  // to that stack trace by setting only `stack_trace_hash_id`.
-  //
-  // TODO: describe how to deal with the case where stack_trace_hash_id is
-  // zero because it was not set.
-  uint64 stack_trace_hash_id = 2;
 }
 
 // A description of a binary module.

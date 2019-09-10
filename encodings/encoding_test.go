@@ -28,63 +28,84 @@ var tests = []struct {
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	},
 	{
-		name: "OTLP/AttrMap",
+		name: "OTLP/AttrAsMap",
 		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
 	},
 	{
-		name: "OTLP/AttrList",
+		name: "OTLP/AttrAsList",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	{
-		name: "OTLP/AttrList/TimeWrapped",
+		name: "OTLP/AttrAsList/TimeWrapped",
 		gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
 	},
+}
+
+var batchTypes = []struct {
+	name     string
+	batchGen func(gen core.Generator) []core.ExportRequest
+}{
+	{name: "Attributes", batchGen: generateAttrBatches},
+	{name: "TimedEvent", batchGen: generateTimedEventBatches},
 }
 
 const BatchCount = 1000
 
 func BenchmarkEncode(b *testing.B) {
-	for _, test := range tests {
-		b.Run(test.name, func(b *testing.B) {
-			b.StopTimer()
-			batches := generateBatches(test.gen())
 
-			runtime.GC()
-			b.StartTimer()
-			for i := 0; i < b.N; i++ {
-				for _, batch := range batches {
-					encode(batch)
+	for _, test := range tests {
+		for _, batchType := range batchTypes {
+			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
+				b.StopTimer()
+				batches := batchType.batchGen(test.gen())
+
+				runtime.GC()
+				b.StartTimer()
+				for i := 0; i < b.N; i++ {
+					for _, batch := range batches {
+						encode(batch)
+					}
 				}
-			}
-		})
+			})
+		}
 	}
 }
 
 func BenchmarkDecode(b *testing.B) {
 	for _, test := range tests {
-		b.Run(test.name, func(b *testing.B) {
-			b.StopTimer()
-			batches := generateBatches(test.gen())
-			var encodedBytes [][]byte
-			for _, batch := range batches {
-				encodedBytes = append(encodedBytes, encode(batch))
-			}
-
-			runtime.GC()
-			b.StartTimer()
-			for i := 0; i < b.N; i++ {
-				for j, bytes := range encodedBytes {
-					decode(bytes, batches[j].(proto.Message))
+		for _, batchType := range batchTypes {
+			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
+				b.StopTimer()
+				batches := batchType.batchGen(test.gen())
+				var encodedBytes [][]byte
+				for _, batch := range batches {
+					encodedBytes = append(encodedBytes, encode(batch))
 				}
-			}
-		})
+
+				runtime.GC()
+				b.StartTimer()
+				for i := 0; i < b.N; i++ {
+					for j, bytes := range encodedBytes {
+						decode(bytes, batches[j].(proto.Message))
+					}
+				}
+			})
+		}
 	}
 }
 
-func generateBatches(gen core.Generator) []core.ExportRequest {
+func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateBatch(100, 3))
+		batches = append(batches, gen.GenerateBatch(100, 3, 0))
+	}
+	return batches
+}
+
+func generateTimedEventBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batches = append(batches, gen.GenerateBatch(100, 0, 3))
 	}
 	return batches
 }
@@ -108,7 +129,7 @@ func TestEncodeSize(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gen := test.gen()
-			batch := gen.GenerateBatch(300, 3)
+			batch := gen.GenerateBatch(100, 3, 0)
 			bodyBytes, err := proto.Marshal(batch.(proto.Message))
 			if err != nil {
 				log.Fatal(err)

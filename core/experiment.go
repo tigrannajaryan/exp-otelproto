@@ -25,7 +25,7 @@ func RunTest(clnt Client, srv Server, gen Generator) {
 
 	// Generate and send a batch
 	for i := 0; i < 2; i++ {
-		batch := gen.GenerateBatch(100, 2)
+		batch := gen.GenerateBatch(100, 2, 0)
 		clnt.Export(batch)
 	}
 }
@@ -88,7 +88,7 @@ func BenchmarkLocalDelivery(
 	for i := 0; i < options.Batches; i++ {
 		// Count sent batch.
 		wg.Add(1)
-		batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan)
+		batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan, 0)
 		clnt.Export(batch)
 	}
 
@@ -132,7 +132,7 @@ func LoadGenerator(
 	for {
 		startTime := time.Now()
 		ch := time.After(1 * time.Second)
-		batch := gen.GenerateBatch(spansPerSecond, 10)
+		batch := gen.GenerateBatch(spansPerSecond, 10, 0)
 		clnt.Export(batch)
 		<-ch
 		wallSecs := time.Now().Sub(startTime).Seconds()

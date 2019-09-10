@@ -31,7 +31,7 @@ func (g *Generator) genRandByteString(len int) string {
 	return string(b)
 }
 
-func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.ExportRequest {
+func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	resource := Resource{
@@ -74,6 +74,18 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 				attrName := g.genRandByteString(g.random.Intn(50) + 1)
 				span.Attributes = append(span.Attributes,
 					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+			}
+		}
+
+		if timedEventsPerSpan > 0 {
+			span.TimeEvents = &Span_TimeEvents{}
+			for i := 0; i < timedEventsPerSpan; i++ {
+				span.TimeEvents.TimeEvent = append(span.TimeEvents.TimeEvent, &Span_TimeEvent{
+					TimeUnixnano: timeToTimestamp(startTime),
+					Attributes: []*AttributeKeyValue{
+						{Key: "te", Type: AttributeKeyValue_INT64, IntValue: int64(spanID)},
+					},
+				})
 			}
 		}
 
