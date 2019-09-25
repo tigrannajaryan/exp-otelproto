@@ -10,10 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary_async"
-
-	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
-
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -21,7 +17,9 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary_async"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
 )
@@ -118,7 +116,7 @@ func benchmarkGRPCOpenCensusWithAck(options core.Options) {
 
 func benchmarkGRPCUnary(options core.Options) {
 	benchmarkImpl(
-		"GRPC/Unary",
+		"GRPC/OTLP/Sequential",
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
@@ -128,7 +126,7 @@ func benchmarkGRPCUnary(options core.Options) {
 
 func benchmarkGRPCUnaryAsync(options core.Options) {
 	benchmarkImpl(
-		"GRPC/Unary/Async",
+		"GRPC/OTLP/Concurrent",
 		options,
 		func() core.Client { return &grpc_unary_async.Client{} },
 		func() core.Server { return &grpc_unary_async.Server{} },

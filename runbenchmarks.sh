@@ -5,15 +5,15 @@ MULTIPLIER=50
 
 echo ====================================================================================
 echo Legend:
+echo "OTLP/Sequential             - OTLP, sequential. One request per batch, load balancer friendly, with ack"
+echo "OTLP/Concurrent             - OTLP, 20 concurrent requests, load balancer friendly, with ack"
 echo "GRPC/Stream/LBTimed/Sync    - GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
-echo "GRPC/Stream/LBTimed/Async/N - OTLP Streaming. GRPC, N streams, load balancer friendly, close stream every 30 sec, with async ack"
-echo "GRPC/Unary                  - OTLP Unary. One request per batch, load balancer friendly, with ack"
-echo "GRPC/Unary/Async            - GRPC, unary async request per batch, load balancer friendly, with ack"
+echo "GRPC/Stream/LBTimed/Async/N - GRPC, streaming. N streams, load balancer friendly, close stream every 30 sec, with async ack"
 echo "GRPC/OpenCensus             - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack"
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
-echo "GRPC/Stream/LBSrv/Async     - OTLP Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
+echo "GRPC/Stream/LBSrv/Async     - GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
@@ -25,10 +25,10 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
-    benchmark streamlbasync
-    benchmark streamlbconc
     benchmark unary
     benchmark unaryasync
+    benchmark streamlbasync
+    benchmark streamlbconc
     benchmark opencensus
     benchmark ocack
     benchmark streamsync
@@ -90,10 +90,10 @@ echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} 
 echo 200ms network roundtrip latency
 
 tc qdisc add dev lo root netem delay 100ms
+benchmark unaryasync
 benchmark opencensus
 benchmark streamlbasync
 benchmark streamlbconc
-benchmark unaryasync
 benchmark wsstreamasync
 benchmark wsstreamasynczlib
 tc qdisc delete dev lo root netem delay 100ms
