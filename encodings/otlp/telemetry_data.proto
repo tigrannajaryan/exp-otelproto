@@ -24,14 +24,11 @@ message ResourceMetrics {
 
 // Resource information. This describes the source of telemetry data.
 message Resource {
-  // Identifier that uniquely identifies a process within a VM/container.
-  Process process = 1;
+  // Set of labels that describe the resource. See OpenTelemetry specification
+  // semantic conventions for standardized label names:
+  // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
 
-  // Name of the service.
-  string service_name = 3;
-
-  // Set of labels that describe the resource.
-  repeated AttributeKeyValue attributes = 2;
+  repeated AttributeKeyValue labels = 3;
 }
 
 message AttributeKeyValue {
@@ -56,20 +53,6 @@ message AttributeKeyValue {
   double double_value = 6;
   // A binary value of bytes.
   bytes bunary_value = 7;
-}
-
-// Identifies a process within a VM/container.
-message Process {
-
-  // The host name. Usually refers to the machine/container name.
-  // For example: os.Hostname() in Go, socket.gethostname() in Python.
-  string host_name = 1;
-
-  // Process id.
-  uint32 pid = 2;
-
-  // Start time of this process. Represented in epoch time.
-  int64 start_time_unixnano = 3;
 }
 
 // A span represents a single operation within a trace. Spans can be
@@ -255,26 +238,11 @@ message Span {
     // A unique identifier for the linked span. The ID is an 8-byte array.
     bytes span_id = 2;
 
-    // The relationship of the current span relative to the linked span: child,
-    // parent, or unspecified.
-    enum Type {
-      // The relationship of the two spans is unknown, or known but other
-      // than parent-child.
-      TYPE_UNSPECIFIED = 0;
-      // The linked span is a child of the current span.
-      CHILD_LINKED_SPAN = 1;
-      // The linked span is a parent of the current span.
-      PARENT_LINKED_SPAN = 2;
-    }
-
-    // The relationship of the current span relative to the linked span.
-    Type type = 3;
+    // The Tracestate associated with the link.
+    Tracestate tracestate = 3;
 
     // A set of attributes on the link.
     repeated AttributeKeyValue attributes = 4;
-
-    // The Tracestate associated with the link.
-    Tracestate tracestate = 5;
   }
 
   // A collection of links, which are references from this span to a span

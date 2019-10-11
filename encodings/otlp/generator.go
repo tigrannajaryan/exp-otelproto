@@ -33,12 +33,12 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	resource := Resource{
-		Process: &Process{
-			StartTimeUnixnano: 12345678,
-			Pid:               1234,
-			HostName:          "fakehost",
+		Labels: []*AttributeKeyValue{
+			{Key: "StartTimeUnixnano", IntValue: 12345678},
+			{Key: "Pid", IntValue: 1234},
+			{Key: "HostName", StringValue: "fakehost"},
+			{Key: "ServiceName", StringValue: "generator"},
 		},
-		ServiceName: "generator",
 	}
 
 	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: &resource}}}
