@@ -51,6 +51,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 		span := &Span{
 			TraceId:           core.GenerateTraceID(traceID),
 			SpanId:            core.GenerateSpanID(spanID),
+			ParentSpanId:      []byte{},
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
 			StartTimeUnixnano: core.TimeToTimestamp(startTime),
@@ -76,9 +77,8 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 		}
 
 		if timedEventsPerSpan > 0 {
-			span.TimedEvents = &Span_TimedEvents{}
 			for i := 0; i < timedEventsPerSpan; i++ {
-				span.TimedEvents.TimedEvent = append(span.TimedEvents.TimedEvent, &Span_TimedEvent{
+				span.TimedEvents = append(span.TimedEvents, &Span_TimedEvent{
 					TimeUnixnano: core.TimeToTimestamp(startTime),
 					Attributes: []*AttributeKeyValue{
 						{Key: "te", Type: AttributeKeyValue_INT64, IntValue: int64(spanID)},
