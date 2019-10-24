@@ -103,6 +103,5 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 }
 
 func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
-	batch := &MetricExportRequest{}
-	return batch
+	return nil
 }

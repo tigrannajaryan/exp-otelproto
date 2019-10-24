@@ -101,6 +101,5 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 }
 
 func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
-	batch := &ExportRequest{}
-	return batch
+	return nil
 }

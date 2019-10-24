@@ -8,13 +8,13 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlptimewrapped"
-
-	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlptimewrapped"
+
 	"github.com/golang/protobuf/proto"
+	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
@@ -28,15 +28,15 @@ var tests = []struct {
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	},
 	{
-		name: "OTLP/AttrAsMap",
-		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
-	},
-	{
-		name: "OTLP/AttrAsList",
+		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	{
-		name: "OTLP/AttrAsList/TimeWrapped",
+		name: "OC+AttrAsMap",
+		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
+	},
+	{
+		name: "OC+AttrAsList+TimeWrapped",
 		gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
 	},
 }
@@ -58,7 +58,13 @@ func BenchmarkEncode(b *testing.B) {
 		for _, batchType := range batchTypes {
 			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
 				b.StopTimer()
-				batches := batchType.batchGen(test.gen())
+				gen := test.gen()
+				batches := batchType.batchGen(gen)
+				if batches == nil {
+					// Unsupported test type and batch type combination.
+					b.SkipNow()
+					return
+				}
 
 				runtime.GC()
 				b.StartTimer()
@@ -78,6 +84,12 @@ func BenchmarkDecode(b *testing.B) {
 			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
 				b.StopTimer()
 				batches := batchType.batchGen(test.gen())
+				if batches == nil {
+					// Unsupported test type and batch type combination.
+					b.SkipNow()
+					return
+				}
+
 				var encodedBytes [][]byte
 				for _, batch := range batches {
 					encodedBytes = append(encodedBytes, encode(batch))
@@ -106,7 +118,11 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 func generateMetricBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateMetricBatch(100))
+		batch := gen.GenerateMetricBatch(100)
+		if batch == nil {
+			return nil
+		}
+		batches = append(batches, batch)
 	}
 	return batches
 }

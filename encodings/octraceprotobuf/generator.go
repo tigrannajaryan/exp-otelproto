@@ -132,7 +132,7 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 	batch := &ExportMetricsServiceRequest{
 		Resource: genResource(),
 	}
-	for i := 0; i < metricsPerBatch; i++ {
+	for i := 0; i < metricsPerBatch/2; i++ {
 
 		startTime := time.Now()
 
@@ -141,6 +141,7 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			{Key: "label2"},
 		}
 
+		// Add int64 Gauge
 		descr := &MetricDescriptor{
 			Name:        "metric" + strconv.Itoa(i),
 			Description: "some description: " + strconv.Itoa(i),
@@ -165,20 +166,83 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			ts := TimeSeries{
 				StartTimestamp: timeToTimestamp(startTime),
 				LabelValues: []*LabelValue{
-					{Value: "val1"},
-					{Value: "val2"},
+					{Value: "val1", HasValue: true},
+					{Value: "val2", HasValue: true},
 				},
 				Points: points,
 			}
 			timeseries = append(timeseries, &ts)
 		}
 
-		metric := &Metric{
+		metric1 := &Metric{
 			MetricDescriptor: descr,
 			Timeseries:       timeseries,
 		}
 
-		batch.Metrics = append(batch.Metrics, metric)
+		batch.Metrics = append(batch.Metrics, metric1)
+
+		// Add Histogram
+		descr = &MetricDescriptor{
+			Name:        "metric" + strconv.Itoa(i),
+			Description: "some description: " + strconv.Itoa(i),
+			Type:        MetricDescriptor_GAUGE_DISTRIBUTION,
+			LabelKeys:   labelKeys,
+		}
+
+		timeseries = []*TimeSeries{}
+		for j := 0; j < 1; j++ {
+			var points []*Point
+
+			pointTs := timeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))
+
+			for k := 0; k < 5; k++ {
+				val := float64(i * j * k)
+				point := Point{
+					Timestamp: pointTs,
+					Value: &Point_DistributionValue{
+						&DistributionValue{
+							Count:                 1,
+							Sum:                   val,
+							SumOfSquaredDeviation: 123,
+							BucketOptions: &DistributionValue_BucketOptions{
+								Type: &DistributionValue_BucketOptions_Explicit_{
+									Explicit: &DistributionValue_BucketOptions_Explicit{
+										Bounds: []float64{0, val},
+									},
+								},
+							},
+							Buckets: []*DistributionValue_Bucket{
+								{
+									Count: 1,
+									Exemplar: &DistributionValue_Exemplar{
+										Value:     val,
+										Timestamp: pointTs,
+									},
+								},
+							},
+						},
+					},
+				}
+				points = append(points, &point)
+			}
+
+			ts := TimeSeries{
+				StartTimestamp: timeToTimestamp(startTime),
+				LabelValues: []*LabelValue{
+					{Value: "val1", HasValue: true},
+					{Value: "val2", HasValue: true},
+				},
+				Points: points,
+			}
+			timeseries = append(timeseries, &ts)
+		}
+
+		metric2 := &Metric{
+			MetricDescriptor: descr,
+			Timeseries:       timeseries,
+		}
+
+		batch.Metrics = append(batch.Metrics, metric2)
 	}
 	return batch
 }
