@@ -15,7 +15,7 @@ func onBatchReceive(batch ExportRequest, spanCount int) {
 	log.Printf("Server received a batch of %v spans", spanCount)
 }
 
-func RunTest(clnt Client, srv Server, gen Generator) {
+func RunTest(clnt Client, srv Server, gen SpanGenerator) {
 
 	// Listen locally for Agent's forwarded data
 	go srv.Listen("0.0.0.0:3465", onBatchReceive)
@@ -39,7 +39,7 @@ type Options struct {
 func BenchmarkLocalDelivery(
 	clientFactory func() Client,
 	serverFactory func() Server,
-	generatorFactory func() Generator,
+	generatorFactory func() SpanGenerator,
 	options Options,
 ) (cpuSecs float64, wallSecs float64) {
 	// Create client, server and generator from factories
@@ -116,7 +116,7 @@ func BenchmarkLocalDelivery(
 
 func LoadGenerator(
 	clientFactory func() Client,
-	generatorFactory func() Generator,
+	generatorFactory func() SpanGenerator,
 	serverEndpoint string,
 	spansPerSecond int,
 ) {

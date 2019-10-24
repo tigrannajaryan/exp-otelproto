@@ -51,7 +51,7 @@ func main() {
 	case "opencensus":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_oc.Client{} },
-			func() core.Generator { return octraceprotobuf.NewGenerator() },
+			func() core.SpanGenerator { return octraceprotobuf.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -59,7 +59,7 @@ func main() {
 	case "ocack":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_oc.Client{WaitForAck: true} },
-			func() core.Generator { return octraceprotobuf.NewGenerator() },
+			func() core.SpanGenerator { return octraceprotobuf.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -67,7 +67,7 @@ func main() {
 	case "unary":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_unary.Client{} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -75,7 +75,7 @@ func main() {
 	case "streamsync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream.Client{} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -83,7 +83,7 @@ func main() {
 	case "streamlbtimedsync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: rebalancePeriod} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -91,7 +91,7 @@ func main() {
 	case "streamlbalwayssync":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -104,7 +104,7 @@ func main() {
 					StreamReopenRequestCount: uint32(rebalanceRequestLimit),
 				}
 			},
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -112,7 +112,7 @@ func main() {
 	case "streamlbsrv":
 		core.LoadGenerator(
 			func() core.Client { return &grpc_stream_lb_srv.Client{} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -120,7 +120,7 @@ func main() {
 	case "wsstreamsync":
 		core.LoadGenerator(
 			func() core.Client { return &ws_stream_sync.Client{} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -128,7 +128,7 @@ func main() {
 	case "wsstreamasync":
 		core.LoadGenerator(
 			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_NONE} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)
@@ -136,7 +136,7 @@ func main() {
 	case "wsstreamasynczlib":
 		core.LoadGenerator(
 			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_ZLIB} },
-			func() core.Generator { return otlp.NewGenerator() },
+			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
 		)

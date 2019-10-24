@@ -101,3 +101,8 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 		Nanos:   int32(nanoTime % 1e9),
 	}
 }
+
+func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+	batch := &MetricExportRequest{}
+	return batch
+}

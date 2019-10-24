@@ -100,7 +100,7 @@ func benchmarkGRPCOpenCensus(options core.Options) {
 		options,
 		func() core.Client { return &grpc_oc.Client{} },
 		func() core.Server { return &grpc_oc.Server{} },
-		func() core.Generator { return octraceprotobuf.NewGenerator() },
+		func() core.SpanGenerator { return octraceprotobuf.NewGenerator() },
 	)
 }
 
@@ -110,7 +110,7 @@ func benchmarkGRPCOpenCensusWithAck(options core.Options) {
 		options,
 		func() core.Client { return &grpc_oc.Client{WaitForAck: true} },
 		func() core.Server { return &grpc_oc.Server{SendAck: true} },
-		func() core.Generator { return octraceprotobuf.NewGenerator() },
+		func() core.SpanGenerator { return octraceprotobuf.NewGenerator() },
 	)
 }
 
@@ -120,7 +120,7 @@ func benchmarkGRPCUnary(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -130,7 +130,7 @@ func benchmarkGRPCUnaryAsync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_unary_async.Client{} },
 		func() core.Server { return &grpc_unary_async.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -140,7 +140,7 @@ func benchmarkGRPCStreamLBTimedSync(options core.Options, streamReopenPeriod tim
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: streamReopenPeriod} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -150,7 +150,7 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -171,7 +171,7 @@ func benchmarkGRPCStreamLBAsync(
 			}
 		},
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -186,7 +186,7 @@ func benchmarkGRPCStreamLBSrv(options core.Options, streamReopenPeriod time.Dura
 				StreamReopenRequestCount: rebalanceRequestLimit,
 			}
 		},
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -196,7 +196,7 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream.Client{} },
 		func() core.Server { return &grpc_stream.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -206,7 +206,7 @@ func benchmarkWSStreamSync(options core.Options) {
 		options,
 		func() core.Client { return &ws_stream_sync.Client{} },
 		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -226,7 +226,7 @@ func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMe
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
 		func() core.Server { return &ws_stream_async.Server{} },
-		func() core.Generator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -235,7 +235,7 @@ func benchmarkImpl(
 	options core.Options,
 	clientFactory func() core.Client,
 	serverFactory func() core.Server,
-	generatorFactory func() core.Generator,
+	generatorFactory func() core.SpanGenerator,
 ) {
 	cpuSecs, wallSecs := core.BenchmarkLocalDelivery(
 		clientFactory,

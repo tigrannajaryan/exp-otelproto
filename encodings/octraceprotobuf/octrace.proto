@@ -3,6 +3,7 @@ syntax = "proto3";
 package octraceprotobuf;
 
 import "resource.proto";
+import "metrics.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -23,12 +24,18 @@ service OCStreamTracer {
 // The request message containing the user's name.
 message ExportRequest {
   repeated Span spans = 2;
+  Resource resource = 3;
 }
 
 // The response message containing the greetings
 message ExportResponse {
 }
 
+message ExportMetricsServiceRequest {
+  // A list of metrics that belong to the last received Node.
+  repeated Metric metrics = 2;
+  Resource resource = 3;
+}
 
 // A span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans

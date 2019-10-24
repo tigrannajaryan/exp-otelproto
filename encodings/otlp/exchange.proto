@@ -3,6 +3,7 @@ syntax = "proto3";
 package otlp;
 
 import "telemetry_data.proto";
+import "metric_data.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";

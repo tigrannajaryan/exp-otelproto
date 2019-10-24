@@ -99,3 +99,8 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 	}
 	return batch
 }
+
+func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+	batch := &ExportRequest{}
+	return batch
+}

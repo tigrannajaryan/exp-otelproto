@@ -47,6 +47,7 @@ var batchTypes = []struct {
 }{
 	{name: "Attributes", batchGen: generateAttrBatches},
 	{name: "TimedEvent", batchGen: generateTimedEventBatches},
+	{name: "Metrics", batchGen: generateMetricBatches},
 }
 
 const BatchCount = 1000
@@ -98,6 +99,14 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
 		batches = append(batches, gen.GenerateBatch(100, 3, 0))
+	}
+	return batches
+}
+
+func generateMetricBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batches = append(batches, gen.GenerateMetricBatch(100))
 	}
 	return batches
 }

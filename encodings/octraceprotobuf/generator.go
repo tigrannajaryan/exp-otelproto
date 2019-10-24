@@ -3,6 +3,7 @@ package octraceprotobuf
 import (
 	"encoding/binary"
 	"math/rand"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -32,9 +33,22 @@ func (g *Generator) genRandByteString(len int) string {
 	return string(b)
 }
 
+func genResource() *Resource {
+	return &Resource{
+		Labels: map[string]string{
+			"StartTimeUnixnano": "12345678",
+			"Pid":               "1234",
+			"HostName":          "fakehost",
+			"ServiceName":       "generator",
+		},
+	}
+}
+
 func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
-	batch := &ExportRequest{}
+	batch := &ExportRequest{
+		Resource: genResource(),
+	}
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Now()
 
@@ -112,4 +126,59 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 		Seconds: nanoTime / 1e9,
 		Nanos:   int32(nanoTime % 1e9),
 	}
+}
+
+func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+	batch := &ExportMetricsServiceRequest{
+		Resource: genResource(),
+	}
+	for i := 0; i < metricsPerBatch; i++ {
+
+		startTime := time.Now()
+
+		labelKeys := []*LabelKey{
+			{Key: "label1"},
+			{Key: "label2"},
+		}
+
+		descr := &MetricDescriptor{
+			Name:        "metric" + strconv.Itoa(i),
+			Description: "some description: " + strconv.Itoa(i),
+			Type:        MetricDescriptor_GAUGE_INT64,
+			LabelKeys:   labelKeys,
+		}
+
+		var timeseries []*TimeSeries
+		for j := 0; j < 5; j++ {
+			var points []*Point
+
+			pointTs := startTime.Add(time.Duration(time.Millisecond))
+
+			for k := 0; k < 5; k++ {
+				point := Point{
+					Timestamp: timeToTimestamp(pointTs),
+					Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
+				}
+				points = append(points, &point)
+			}
+
+			ts := TimeSeries{
+				StartTimestamp: timeToTimestamp(startTime),
+				LabelValues: []*LabelValue{
+					{Value: "val1"},
+					{Value: "val2"},
+				},
+				Points: points,
+			}
+			timeseries = append(timeseries, &ts)
+		}
+
+		metric := &Metric{
+			MetricDescriptor: descr,
+			Timeseries:       timeseries,
+		}
+
+		batch.Metrics = append(batch.Metrics, metric)
+	}
+	return batch
 }
