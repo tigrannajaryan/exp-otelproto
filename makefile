@@ -48,9 +48,9 @@ benchmark:
 	./runbenchmarks.sh
 
 benchmark-encoding:
-	sudo ./beforebenchmarks.sh
+	#sudo ./beforebenchmarks.sh
 	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 5s
-	sudo ./afterbenchmarks.sh
+	#sudo ./afterbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go
