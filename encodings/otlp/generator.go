@@ -174,11 +174,9 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 						BucketBounds: []float64{0, val},
 						Buckets: []*HistogramValue_Bucket{
 							{
-								Count: 1,
-								Exemplar: &HistogramValue_Bucket_Exemplar{
-									Value:             val,
-									TimestampUnixnano: pointTs,
-								},
+								Count:                     1,
+								ExemplarValue:             val,
+								ExemplarTimestampUnixnano: pointTs,
 							},
 						},
 					},
