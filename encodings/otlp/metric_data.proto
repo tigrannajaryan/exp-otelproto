@@ -20,43 +20,47 @@ message ResourceMetrics {
 //
 // The data model and relation between entities is shown in the diagram below.
 //
-// - Metric is composed of a Resource, a MetricDescriptor and a TimeSeriesList.
+// - Metric is composed of a Resource, a MetricDescriptor and a TimeSeriesList data.
 // - MetricDescriptor contains a list of label keys (shown horizontally).
 // - TimeSeriesList is composed of a list of TimeSeries (shown vertically).
 // - TimeSeries contains a list of label values and a list of metric values (shown
 //   horizontally).
 //
-//  +------+   +--------+
-//  |      |-->|Resource|
-//  |      |   +--------+
-//  |      |
-//  |Metric|   +------------------------+
-//  |      |   | MetricDescriptor       |
-//  |      |   |+-----+-----+   +-----+ |
-//  |      |-->||label|label|...|label| |
-//  |      |   ||key1 |key2 |   |keyN | |
-//  +------+   |+-----+-----+   +-----+ |
-//     |       +------------------------+
-//     v
-//  +------+   +------------------------------+
-//  |      |   |+-----+-----+   +-----+       |
-//  | Time |   ||label|label|...|label|       |
-//  |Series|-->|+-----+-----+   +-----+       |
-//  |  1   |   |+-----+-----+-----+   +-----+ |
-//  |      |   ||value|value|value|...|value| |
-//  |      |   |+-----+-----+-----+   +-----+ |
-//  +------+   +------------------------------+
-//      .                      .
-//      .                      .
-//      .                      .
-//  +------+   +-----------------------------------+
-//  |      |   |+-----+-----+   +-----+            |
-//  | Time |   ||label|label|...|label|            |
-//  |Series|-->|+-----+-----+   +-----+            |
-//  |  N   |   |+-----+-----+-----+-----+   +-----+|
-//  |      |   ||value|value|value|value|...|value||
-//  |      |   |+-----+-----+-----+-----+   +-----+|
-//  +------+   +-----------------------------------+
+//     Metric
+//  +----------+         +--------+
+//  |  resource|-------->|Resource|
+//  |          |         +--------+
+//  |          |
+//  |          |         +------------------------+
+//  |descriptor|-------->| MetricDescriptor       |
+//  |          |         |+-----+-----+   +-----+ |
+//  |          |         ||label|label|...|label| |
+//  |      data|--+      ||key1 |key2 |   |keyN | |
+//  +----------+  |      |+-----+-----+   +-----+ |
+//                |      +------------------------+
+//                |
+//                |      +------------------------------+
+//                |      |TimeSeries 1                  |
+//                v      |+-----+-----+   +-----+       |
+//             +-----+   ||label|label|...|label|       |
+//             |  1  |-->|+-----+-----+   +-----+       |
+//             +-----+   |+-----+-----+-----+   +-----+ |
+//             |  .  |   ||value|value|value|...|value| |
+//             |  .  |   |+-----+-----+-----+   +-----+ |
+//             |  .  |   +------------------------------+
+//             |  .  |                   .
+//             |  .  |                   .
+//             |  .  |                   .
+//             |  .  |   +-----------------------------------+
+//             |  .  |   |TimeSeries N                       |
+//             +-----+   |+-----+-----+   +-----+            |
+//             |  N  |-->||label|label|...|label|            |
+//             +-----+   |+-----+-----+   +-----+            |
+//                       |+-----+-----+-----+-----+   +-----+|
+//                       ||value|value|value|value|...|value||
+//                       |+-----+-----+-----+-----+   +-----+|
+//                       +-----------------------------------+
+//
 message Metric {
   // metric_descriptor describes the Metric.
   MetricDescriptor metric_descriptor = 1;
@@ -66,9 +70,9 @@ message Metric {
   // information, unless resource information is unknown.
   Resource resource = 2;
 
-  // data is s list of one or more TimeSeries for a single metric, where each timeseries has
-  // one or more points. Only of the following fields is used for the data, depending on
-  // the type of metric defined by MetricDescriptor.type field.
+  // data is a list of one or more TimeSeries for a single metric, where each timeseries has
+  // one or more points. Only one of the following fields is used for the data, depending on
+  // the type of the metric defined by MetricDescriptor.type field.
   oneof data {
     GaugeInt64TimeSeriesList gauge_int64_data = 3;
     GaugeDoubleTimeSeriesList gauge_double_data = 4;
@@ -91,15 +95,14 @@ message MetricDescriptor {
   // described by http://unitsofmeasure.org/ucum.html.
   string unit = 3;
 
-  // Type of metric. It describes how the data is reported.
+  // Type of the metric. It describes how the data is reported.
   //
   // A gauge is an instantaneous measurement of a value.
   //
   // A counter/cumulative measurement is a value accumulated over a time
   // interval. In a time series, cumulative measurements should have the same
-  // start time, increasing values and increasing end times, until an event
-  // resets the cumulative value to zero and sets a new start time for the
-  // following points.
+  // start time, increasing values, until an event resets the cumulative value
+  // to zero and sets a new start time for the subsequent points.
   enum Type {
     // Do not use this default value.
     UNSPECIFIED = 0;
@@ -133,7 +136,7 @@ message MetricDescriptor {
     // Histogram cumulative measurement.
     // Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
     // histogram cannot decrease; if values are reset then HistogramValue.start_time_unixnano
-    // should also be reset.
+    // should also be reset to the new start timestamp.
     CUMULATIVE_HISTOGRAM = 6;
 
     // Summary value. Some frameworks implemented Histograms as a summary of observations
@@ -188,8 +191,7 @@ message GaugeInt64TimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated GaugeInt64Value points = 2;
 }
 
@@ -201,8 +203,7 @@ message GaugeDoubleTimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated GaugeDoubleValue points = 2;
 }
 
@@ -214,8 +215,7 @@ message CounterInt64TimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated CounterInt64Value points = 2;
 }
 
@@ -227,8 +227,7 @@ message CounterDoubleTimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated CounterDoubleValue points = 2;
 }
 
@@ -272,8 +271,7 @@ message HistogramTimeSeries {
     ExplicitBounds explicit_bounds = 2;
   }
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated HistogramValue points = 3;
 }
 
@@ -285,8 +283,7 @@ message SummaryTimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
-  // The data points of this timeseries. Point.value type MUST match the
-  // MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+  // The data points of this timeseries.
   repeated SummaryValue points = 2;
 }
 
@@ -417,7 +414,7 @@ message HistogramValue {
   // Note: if HistogramTimeSeries.bucket_options defines bucket bounds then this field
   // must also be present and number of elements in this field must be equal to the
   // number of buckets defined by bucket_options.
-  repeated Bucket buckets = 6;
+  repeated Bucket buckets = 5;
 }
 
 // StringKeyValuePair is a pair of key/value strings.
