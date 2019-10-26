@@ -116,20 +116,20 @@ message MetricDescriptor {
     GAUGE_DOUBLE = 2;
 
     // Histogram gauge measurement.
-    // Used in scenarios like a snapshot of time the current items in a queue
+    // Used in scenarios like a snapshot of time that current items in a queue
     // have spent there.
     // Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
     // histogram can go both up and down over time. Recorded values are always >= 0.
     GAUGE_HISTOGRAM = 3;
 
     // Integer counter measurement. The value cannot decrease; if value is reset then
-    // Point.start_time_unixnano should also be reset.
+    // CounterInt64Value.start_time_unixnano should also be reset.
     // Corresponding values are stored in CounterInt64TimeSeriesList.
     COUNTER_INT64 = 4;
 
     // Floating point counter measurement. The value cannot decrease, if
-    // resets then the start_time should also be reset. Recorded values are
-    // always >= 0.
+    // resets then the CounterDoubleValue.start_time_unixnano should also be reset.
+    // Recorded values are always >= 0.
     // Corresponding values are stored in CounterDoubleTimeSeriesList.
     COUNTER_DOUBLE = 5;
 
@@ -149,7 +149,8 @@ message MetricDescriptor {
   }
   Type type = 4;
 
-  // The label keys associated with the metric descriptor.
+  // The label keys associated with the metric descriptor. Keys in this list must
+  // be unique.
   repeated string label_keys = 5;
 }
 

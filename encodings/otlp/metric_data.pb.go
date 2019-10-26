@@ -40,18 +40,18 @@ const (
 	// Corresponding values are stored in GaugeDoubleTimeSeriesList.
 	MetricDescriptor_GAUGE_DOUBLE MetricDescriptor_Type = 2
 	// Histogram gauge measurement.
-	// Used in scenarios like a snapshot of time the current items in a queue
+	// Used in scenarios like a snapshot of time that current items in a queue
 	// have spent there.
 	// Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
 	// histogram can go both up and down over time. Recorded values are always >= 0.
 	MetricDescriptor_GAUGE_HISTOGRAM MetricDescriptor_Type = 3
 	// Integer counter measurement. The value cannot decrease; if value is reset then
-	// Point.start_time_unixnano should also be reset.
+	// CounterInt64Value.start_time_unixnano should also be reset.
 	// Corresponding values are stored in CounterInt64TimeSeriesList.
 	MetricDescriptor_COUNTER_INT64 MetricDescriptor_Type = 4
 	// Floating point counter measurement. The value cannot decrease, if
-	// resets then the start_time should also be reset. Recorded values are
-	// always >= 0.
+	// resets then the CounterDoubleValue.start_time_unixnano should also be reset.
+	// Recorded values are always >= 0.
 	// Corresponding values are stored in CounterDoubleTimeSeriesList.
 	MetricDescriptor_COUNTER_DOUBLE MetricDescriptor_Type = 5
 	// Histogram cumulative measurement.
@@ -365,7 +365,8 @@ type MetricDescriptor struct {
 	// described by http://unitsofmeasure.org/ucum.html.
 	Unit string                `protobuf:"bytes,3,opt,name=unit,proto3" json:"unit,omitempty"`
 	Type MetricDescriptor_Type `protobuf:"varint,4,opt,name=type,proto3,enum=otlp.MetricDescriptor_Type" json:"type,omitempty"`
-	// The label keys associated with the metric descriptor.
+	// The label keys associated with the metric descriptor. Keys in this list must
+	// be unique.
 	LabelKeys            []string `protobuf:"bytes,5,rep,name=label_keys,json=labelKeys,proto3" json:"label_keys,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

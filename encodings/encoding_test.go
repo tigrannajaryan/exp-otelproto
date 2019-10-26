@@ -8,10 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/traceprotobuf"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlptimewrapped"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -31,6 +27,7 @@ var tests = []struct {
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
+	/* These are historical experiments. Uncomment if interested to see results.
 	{
 		name: "OC+AttrAsMap",
 		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
@@ -39,6 +36,7 @@ var tests = []struct {
 		name: "OC+AttrAsList+TimeWrapped",
 		gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
 	},
+	*/
 }
 
 var batchTypes = []struct {
@@ -110,7 +108,7 @@ func BenchmarkDecode(b *testing.B) {
 func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateBatch(100, 3, 0))
+		batches = append(batches, gen.GenerateSpanBatch(100, 3, 0))
 	}
 	return batches
 }
@@ -130,7 +128,7 @@ func generateMetricBatches(gen core.Generator) []core.ExportRequest {
 func generateTimedEventBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateBatch(100, 0, 3))
+		batches = append(batches, gen.GenerateSpanBatch(100, 0, 3))
 	}
 	return batches
 }
@@ -151,23 +149,83 @@ func decode(bytes []byte, pb proto.Message) {
 }
 
 func TestEncodeSize(t *testing.T) {
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gen := test.gen()
-			batch := gen.GenerateBatch(100, 3, 0)
-			bodyBytes, err := proto.Marshal(batch.(proto.Message))
-			if err != nil {
-				log.Fatal(err)
-			}
 
-			// Try to compress
-			var b bytes.Buffer
-			w := zlib.NewWriter(&b)
-			w.Write(bodyBytes)
-			w.Close()
-			compressedBytes := b.Bytes()
+	variation := []struct {
+		name                 string
+		trace                bool
+		firstUncompessedSize int
+		firstCompressedSize  int
+	}{
+		{
+			name:  "Trace",
+			trace: true,
+		},
+		{
+			name:  "Metric",
+			trace: false,
+		},
+	}
 
-			fmt.Printf("%-15v size %5d bytes, gzip size %5d\n", test.name, len(bodyBytes), len(compressedBytes))
-		})
+	fmt.Println("===== Encoded sizes")
+
+	for _, v := range variation {
+		fmt.Println("Encoding                       Uncompressed  Improved        Compressed  Improved")
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				gen := test.gen()
+
+				var batch core.ExportRequest
+				if v.trace {
+					batch = gen.GenerateSpanBatch(100, 3, 0)
+				} else {
+					batch = gen.GenerateMetricBatch(100)
+				}
+				if batch == nil {
+					// Skip this case.
+					return
+				}
+
+				bodyBytes, err := proto.Marshal(batch.(proto.Message))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Try to compress
+				var b bytes.Buffer
+				w := zlib.NewWriter(&b)
+				w.Write(bodyBytes)
+				w.Close()
+				compressedBytes := b.Bytes()
+
+				uncompressedSize := len(bodyBytes)
+				compressedSize := len(compressedBytes)
+
+				uncompressedRatioStr := "[1.000]"
+				compressedRatioStr := "[1.000]"
+
+				if v.firstUncompessedSize == 0 {
+					v.firstUncompessedSize = uncompressedSize
+				} else {
+					uncompressedRatioStr = fmt.Sprintf(" [%1.3f]", float64(v.firstUncompessedSize)/float64(uncompressedSize))
+				}
+
+				if v.firstCompressedSize == 0 {
+					v.firstCompressedSize = compressedSize
+				} else {
+					compressedRatioStr = fmt.Sprintf(" [%1.3f]", float64(v.firstCompressedSize)/float64(compressedSize))
+				}
+
+				fmt.Printf(
+					"%-31v %5d bytes%9s, gziped %4d bytes%9s\n",
+					test.name+"/"+v.name,
+					uncompressedSize,
+					uncompressedRatioStr,
+					compressedSize,
+					compressedRatioStr,
+				)
+
+			})
+		}
+		fmt.Println("")
 	}
 }

@@ -43,7 +43,7 @@ func genResource() *Resource {
 	}
 }
 
-func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
+func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
 	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: genResource()}}}
@@ -120,9 +120,9 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 5; j++ {
 			var points []*GaugeInt64Value
 
-			pointTs := startTime.Add(time.Duration(time.Millisecond))
-
 			for k := 0; k < 5; k++ {
+				pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
+
 				point := GaugeInt64Value{
 					TimestampUnixnano: core.TimeToTimestamp(pointTs),
 					Value:             int64(i * j * k),
@@ -167,9 +167,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 1; j++ {
 			var points []*HistogramValue
 
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))
-
 			for k := 0; k < 5; k++ {
+				pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 				val := float64(i * j * k)
 				point := HistogramValue{
 					TimestampUnixnano: pointTs,

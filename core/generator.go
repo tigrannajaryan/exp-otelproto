@@ -2,7 +2,7 @@ package core
 
 // SpanGenerator allows to generate a ExportRequest containing a batch of spans.
 type SpanGenerator interface {
-	GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) ExportRequest
+	GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) ExportRequest
 }
 
 // MetricGenerator allows to generate a ExportRequest containing a batch of metrics.

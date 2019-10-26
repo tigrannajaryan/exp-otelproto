@@ -25,7 +25,7 @@ func RunTest(clnt Client, srv Server, gen SpanGenerator) {
 
 	// Generate and send a batch
 	for i := 0; i < 2; i++ {
-		batch := gen.GenerateBatch(100, 2, 0)
+		batch := gen.GenerateSpanBatch(100, 2, 0)
 		clnt.Export(batch)
 	}
 }
@@ -72,7 +72,7 @@ func BenchmarkLocalDelivery(
 
 	//var batches []ExportRequest
 	//for i := 0; i < options.Batches; i++ {
-	//	batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan)
+	//	batch := gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan)
 	//	batches = append(batches, batch)
 	//}
 
@@ -88,7 +88,7 @@ func BenchmarkLocalDelivery(
 	for i := 0; i < options.Batches; i++ {
 		// Count sent batch.
 		wg.Add(1)
-		batch := gen.GenerateBatch(options.SpansPerBatch, options.AttrPerSpan, 0)
+		batch := gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan, 0)
 		clnt.Export(batch)
 	}
 
@@ -132,7 +132,7 @@ func LoadGenerator(
 	for {
 		startTime := time.Now()
 		ch := time.After(1 * time.Second)
-		batch := gen.GenerateBatch(spansPerSecond, 10, 0)
+		batch := gen.GenerateSpanBatch(spansPerSecond, 10, 0)
 		clnt.Export(batch)
 		<-ch
 		wallSecs := time.Now().Sub(startTime).Seconds()

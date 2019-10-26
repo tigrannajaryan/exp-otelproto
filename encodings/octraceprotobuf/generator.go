@@ -44,7 +44,7 @@ func genResource() *Resource {
 	}
 }
 
-func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
+func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 	batch := &ExportRequest{
 		Resource: genResource(),
@@ -153,9 +153,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 5; j++ {
 			var points []*Point
 
-			pointTs := startTime.Add(time.Duration(time.Millisecond))
-
 			for k := 0; k < 5; k++ {
+				pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
 				point := Point{
 					Timestamp: timeToTimestamp(pointTs),
 					Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
@@ -193,9 +192,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 1; j++ {
 			var points []*Point
 
-			pointTs := timeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))
-
 			for k := 0; k < 5; k++ {
+				pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 				val := float64(i * j * k)
 				point := Point{
 					Timestamp: pointTs,
