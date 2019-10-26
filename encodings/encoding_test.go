@@ -52,8 +52,8 @@ const BatchCount = 1000
 
 func BenchmarkEncode(b *testing.B) {
 
-	for _, test := range tests {
-		for _, batchType := range batchTypes {
+	for _, batchType := range batchTypes {
+		for _, test := range tests {
 			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
 				b.StopTimer()
 				gen := test.gen()
@@ -73,12 +73,13 @@ func BenchmarkEncode(b *testing.B) {
 				}
 			})
 		}
+		fmt.Println("")
 	}
 }
 
 func BenchmarkDecode(b *testing.B) {
-	for _, test := range tests {
-		for _, batchType := range batchTypes {
+	for _, batchType := range batchTypes {
+		for _, test := range tests {
 			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
 				b.StopTimer()
 				batches := batchType.batchGen(test.gen())
@@ -102,6 +103,7 @@ func BenchmarkDecode(b *testing.B) {
 				}
 			})
 		}
+		fmt.Println("")
 	}
 }
 
