@@ -98,6 +98,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int, timedEven
 }
 
 func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+
 	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: genResource()}}}
 	for i := 0; i < metricsPerBatch/2; i++ {
 		startTime := time.Now()
@@ -115,23 +116,25 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			LabelKeys:   labelKeys,
 		}
 
-		var timeseries []*TimeSeries
+		var timeseries []*GaugeInt64TimeSeries
 		for j := 0; j < 5; j++ {
-			var points []*Point
+			var points []*GaugeInt64Value
 
 			pointTs := startTime.Add(time.Duration(time.Millisecond))
 
 			for k := 0; k < 5; k++ {
-				point := Point{
-					StartTimeUnspecified: true,
-					TimestampUnixnano:    core.TimeToTimestamp(pointTs),
-					Type:                 Point_INT64,
-					Int64Value:           int64(i * j * k),
+				point := GaugeInt64Value{
+					TimestampUnixnano: core.TimeToTimestamp(pointTs),
+					Value:             int64(i * j * k),
 				}
+
+				//sz := unsafe.Sizeof(point)
+				//log.Printf("size=%v", sz)
+
 				points = append(points, &point)
 			}
 
-			ts := TimeSeries{
+			ts := GaugeInt64TimeSeries{
 				LabelValues: []*LabelValue{
 					{Value: "val1"},
 					{Value: "val2"},
@@ -143,7 +146,11 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 
 		metric1 := &Metric{
 			MetricDescriptor: descr,
-			Timeseries:       timeseries,
+			Data: &Metric_GaugeInt64Data{
+				GaugeInt64Data: &GaugeInt64TimeSeriesList{
+					List: timeseries,
+				},
+			},
 		}
 
 		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, metric1)
@@ -156,27 +163,24 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			LabelKeys:   labelKeys,
 		}
 
-		timeseries = []*TimeSeries{}
+		var timeseries2 []*HistogramTimeSeries
 		for j := 0; j < 1; j++ {
-			var points []*Point
+			var points []*HistogramValue
 
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))
 
 			for k := 0; k < 5; k++ {
 				val := float64(i * j * k)
-				point := Point{
-					StartTimeUnspecified: true,
-					TimestampUnixnano:    pointTs,
-					Type:                 Point_HISTOGRAM,
-					HistogramValue: &HistogramValue{
-						Count:        1,
-						Sum:          val,
-						BucketBounds: []float64{0, val},
-						Buckets: []*HistogramValue_Bucket{
-							{
-								Count:                     1,
-								ExemplarValue:             val,
-								ExemplarTimestampUnixnano: pointTs,
+				point := HistogramValue{
+					TimestampUnixnano: pointTs,
+					Count:             1,
+					Sum:               val,
+					Buckets: []*HistogramValue_Bucket{
+						{
+							Count: 1,
+							Exemplar: &HistogramValue_Bucket_Exemplar{
+								Value:             val,
+								TimestampUnixnano: pointTs,
 							},
 						},
 					},
@@ -184,19 +188,28 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 				points = append(points, &point)
 			}
 
-			ts := TimeSeries{
+			ts := HistogramTimeSeries{
 				LabelValues: []*LabelValue{
 					{Value: "val1"},
 					{Value: "val2"},
 				},
+				BucketOptions: &HistogramTimeSeries_ExplicitBounds_{
+					ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
+						Bounds: []float64{0, 1000000},
+					},
+				},
 				Points: points,
 			}
-			timeseries = append(timeseries, &ts)
+			timeseries2 = append(timeseries2, &ts)
 		}
 
 		metric2 := &Metric{
 			MetricDescriptor: descr,
-			Timeseries:       timeseries,
+			Data: &Metric_HistogramData{
+				HistogramData: &HistogramTimeSeriesList{
+					List: timeseries2,
+				},
+			},
 		}
 
 		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, metric2)

@@ -35,29 +35,29 @@ const (
 	// Do not use this default value.
 	MetricDescriptor_UNSPECIFIED MetricDescriptor_Type = 0
 	// Integer gauge. The value can go both up and down over time.
-	// Corresponding value is stored in Point.int64_value.
+	// Corresponding values are stored in GaugeInt64TimeSeriesList.
 	MetricDescriptor_GAUGE_INT64 MetricDescriptor_Type = 1
 	// Floating point gauge. The value can go both up and down over time.
-	// Corresponding value is stored in Point.double_value.
+	// Corresponding values are stored in GaugeDoubleTimeSeriesList.
 	MetricDescriptor_GAUGE_DOUBLE MetricDescriptor_Type = 2
 	// Histogram gauge measurement.
 	// Used in scenarios like a snapshot of time the current items in a queue
 	// have spent there.
-	// Corresponding value is stored in Point.histogram_value. The count and sum of the
+	// Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
 	// histogram can go both up and down over time. Recorded values are always >= 0.
 	MetricDescriptor_GAUGE_HISTOGRAM MetricDescriptor_Type = 3
 	// Integer counter measurement. The value cannot decrease; if value is reset then
 	// Point.start_time_unixnano should also be reset.
-	// Corresponding value is stored in Point.int64_value.
+	// Corresponding values are stored in CounterInt64TimeSeriesList.
 	MetricDescriptor_COUNTER_INT64 MetricDescriptor_Type = 4
 	// Floating point counter measurement. The value cannot decrease, if
 	// resets then the start_time should also be reset. Recorded values are
 	// always >= 0.
-	// Corresponding value is stored in Point.double_value.
+	// Corresponding values are stored in CounterDoubleTimeSeriesList.
 	MetricDescriptor_COUNTER_DOUBLE MetricDescriptor_Type = 5
 	// Histogram cumulative measurement.
-	// Corresponding value is stored in Point.histogram_value. The count and sum of the
-	// histogram cannot decrease; if values are reset then Point.start_time_unixnano
+	// Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
+	// histogram cannot decrease; if values are reset then HistogramValue.start_time_unixnano
 	// should also be reset.
 	MetricDescriptor_CUMULATIVE_HISTOGRAM MetricDescriptor_Type = 6
 	// Summary value. Some frameworks implemented Histograms as a summary of observations
@@ -65,7 +65,7 @@ const (
 	// also provides a total count of observations and a sum of all observed
 	// values, it calculates configurable percentiles over a sliding time
 	// window.
-	// Corresponding value is stored in Point.summary_value.
+	// Corresponding values are stored in SummaryTimeSeriesList.
 	MetricDescriptor_SUMMARY MetricDescriptor_Type = 7
 )
 
@@ -99,39 +99,7 @@ func (MetricDescriptor_Type) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_9a96a8671bd66caf, []int{2, 0}
 }
 
-// ValueType is the enumeration of possible types that Point's value can have.
-type Point_ValueType int32
-
-const (
-	Point_INT64     Point_ValueType = 0
-	Point_DOUBLE    Point_ValueType = 1
-	Point_HISTOGRAM Point_ValueType = 2
-	Point_SUMMARY   Point_ValueType = 3
-)
-
-var Point_ValueType_name = map[int32]string{
-	0: "INT64",
-	1: "DOUBLE",
-	2: "HISTOGRAM",
-	3: "SUMMARY",
-}
-
-var Point_ValueType_value = map[string]int32{
-	"INT64":     0,
-	"DOUBLE":    1,
-	"HISTOGRAM": 2,
-	"SUMMARY":   3,
-}
-
-func (x Point_ValueType) String() string {
-	return proto.EnumName(Point_ValueType_name, int32(x))
-}
-
-func (Point_ValueType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{5, 0}
-}
-
-// A collection of metrics from a Resource.
+// A list of metrics from a Resource.
 type ResourceMetrics struct {
 	Resource             *Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
 	Metrics              []*Metric `protobuf:"bytes,2,rep,name=metrics,proto3" json:"metrics,omitempty"`
@@ -180,19 +148,68 @@ func (m *ResourceMetrics) GetMetrics() []*Metric {
 }
 
 // Defines a Metric which has one or more timeseries.
+//
+// The data model and relation between entities is shown in the diagram below.
+//
+// - Metric is composed of a Resource, a MetricDescriptor and a TimeSeriesList.
+// - MetricDescriptor contains a list of label keys (shown horizontally).
+// - TimeSeriesList is composed of a list of TimeSeries (shown vertically).
+// - TimeSeries contains a list of label values and a list of metric values (shown
+//   horizontally).
+//
+//  +------+   +--------+
+//  |      |-->|Resource|
+//  |      |   +--------+
+//  |      |
+//  |Metric|   +------------------------+
+//  |      |   | MetricDescriptor       |
+//  |      |   |+-----+-----+   +-----+ |
+//  |      |-->||label|label|...|label| |
+//  |      |   ||key1 |key2 |   |keyN | |
+//  +------+   |+-----+-----+   +-----+ |
+//     |       +------------------------+
+//     v
+//  +------+   +------------------------------+
+//  |      |   |+-----+-----+   +-----+       |
+//  | Time |   ||label|label|...|label|       |
+//  |Series|-->|+-----+-----+   +-----+       |
+//  |  1   |   |+-----+-----+-----+   +-----+ |
+//  |      |   ||value|value|value|...|value| |
+//  |      |   |+-----+-----+-----+   +-----+ |
+//  +------+   +------------------------------+
+//      .                      .
+//      .                      .
+//      .                      .
+//  +------+   +-----------------------------------+
+//  |      |   |+-----+-----+   +-----+            |
+//  | Time |   ||label|label|...|label|            |
+//  |Series|-->|+-----+-----+   +-----+            |
+//  |  N   |   |+-----+-----+-----+-----+   +-----+|
+//  |      |   ||value|value|value|value|...|value||
+//  |      |   |+-----+-----+-----+-----+   +-----+|
+//  +------+   +-----------------------------------+
 type Metric struct {
 	// metric_descriptor describes the Metric.
 	MetricDescriptor *MetricDescriptor `protobuf:"bytes,1,opt,name=metric_descriptor,json=metricDescriptor,proto3" json:"metric_descriptor,omitempty"`
-	// timeseries is one or more TimeSeries for a single metric, where each timeseries has
-	// one or more points.
-	Timeseries []*TimeSeries `protobuf:"bytes,2,rep,name=timeseries,proto3" json:"timeseries,omitempty"`
 	// resource that is associated with this metric. Optional. If not set, this metric
 	// should be part of a ResourceMetrics message that does include the resource
 	// information, unless resource information is unknown.
-	Resource             *Resource `protobuf:"bytes,3,opt,name=resource,proto3" json:"resource,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
-	XXX_unrecognized     []byte    `json:"-"`
-	XXX_sizecache        int32     `json:"-"`
+	Resource *Resource `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`
+	// data is s list of one or more TimeSeries for a single metric, where each timeseries has
+	// one or more points. Only of the following fields is used for the data, depending on
+	// the type of metric defined by MetricDescriptor.type field.
+	//
+	// Types that are valid to be assigned to Data:
+	//	*Metric_GaugeInt64Data
+	//	*Metric_GaugeDoubleData
+	//	*Metric_CounterInt64Data
+	//	*Metric_CounterDoubleData
+	//	*Metric_HistogramData
+	//	*Metric_SummaryData
+	Data                 isMetric_Data `protobuf_oneof:"data"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
 }
 
 func (m *Metric) Reset()         { *m = Metric{} }
@@ -227,18 +244,112 @@ func (m *Metric) GetMetricDescriptor() *MetricDescriptor {
 	return nil
 }
 
-func (m *Metric) GetTimeseries() []*TimeSeries {
-	if m != nil {
-		return m.Timeseries
-	}
-	return nil
-}
-
 func (m *Metric) GetResource() *Resource {
 	if m != nil {
 		return m.Resource
 	}
 	return nil
+}
+
+type isMetric_Data interface {
+	isMetric_Data()
+}
+
+type Metric_GaugeInt64Data struct {
+	GaugeInt64Data *GaugeInt64TimeSeriesList `protobuf:"bytes,3,opt,name=gauge_int64_data,json=gaugeInt64Data,proto3,oneof"`
+}
+
+type Metric_GaugeDoubleData struct {
+	GaugeDoubleData *GaugeDoubleTimeSeriesList `protobuf:"bytes,4,opt,name=gauge_double_data,json=gaugeDoubleData,proto3,oneof"`
+}
+
+type Metric_CounterInt64Data struct {
+	CounterInt64Data *CounterInt64TimeSeriesList `protobuf:"bytes,5,opt,name=counter_int64_data,json=counterInt64Data,proto3,oneof"`
+}
+
+type Metric_CounterDoubleData struct {
+	CounterDoubleData *CounterDoubleTimeSeriesList `protobuf:"bytes,6,opt,name=counter_double_data,json=counterDoubleData,proto3,oneof"`
+}
+
+type Metric_HistogramData struct {
+	HistogramData *HistogramTimeSeriesList `protobuf:"bytes,7,opt,name=histogram_data,json=histogramData,proto3,oneof"`
+}
+
+type Metric_SummaryData struct {
+	SummaryData *SummaryTimeSeriesList `protobuf:"bytes,8,opt,name=summary_data,json=summaryData,proto3,oneof"`
+}
+
+func (*Metric_GaugeInt64Data) isMetric_Data() {}
+
+func (*Metric_GaugeDoubleData) isMetric_Data() {}
+
+func (*Metric_CounterInt64Data) isMetric_Data() {}
+
+func (*Metric_CounterDoubleData) isMetric_Data() {}
+
+func (*Metric_HistogramData) isMetric_Data() {}
+
+func (*Metric_SummaryData) isMetric_Data() {}
+
+func (m *Metric) GetData() isMetric_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *Metric) GetGaugeInt64Data() *GaugeInt64TimeSeriesList {
+	if x, ok := m.GetData().(*Metric_GaugeInt64Data); ok {
+		return x.GaugeInt64Data
+	}
+	return nil
+}
+
+func (m *Metric) GetGaugeDoubleData() *GaugeDoubleTimeSeriesList {
+	if x, ok := m.GetData().(*Metric_GaugeDoubleData); ok {
+		return x.GaugeDoubleData
+	}
+	return nil
+}
+
+func (m *Metric) GetCounterInt64Data() *CounterInt64TimeSeriesList {
+	if x, ok := m.GetData().(*Metric_CounterInt64Data); ok {
+		return x.CounterInt64Data
+	}
+	return nil
+}
+
+func (m *Metric) GetCounterDoubleData() *CounterDoubleTimeSeriesList {
+	if x, ok := m.GetData().(*Metric_CounterDoubleData); ok {
+		return x.CounterDoubleData
+	}
+	return nil
+}
+
+func (m *Metric) GetHistogramData() *HistogramTimeSeriesList {
+	if x, ok := m.GetData().(*Metric_HistogramData); ok {
+		return x.HistogramData
+	}
+	return nil
+}
+
+func (m *Metric) GetSummaryData() *SummaryTimeSeriesList {
+	if x, ok := m.GetData().(*Metric_SummaryData); ok {
+		return x.SummaryData
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Metric) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*Metric_GaugeInt64Data)(nil),
+		(*Metric_GaugeDoubleData)(nil),
+		(*Metric_CounterInt64Data)(nil),
+		(*Metric_CounterDoubleData)(nil),
+		(*Metric_HistogramData)(nil),
+		(*Metric_SummaryData)(nil),
+	}
 }
 
 // Defines a metric type and its schema.
@@ -318,54 +429,660 @@ func (m *MetricDescriptor) GetLabelKeys() []string {
 	return nil
 }
 
-// TimeSeries is a collection of data points that describes the time-varying values
-// of a metric.
-type TimeSeries struct {
+// GaugeInt64TimeSeriesList is a list of timeseries of int64 Gauge.
+type GaugeInt64TimeSeriesList struct {
+	List                 []*GaugeInt64TimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
+}
+
+func (m *GaugeInt64TimeSeriesList) Reset()         { *m = GaugeInt64TimeSeriesList{} }
+func (m *GaugeInt64TimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*GaugeInt64TimeSeriesList) ProtoMessage()    {}
+func (*GaugeInt64TimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{3}
+}
+
+func (m *GaugeInt64TimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeInt64TimeSeriesList.Unmarshal(m, b)
+}
+func (m *GaugeInt64TimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeInt64TimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *GaugeInt64TimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeInt64TimeSeriesList.Merge(m, src)
+}
+func (m *GaugeInt64TimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_GaugeInt64TimeSeriesList.Size(m)
+}
+func (m *GaugeInt64TimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeInt64TimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GaugeInt64TimeSeriesList proto.InternalMessageInfo
+
+func (m *GaugeInt64TimeSeriesList) GetList() []*GaugeInt64TimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// GaugeDoubleTimeSeriesList is a list of timeseries of double Gauge.
+type GaugeDoubleTimeSeriesList struct {
+	List                 []*GaugeDoubleTimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *GaugeDoubleTimeSeriesList) Reset()         { *m = GaugeDoubleTimeSeriesList{} }
+func (m *GaugeDoubleTimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*GaugeDoubleTimeSeriesList) ProtoMessage()    {}
+func (*GaugeDoubleTimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{4}
+}
+
+func (m *GaugeDoubleTimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeDoubleTimeSeriesList.Unmarshal(m, b)
+}
+func (m *GaugeDoubleTimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeDoubleTimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *GaugeDoubleTimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeDoubleTimeSeriesList.Merge(m, src)
+}
+func (m *GaugeDoubleTimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_GaugeDoubleTimeSeriesList.Size(m)
+}
+func (m *GaugeDoubleTimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeDoubleTimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GaugeDoubleTimeSeriesList proto.InternalMessageInfo
+
+func (m *GaugeDoubleTimeSeriesList) GetList() []*GaugeDoubleTimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// CounterInt64TimeSeriesList is a list of timeseries of int64 Counter.
+type CounterInt64TimeSeriesList struct {
+	List                 []*CounterInt64TimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
+	XXX_unrecognized     []byte                    `json:"-"`
+	XXX_sizecache        int32                     `json:"-"`
+}
+
+func (m *CounterInt64TimeSeriesList) Reset()         { *m = CounterInt64TimeSeriesList{} }
+func (m *CounterInt64TimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*CounterInt64TimeSeriesList) ProtoMessage()    {}
+func (*CounterInt64TimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{5}
+}
+
+func (m *CounterInt64TimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterInt64TimeSeriesList.Unmarshal(m, b)
+}
+func (m *CounterInt64TimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterInt64TimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *CounterInt64TimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterInt64TimeSeriesList.Merge(m, src)
+}
+func (m *CounterInt64TimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_CounterInt64TimeSeriesList.Size(m)
+}
+func (m *CounterInt64TimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterInt64TimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterInt64TimeSeriesList proto.InternalMessageInfo
+
+func (m *CounterInt64TimeSeriesList) GetList() []*CounterInt64TimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// CounterDoubleTimeSeriesList is a list of timeseries of double Counter.
+type CounterDoubleTimeSeriesList struct {
+	List                 []*CounterDoubleTimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
+	XXX_unrecognized     []byte                     `json:"-"`
+	XXX_sizecache        int32                      `json:"-"`
+}
+
+func (m *CounterDoubleTimeSeriesList) Reset()         { *m = CounterDoubleTimeSeriesList{} }
+func (m *CounterDoubleTimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*CounterDoubleTimeSeriesList) ProtoMessage()    {}
+func (*CounterDoubleTimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{6}
+}
+
+func (m *CounterDoubleTimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterDoubleTimeSeriesList.Unmarshal(m, b)
+}
+func (m *CounterDoubleTimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterDoubleTimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *CounterDoubleTimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterDoubleTimeSeriesList.Merge(m, src)
+}
+func (m *CounterDoubleTimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_CounterDoubleTimeSeriesList.Size(m)
+}
+func (m *CounterDoubleTimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterDoubleTimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterDoubleTimeSeriesList proto.InternalMessageInfo
+
+func (m *CounterDoubleTimeSeriesList) GetList() []*CounterDoubleTimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// HistogramTimeSeriesList is a list of timeseries of Histogram.
+type HistogramTimeSeriesList struct {
+	List                 []*HistogramTimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *HistogramTimeSeriesList) Reset()         { *m = HistogramTimeSeriesList{} }
+func (m *HistogramTimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*HistogramTimeSeriesList) ProtoMessage()    {}
+func (*HistogramTimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{7}
+}
+
+func (m *HistogramTimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HistogramTimeSeriesList.Unmarshal(m, b)
+}
+func (m *HistogramTimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HistogramTimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *HistogramTimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HistogramTimeSeriesList.Merge(m, src)
+}
+func (m *HistogramTimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_HistogramTimeSeriesList.Size(m)
+}
+func (m *HistogramTimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_HistogramTimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HistogramTimeSeriesList proto.InternalMessageInfo
+
+func (m *HistogramTimeSeriesList) GetList() []*HistogramTimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// SummaryTimeSeriesList is a list of timeseries of Summary.
+type SummaryTimeSeriesList struct {
+	List                 []*SummaryTimeSeries `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *SummaryTimeSeriesList) Reset()         { *m = SummaryTimeSeriesList{} }
+func (m *SummaryTimeSeriesList) String() string { return proto.CompactTextString(m) }
+func (*SummaryTimeSeriesList) ProtoMessage()    {}
+func (*SummaryTimeSeriesList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{8}
+}
+
+func (m *SummaryTimeSeriesList) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SummaryTimeSeriesList.Unmarshal(m, b)
+}
+func (m *SummaryTimeSeriesList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SummaryTimeSeriesList.Marshal(b, m, deterministic)
+}
+func (m *SummaryTimeSeriesList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SummaryTimeSeriesList.Merge(m, src)
+}
+func (m *SummaryTimeSeriesList) XXX_Size() int {
+	return xxx_messageInfo_SummaryTimeSeriesList.Size(m)
+}
+func (m *SummaryTimeSeriesList) XXX_DiscardUnknown() {
+	xxx_messageInfo_SummaryTimeSeriesList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SummaryTimeSeriesList proto.InternalMessageInfo
+
+func (m *SummaryTimeSeriesList) GetList() []*SummaryTimeSeries {
+	if m != nil {
+		return m.List
+	}
+	return nil
+}
+
+// GaugeInt64TimeSeries is a list of data points that describes the time-varying values
+// of a int64 Gauge metric.
+type GaugeInt64TimeSeries struct {
 	// The set of label values that uniquely identify this timeseries. Applies to
 	// all points. The order of label values must match that of label keys in the
 	// metric descriptor.
 	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
 	// The data points of this timeseries. Point.value type MUST match the
 	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
-	Points               []*Point `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Points               []*GaugeInt64Value `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
-func (m *TimeSeries) Reset()         { *m = TimeSeries{} }
-func (m *TimeSeries) String() string { return proto.CompactTextString(m) }
-func (*TimeSeries) ProtoMessage()    {}
-func (*TimeSeries) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{3}
+func (m *GaugeInt64TimeSeries) Reset()         { *m = GaugeInt64TimeSeries{} }
+func (m *GaugeInt64TimeSeries) String() string { return proto.CompactTextString(m) }
+func (*GaugeInt64TimeSeries) ProtoMessage()    {}
+func (*GaugeInt64TimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{9}
 }
 
-func (m *TimeSeries) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TimeSeries.Unmarshal(m, b)
+func (m *GaugeInt64TimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeInt64TimeSeries.Unmarshal(m, b)
 }
-func (m *TimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TimeSeries.Marshal(b, m, deterministic)
+func (m *GaugeInt64TimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeInt64TimeSeries.Marshal(b, m, deterministic)
 }
-func (m *TimeSeries) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TimeSeries.Merge(m, src)
+func (m *GaugeInt64TimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeInt64TimeSeries.Merge(m, src)
 }
-func (m *TimeSeries) XXX_Size() int {
-	return xxx_messageInfo_TimeSeries.Size(m)
+func (m *GaugeInt64TimeSeries) XXX_Size() int {
+	return xxx_messageInfo_GaugeInt64TimeSeries.Size(m)
 }
-func (m *TimeSeries) XXX_DiscardUnknown() {
-	xxx_messageInfo_TimeSeries.DiscardUnknown(m)
+func (m *GaugeInt64TimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeInt64TimeSeries.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TimeSeries proto.InternalMessageInfo
+var xxx_messageInfo_GaugeInt64TimeSeries proto.InternalMessageInfo
 
-func (m *TimeSeries) GetLabelValues() []*LabelValue {
+func (m *GaugeInt64TimeSeries) GetLabelValues() []*LabelValue {
 	if m != nil {
 		return m.LabelValues
 	}
 	return nil
 }
 
-func (m *TimeSeries) GetPoints() []*Point {
+func (m *GaugeInt64TimeSeries) GetPoints() []*GaugeInt64Value {
+	if m != nil {
+		return m.Points
+	}
+	return nil
+}
+
+// GaugeDoubleTimeSeries is a list of data points that describes the time-varying values
+// of a double Gauge metric.
+type GaugeDoubleTimeSeries struct {
+	// The set of label values that uniquely identify this timeseries. Applies to
+	// all points. The order of label values must match that of label keys in the
+	// metric descriptor.
+	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
+	// The data points of this timeseries. Point.value type MUST match the
+	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+	Points               []*GaugeDoubleValue `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *GaugeDoubleTimeSeries) Reset()         { *m = GaugeDoubleTimeSeries{} }
+func (m *GaugeDoubleTimeSeries) String() string { return proto.CompactTextString(m) }
+func (*GaugeDoubleTimeSeries) ProtoMessage()    {}
+func (*GaugeDoubleTimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{10}
+}
+
+func (m *GaugeDoubleTimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeDoubleTimeSeries.Unmarshal(m, b)
+}
+func (m *GaugeDoubleTimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeDoubleTimeSeries.Marshal(b, m, deterministic)
+}
+func (m *GaugeDoubleTimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeDoubleTimeSeries.Merge(m, src)
+}
+func (m *GaugeDoubleTimeSeries) XXX_Size() int {
+	return xxx_messageInfo_GaugeDoubleTimeSeries.Size(m)
+}
+func (m *GaugeDoubleTimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeDoubleTimeSeries.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GaugeDoubleTimeSeries proto.InternalMessageInfo
+
+func (m *GaugeDoubleTimeSeries) GetLabelValues() []*LabelValue {
+	if m != nil {
+		return m.LabelValues
+	}
+	return nil
+}
+
+func (m *GaugeDoubleTimeSeries) GetPoints() []*GaugeDoubleValue {
+	if m != nil {
+		return m.Points
+	}
+	return nil
+}
+
+// CounterInt64TimeSeries is a list of data points that describes the time-varying values
+// of a int64 Counter metric.
+type CounterInt64TimeSeries struct {
+	// The set of label values that uniquely identify this timeseries. Applies to
+	// all points. The order of label values must match that of label keys in the
+	// metric descriptor.
+	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
+	// The data points of this timeseries. Point.value type MUST match the
+	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+	Points               []*CounterInt64Value `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *CounterInt64TimeSeries) Reset()         { *m = CounterInt64TimeSeries{} }
+func (m *CounterInt64TimeSeries) String() string { return proto.CompactTextString(m) }
+func (*CounterInt64TimeSeries) ProtoMessage()    {}
+func (*CounterInt64TimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{11}
+}
+
+func (m *CounterInt64TimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterInt64TimeSeries.Unmarshal(m, b)
+}
+func (m *CounterInt64TimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterInt64TimeSeries.Marshal(b, m, deterministic)
+}
+func (m *CounterInt64TimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterInt64TimeSeries.Merge(m, src)
+}
+func (m *CounterInt64TimeSeries) XXX_Size() int {
+	return xxx_messageInfo_CounterInt64TimeSeries.Size(m)
+}
+func (m *CounterInt64TimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterInt64TimeSeries.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterInt64TimeSeries proto.InternalMessageInfo
+
+func (m *CounterInt64TimeSeries) GetLabelValues() []*LabelValue {
+	if m != nil {
+		return m.LabelValues
+	}
+	return nil
+}
+
+func (m *CounterInt64TimeSeries) GetPoints() []*CounterInt64Value {
+	if m != nil {
+		return m.Points
+	}
+	return nil
+}
+
+// CounterDoubleTimeSeries is a list of data points that describes the time-varying values
+// of a double Counter metric.
+type CounterDoubleTimeSeries struct {
+	// The set of label values that uniquely identify this timeseries. Applies to
+	// all points. The order of label values must match that of label keys in the
+	// metric descriptor.
+	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
+	// The data points of this timeseries. Point.value type MUST match the
+	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+	Points               []*CounterDoubleValue `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *CounterDoubleTimeSeries) Reset()         { *m = CounterDoubleTimeSeries{} }
+func (m *CounterDoubleTimeSeries) String() string { return proto.CompactTextString(m) }
+func (*CounterDoubleTimeSeries) ProtoMessage()    {}
+func (*CounterDoubleTimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{12}
+}
+
+func (m *CounterDoubleTimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterDoubleTimeSeries.Unmarshal(m, b)
+}
+func (m *CounterDoubleTimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterDoubleTimeSeries.Marshal(b, m, deterministic)
+}
+func (m *CounterDoubleTimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterDoubleTimeSeries.Merge(m, src)
+}
+func (m *CounterDoubleTimeSeries) XXX_Size() int {
+	return xxx_messageInfo_CounterDoubleTimeSeries.Size(m)
+}
+func (m *CounterDoubleTimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterDoubleTimeSeries.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterDoubleTimeSeries proto.InternalMessageInfo
+
+func (m *CounterDoubleTimeSeries) GetLabelValues() []*LabelValue {
+	if m != nil {
+		return m.LabelValues
+	}
+	return nil
+}
+
+func (m *CounterDoubleTimeSeries) GetPoints() []*CounterDoubleValue {
+	if m != nil {
+		return m.Points
+	}
+	return nil
+}
+
+// HistogramTimeSeries is a list of data points that describes the time-varying values
+// of a Histogram.
+type HistogramTimeSeries struct {
+	// The set of label values that uniquely identify this timeseries. Applies to
+	// all points. The order of label values must match that of label keys in the
+	// metric descriptor.
+	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
+	// A histogram may optionally contain the distribution of the values in the population.
+	// If that is the case then "bucket_options" field below and "buckets" field in
+	// HistogramValue both must be defined. Otherwise both fields must be omitted in
+	// which case the distribution of values in the histogram is unknown and only the
+	// total count and sum are known.
+	// bucket_options apply to all points in this HistogramTimeSeries. To define
+	// different bucket_options to different points create separate instances of
+	// HistogramTimeSeries each with its own bucket_options.
+	//
+	// Types that are valid to be assigned to BucketOptions:
+	//	*HistogramTimeSeries_ExplicitBounds_
+	BucketOptions isHistogramTimeSeries_BucketOptions `protobuf_oneof:"bucket_options"`
+	// The data points of this timeseries. Point.value type MUST match the
+	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+	Points               []*HistogramValue `protobuf:"bytes,3,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *HistogramTimeSeries) Reset()         { *m = HistogramTimeSeries{} }
+func (m *HistogramTimeSeries) String() string { return proto.CompactTextString(m) }
+func (*HistogramTimeSeries) ProtoMessage()    {}
+func (*HistogramTimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{13}
+}
+
+func (m *HistogramTimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HistogramTimeSeries.Unmarshal(m, b)
+}
+func (m *HistogramTimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HistogramTimeSeries.Marshal(b, m, deterministic)
+}
+func (m *HistogramTimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HistogramTimeSeries.Merge(m, src)
+}
+func (m *HistogramTimeSeries) XXX_Size() int {
+	return xxx_messageInfo_HistogramTimeSeries.Size(m)
+}
+func (m *HistogramTimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_HistogramTimeSeries.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HistogramTimeSeries proto.InternalMessageInfo
+
+func (m *HistogramTimeSeries) GetLabelValues() []*LabelValue {
+	if m != nil {
+		return m.LabelValues
+	}
+	return nil
+}
+
+type isHistogramTimeSeries_BucketOptions interface {
+	isHistogramTimeSeries_BucketOptions()
+}
+
+type HistogramTimeSeries_ExplicitBounds_ struct {
+	ExplicitBounds *HistogramTimeSeries_ExplicitBounds `protobuf:"bytes,2,opt,name=explicit_bounds,json=explicitBounds,proto3,oneof"`
+}
+
+func (*HistogramTimeSeries_ExplicitBounds_) isHistogramTimeSeries_BucketOptions() {}
+
+func (m *HistogramTimeSeries) GetBucketOptions() isHistogramTimeSeries_BucketOptions {
+	if m != nil {
+		return m.BucketOptions
+	}
+	return nil
+}
+
+func (m *HistogramTimeSeries) GetExplicitBounds() *HistogramTimeSeries_ExplicitBounds {
+	if x, ok := m.GetBucketOptions().(*HistogramTimeSeries_ExplicitBounds_); ok {
+		return x.ExplicitBounds
+	}
+	return nil
+}
+
+func (m *HistogramTimeSeries) GetPoints() []*HistogramValue {
+	if m != nil {
+		return m.Points
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*HistogramTimeSeries) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*HistogramTimeSeries_ExplicitBounds_)(nil),
+	}
+}
+
+// ExplicitBounds specifies buckets with explicitly defined bounds for values.
+type HistogramTimeSeries_ExplicitBounds struct {
+	// The bucket boundaries are described by "bounds" field.
+	//
+	// This defines size(bounds) + 1 (= N) buckets. The boundaries for bucket
+	// at index i are:
+	//
+	// [0, bounds[i]) for i == 0
+	// [bounds[i-1], bounds[i]) for 0 < i < N-1
+	// [bounds[i], +infinity) for i == N-1
+	// The values in bounds array must be strictly increasing and > 0.
+	//
+	// Note: only [a, b) intervals are currently supported for each bucket. If we decides
+	// to also support (a, b] intervals we should add support for these by defining a boolean
+	// value which decides what type of intervals to use.
+	Bounds               []float64 `protobuf:"fixed64,1,rep,packed,name=bounds,proto3" json:"bounds,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *HistogramTimeSeries_ExplicitBounds) Reset()         { *m = HistogramTimeSeries_ExplicitBounds{} }
+func (m *HistogramTimeSeries_ExplicitBounds) String() string { return proto.CompactTextString(m) }
+func (*HistogramTimeSeries_ExplicitBounds) ProtoMessage()    {}
+func (*HistogramTimeSeries_ExplicitBounds) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{13, 0}
+}
+
+func (m *HistogramTimeSeries_ExplicitBounds) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HistogramTimeSeries_ExplicitBounds.Unmarshal(m, b)
+}
+func (m *HistogramTimeSeries_ExplicitBounds) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HistogramTimeSeries_ExplicitBounds.Marshal(b, m, deterministic)
+}
+func (m *HistogramTimeSeries_ExplicitBounds) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HistogramTimeSeries_ExplicitBounds.Merge(m, src)
+}
+func (m *HistogramTimeSeries_ExplicitBounds) XXX_Size() int {
+	return xxx_messageInfo_HistogramTimeSeries_ExplicitBounds.Size(m)
+}
+func (m *HistogramTimeSeries_ExplicitBounds) XXX_DiscardUnknown() {
+	xxx_messageInfo_HistogramTimeSeries_ExplicitBounds.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HistogramTimeSeries_ExplicitBounds proto.InternalMessageInfo
+
+func (m *HistogramTimeSeries_ExplicitBounds) GetBounds() []float64 {
+	if m != nil {
+		return m.Bounds
+	}
+	return nil
+}
+
+// SummaryTimeSeries is a list of data points that describes the time-varying values
+// of a Summary metric.
+type SummaryTimeSeries struct {
+	// The set of label values that uniquely identify this timeseries. Applies to
+	// all points. The order of label values must match that of label keys in the
+	// metric descriptor.
+	LabelValues []*LabelValue `protobuf:"bytes,1,rep,name=label_values,json=labelValues,proto3" json:"label_values,omitempty"`
+	// The data points of this timeseries. Point.value type MUST match the
+	// MetricDescriptor.type (see matching types in MetricDescriptor.Type comments).
+	Points               []*SummaryValue `protobuf:"bytes,2,rep,name=points,proto3" json:"points,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *SummaryTimeSeries) Reset()         { *m = SummaryTimeSeries{} }
+func (m *SummaryTimeSeries) String() string { return proto.CompactTextString(m) }
+func (*SummaryTimeSeries) ProtoMessage()    {}
+func (*SummaryTimeSeries) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{14}
+}
+
+func (m *SummaryTimeSeries) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SummaryTimeSeries.Unmarshal(m, b)
+}
+func (m *SummaryTimeSeries) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SummaryTimeSeries.Marshal(b, m, deterministic)
+}
+func (m *SummaryTimeSeries) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SummaryTimeSeries.Merge(m, src)
+}
+func (m *SummaryTimeSeries) XXX_Size() int {
+	return xxx_messageInfo_SummaryTimeSeries.Size(m)
+}
+func (m *SummaryTimeSeries) XXX_DiscardUnknown() {
+	xxx_messageInfo_SummaryTimeSeries.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SummaryTimeSeries proto.InternalMessageInfo
+
+func (m *SummaryTimeSeries) GetLabelValues() []*LabelValue {
+	if m != nil {
+		return m.LabelValues
+	}
+	return nil
+}
+
+func (m *SummaryTimeSeries) GetPoints() []*SummaryValue {
 	if m != nil {
 		return m.Points
 	}
@@ -388,7 +1105,7 @@ func (m *LabelValue) Reset()         { *m = LabelValue{} }
 func (m *LabelValue) String() string { return proto.CompactTextString(m) }
 func (*LabelValue) ProtoMessage()    {}
 func (*LabelValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{4}
+	return fileDescriptor_9a96a8671bd66caf, []int{15}
 }
 
 func (m *LabelValue) XXX_Unmarshal(b []byte) error {
@@ -423,153 +1140,257 @@ func (m *LabelValue) GetValueUnspecified() bool {
 	return false
 }
 
-// Point is a timestamped measurement.
-type Point struct {
-	// start_time_unixnano is the time when the cumulative value was reset to zero.
-	// Must be present for counter/cumulative metrics. The cumulative value is over the time
-	// interval (start_time_unixnano, timestamp_unixnano].
-	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-	StartTimeUnixnano int64 `protobuf:"varint,1,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
-	// start_time_unspecified must be set to true if start_time_unixnano value is unspecified.
-	// In that case the backend can use the previous recorded value for start_time_unixnano.
-	StartTimeUnspecified bool `protobuf:"varint,2,opt,name=start_time_unspecified,json=startTimeUnspecified,proto3" json:"start_time_unspecified,omitempty"`
+// GaugeInt64Value is a timestamped measurement of int64 Gauge.
+type GaugeInt64Value struct {
 	// timestamp_unixnano is the moment when this point was recorded.
 	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-	TimestampUnixnano int64 `protobuf:"varint,3,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
-	// timestamp_unspecified must be set to true if timestamp_unixnano value is unspecified.
-	// In that case timestamp_unixnano value will be decided by the backend.
-	TimestampUnspecified bool `protobuf:"varint,4,opt,name=timestamp_unspecified,json=timestampUnspecified,proto3" json:"timestamp_unspecified,omitempty"`
-	// type of the value.
-	Type Point_ValueType `protobuf:"varint,5,opt,name=type,proto3,enum=otlp.Point_ValueType" json:"type,omitempty"`
-	// A 64-bit integer.
-	Int64Value int64 `protobuf:"varint,6,opt,name=int64_value,json=int64Value,proto3" json:"int64_value,omitempty"`
-	// A 64-bit double-precision floating-point number.
-	DoubleValue float64 `protobuf:"fixed64,7,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
-	// A histogram value.
-	HistogramValue *HistogramValue `protobuf:"bytes,8,opt,name=histogram_value,json=histogramValue,proto3" json:"histogram_value,omitempty"`
-	// A summary value. This is not recommended, since it cannot be aggregated.
-	SummaryValue         *SummaryValue `protobuf:"bytes,9,opt,name=summary_value,json=summaryValue,proto3" json:"summary_value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
+	TimestampUnixnano int64 `protobuf:"varint,1,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
+	// value of Gauge.
+	Value                int64    `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Point) Reset()         { *m = Point{} }
-func (m *Point) String() string { return proto.CompactTextString(m) }
-func (*Point) ProtoMessage()    {}
-func (*Point) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{5}
+func (m *GaugeInt64Value) Reset()         { *m = GaugeInt64Value{} }
+func (m *GaugeInt64Value) String() string { return proto.CompactTextString(m) }
+func (*GaugeInt64Value) ProtoMessage()    {}
+func (*GaugeInt64Value) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{16}
 }
 
-func (m *Point) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Point.Unmarshal(m, b)
+func (m *GaugeInt64Value) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeInt64Value.Unmarshal(m, b)
 }
-func (m *Point) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Point.Marshal(b, m, deterministic)
+func (m *GaugeInt64Value) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeInt64Value.Marshal(b, m, deterministic)
 }
-func (m *Point) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Point.Merge(m, src)
+func (m *GaugeInt64Value) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeInt64Value.Merge(m, src)
 }
-func (m *Point) XXX_Size() int {
-	return xxx_messageInfo_Point.Size(m)
+func (m *GaugeInt64Value) XXX_Size() int {
+	return xxx_messageInfo_GaugeInt64Value.Size(m)
 }
-func (m *Point) XXX_DiscardUnknown() {
-	xxx_messageInfo_Point.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Point proto.InternalMessageInfo
-
-func (m *Point) GetStartTimeUnixnano() int64 {
-	if m != nil {
-		return m.StartTimeUnixnano
-	}
-	return 0
+func (m *GaugeInt64Value) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeInt64Value.DiscardUnknown(m)
 }
 
-func (m *Point) GetStartTimeUnspecified() bool {
-	if m != nil {
-		return m.StartTimeUnspecified
-	}
-	return false
-}
+var xxx_messageInfo_GaugeInt64Value proto.InternalMessageInfo
 
-func (m *Point) GetTimestampUnixnano() int64 {
+func (m *GaugeInt64Value) GetTimestampUnixnano() int64 {
 	if m != nil {
 		return m.TimestampUnixnano
 	}
 	return 0
 }
 
-func (m *Point) GetTimestampUnspecified() bool {
+func (m *GaugeInt64Value) GetValue() int64 {
 	if m != nil {
-		return m.TimestampUnspecified
-	}
-	return false
-}
-
-func (m *Point) GetType() Point_ValueType {
-	if m != nil {
-		return m.Type
-	}
-	return Point_INT64
-}
-
-func (m *Point) GetInt64Value() int64 {
-	if m != nil {
-		return m.Int64Value
+		return m.Value
 	}
 	return 0
 }
 
-func (m *Point) GetDoubleValue() float64 {
+// GaugeDoubleValue is a timestamped measurement of double Gauge.
+type GaugeDoubleValue struct {
+	// timestamp_unixnano is the moment when this point was recorded.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	TimestampUnixnano int64 `protobuf:"varint,1,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
+	// value of Gauge.
+	Value                float64  `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GaugeDoubleValue) Reset()         { *m = GaugeDoubleValue{} }
+func (m *GaugeDoubleValue) String() string { return proto.CompactTextString(m) }
+func (*GaugeDoubleValue) ProtoMessage()    {}
+func (*GaugeDoubleValue) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{17}
+}
+
+func (m *GaugeDoubleValue) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GaugeDoubleValue.Unmarshal(m, b)
+}
+func (m *GaugeDoubleValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GaugeDoubleValue.Marshal(b, m, deterministic)
+}
+func (m *GaugeDoubleValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GaugeDoubleValue.Merge(m, src)
+}
+func (m *GaugeDoubleValue) XXX_Size() int {
+	return xxx_messageInfo_GaugeDoubleValue.Size(m)
+}
+func (m *GaugeDoubleValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_GaugeDoubleValue.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GaugeDoubleValue proto.InternalMessageInfo
+
+func (m *GaugeDoubleValue) GetTimestampUnixnano() int64 {
 	if m != nil {
-		return m.DoubleValue
+		return m.TimestampUnixnano
 	}
 	return 0
 }
 
-func (m *Point) GetHistogramValue() *HistogramValue {
+func (m *GaugeDoubleValue) GetValue() float64 {
 	if m != nil {
-		return m.HistogramValue
+		return m.Value
 	}
-	return nil
+	return 0
 }
 
-func (m *Point) GetSummaryValue() *SummaryValue {
+// CounterInt64Value is a timestamped measurement of int64 counter or cumulative value.
+type CounterInt64Value struct {
+	// start_time_unixnano is the time when the cumulative value was reset to zero.
+	// The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates that timestamp is unspecified. In that case the timestamp
+	// may be decided by the backend.
+	StartTimeUnixnano int64 `protobuf:"varint,1,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// timestamp_unixnano is the moment when this point was recorded.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	TimestampUnixnano int64 `protobuf:"varint,2,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
+	// value of Counter.
+	Value                int64    `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CounterInt64Value) Reset()         { *m = CounterInt64Value{} }
+func (m *CounterInt64Value) String() string { return proto.CompactTextString(m) }
+func (*CounterInt64Value) ProtoMessage()    {}
+func (*CounterInt64Value) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{18}
+}
+
+func (m *CounterInt64Value) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterInt64Value.Unmarshal(m, b)
+}
+func (m *CounterInt64Value) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterInt64Value.Marshal(b, m, deterministic)
+}
+func (m *CounterInt64Value) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterInt64Value.Merge(m, src)
+}
+func (m *CounterInt64Value) XXX_Size() int {
+	return xxx_messageInfo_CounterInt64Value.Size(m)
+}
+func (m *CounterInt64Value) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterInt64Value.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterInt64Value proto.InternalMessageInfo
+
+func (m *CounterInt64Value) GetStartTimeUnixnano() int64 {
 	if m != nil {
-		return m.SummaryValue
+		return m.StartTimeUnixnano
 	}
-	return nil
+	return 0
+}
+
+func (m *CounterInt64Value) GetTimestampUnixnano() int64 {
+	if m != nil {
+		return m.TimestampUnixnano
+	}
+	return 0
+}
+
+func (m *CounterInt64Value) GetValue() int64 {
+	if m != nil {
+		return m.Value
+	}
+	return 0
+}
+
+// CounterDoubleValue is a timestamped measurement of double counter or cumulative value.
+type CounterDoubleValue struct {
+	// start_time_unixnano is the time when the cumulative value was reset to zero.
+	// The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates that timestamp is unspecified. In that case the timestamp
+	// may be decided by the backend.
+	StartTimeUnixnano int64 `protobuf:"varint,1,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// timestamp_unixnano is the moment when this point was recorded.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	TimestampUnixnano int64 `protobuf:"varint,2,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
+	// value of Counter.
+	Value                float64  `protobuf:"fixed64,3,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CounterDoubleValue) Reset()         { *m = CounterDoubleValue{} }
+func (m *CounterDoubleValue) String() string { return proto.CompactTextString(m) }
+func (*CounterDoubleValue) ProtoMessage()    {}
+func (*CounterDoubleValue) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{19}
+}
+
+func (m *CounterDoubleValue) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CounterDoubleValue.Unmarshal(m, b)
+}
+func (m *CounterDoubleValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CounterDoubleValue.Marshal(b, m, deterministic)
+}
+func (m *CounterDoubleValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CounterDoubleValue.Merge(m, src)
+}
+func (m *CounterDoubleValue) XXX_Size() int {
+	return xxx_messageInfo_CounterDoubleValue.Size(m)
+}
+func (m *CounterDoubleValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_CounterDoubleValue.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CounterDoubleValue proto.InternalMessageInfo
+
+func (m *CounterDoubleValue) GetStartTimeUnixnano() int64 {
+	if m != nil {
+		return m.StartTimeUnixnano
+	}
+	return 0
+}
+
+func (m *CounterDoubleValue) GetTimestampUnixnano() int64 {
+	if m != nil {
+		return m.TimestampUnixnano
+	}
+	return 0
+}
+
+func (m *CounterDoubleValue) GetValue() float64 {
+	if m != nil {
+		return m.Value
+	}
+	return 0
 }
 
 // Histogram contains summary statistics for a population of values. It may
 // optionally contain the distribution of those values across a set of buckets.
 type HistogramValue struct {
+	// start_time_unixnano is the time when the cumulative value was reset to zero.
+	// The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates that timestamp is unspecified. In that case the timestamp
+	// may be decided by the backend.
+	// Note: this field is always unspecified if MetricDescriptor.type==GAUGE_HISTOGRAM.
+	StartTimeUnixnano int64 `protobuf:"varint,1,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// timestamp_unixnano is the moment when this point was recorded.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	TimestampUnixnano int64 `protobuf:"varint,2,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
 	// count is the number of values in the population. Must be non-negative. This value
 	// must be equal to the sum of the "count" fields in buckets if a histogram is
 	// provided.
-	Count int64 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	Count int64 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
 	// sum of the values in the population. If count is zero then this field
 	// must be zero. This value must be equal to the sum of the "sum" fields in buckets if
 	// a histogram is provided.
-	Sum float64 `protobuf:"fixed64,2,opt,name=sum,proto3" json:"sum,omitempty"`
-	// bucket_bounds is an optional field. If present specifies buckets with explicitly
-	// defined bounds. The bucket boundaries are described by this field.
-	//
-	// This defines size(bucket_bounds) + 1 (= N) buckets. The boundaries for bucket
-	// at index i are:
-	//
-	// [0, bucket_bounds[i]) for i == 0
-	// [bucket_bounds[i-1], bucket_bounds[i]) for 0 < i < N-1
-	// [bucket_bounds[i], +infinity) for i == N-1
-	// The values in bucket_bounds array must be strictly increasing and > 0.
-	// Don't change bucket boundaries within a TimeSeries if your backend doesn't
-	// support this.
-	// If bucket_bounds field is unspecified then bucket bounds are not explicitly defined.
-	// TODO: If OpenMetrics decides to support (a, b] intervals we should add
-	// support for these by defining a boolean value which decides what type of
-	// intervals to use.
-	BucketBounds []float64 `protobuf:"fixed64,3,rep,packed,name=bucket_bounds,json=bucketBounds,proto3" json:"bucket_bounds,omitempty"`
+	Sum float64 `protobuf:"fixed64,4,opt,name=sum,proto3" json:"sum,omitempty"`
 	// buckets is an optional field contains the values of histogram for each bucket.
 	//
 	// The sum of the values in the buckets "count" field must equal the value in the
@@ -577,7 +1398,11 @@ type HistogramValue struct {
 	//
 	// The number of elements in buckets array must be by one greater than the
 	// number of elements in bucket_bounds array.
-	Buckets              []*HistogramValue_Bucket `protobuf:"bytes,4,rep,name=buckets,proto3" json:"buckets,omitempty"`
+	//
+	// Note: if HistogramTimeSeries.bucket_options defines bucket bounds then this field
+	// must also be present and number of elements in this field must be equal to the
+	// number of buckets defined by bucket_options.
+	Buckets              []*HistogramValue_Bucket `protobuf:"bytes,6,rep,name=buckets,proto3" json:"buckets,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
 	XXX_unrecognized     []byte                   `json:"-"`
 	XXX_sizecache        int32                    `json:"-"`
@@ -587,7 +1412,7 @@ func (m *HistogramValue) Reset()         { *m = HistogramValue{} }
 func (m *HistogramValue) String() string { return proto.CompactTextString(m) }
 func (*HistogramValue) ProtoMessage()    {}
 func (*HistogramValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{6}
+	return fileDescriptor_9a96a8671bd66caf, []int{20}
 }
 
 func (m *HistogramValue) XXX_Unmarshal(b []byte) error {
@@ -608,6 +1433,20 @@ func (m *HistogramValue) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_HistogramValue proto.InternalMessageInfo
 
+func (m *HistogramValue) GetStartTimeUnixnano() int64 {
+	if m != nil {
+		return m.StartTimeUnixnano
+	}
+	return 0
+}
+
+func (m *HistogramValue) GetTimestampUnixnano() int64 {
+	if m != nil {
+		return m.TimestampUnixnano
+	}
+	return 0
+}
+
 func (m *HistogramValue) GetCount() int64 {
 	if m != nil {
 		return m.Count
@@ -622,13 +1461,6 @@ func (m *HistogramValue) GetSum() float64 {
 	return 0
 }
 
-func (m *HistogramValue) GetBucketBounds() []float64 {
-	if m != nil {
-		return m.BucketBounds
-	}
-	return nil
-}
-
 func (m *HistogramValue) GetBuckets() []*HistogramValue_Bucket {
 	if m != nil {
 		return m.Buckets
@@ -638,28 +1470,21 @@ func (m *HistogramValue) GetBuckets() []*HistogramValue_Bucket {
 
 // Bucket contains values for a bucket.
 type HistogramValue_Bucket struct {
-	// The number of values in each bucket of the histogram, as described in
-	// bucket_bounds.
+	// The number of values in each bucket of the histogram, as described by
+	// bucket_options.
 	Count int64 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
-	// Value of the exemplar point. It determines which bucket the exemplar belongs to.
-	ExemplarValue float64 `protobuf:"fixed64,2,opt,name=exemplar_value,json=exemplarValue,proto3" json:"exemplar_value,omitempty"`
-	// The observation (sampling) time of the above value.
-	ExemplarTimestampUnixnano int64 `protobuf:"varint,3,opt,name=exemplar_timestamp_unixnano,json=exemplarTimestampUnixnano,proto3" json:"exemplar_timestamp_unixnano,omitempty"`
-	// timestamp_unspecified must be set to true if timestamp_unixnano value is unspecified.
-	// In that case timestamp_unixnano value will be decided by the backend.
-	ExemplarTimestampUnspecified bool `protobuf:"varint,4,opt,name=exemplar_timestamp_unspecified,json=exemplarTimestampUnspecified,proto3" json:"exemplar_timestamp_unspecified,omitempty"`
-	// exemplar_attachments are contextual information about the example value.
-	ExemplarAttachments  []*StringKeyValuePair `protobuf:"bytes,5,rep,name=exemplar_attachments,json=exemplarAttachments,proto3" json:"exemplar_attachments,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
-	XXX_unrecognized     []byte                `json:"-"`
-	XXX_sizecache        int32                 `json:"-"`
+	// exemplar is an optional representative value of the bucket.
+	Exemplar             *HistogramValue_Bucket_Exemplar `protobuf:"bytes,2,opt,name=exemplar,proto3" json:"exemplar,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                        `json:"-"`
+	XXX_unrecognized     []byte                          `json:"-"`
+	XXX_sizecache        int32                           `json:"-"`
 }
 
 func (m *HistogramValue_Bucket) Reset()         { *m = HistogramValue_Bucket{} }
 func (m *HistogramValue_Bucket) String() string { return proto.CompactTextString(m) }
 func (*HistogramValue_Bucket) ProtoMessage()    {}
 func (*HistogramValue_Bucket) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{6, 0}
+	return fileDescriptor_9a96a8671bd66caf, []int{20, 0}
 }
 
 func (m *HistogramValue_Bucket) XXX_Unmarshal(b []byte) error {
@@ -687,30 +1512,73 @@ func (m *HistogramValue_Bucket) GetCount() int64 {
 	return 0
 }
 
-func (m *HistogramValue_Bucket) GetExemplarValue() float64 {
+func (m *HistogramValue_Bucket) GetExemplar() *HistogramValue_Bucket_Exemplar {
 	if m != nil {
-		return m.ExemplarValue
+		return m.Exemplar
+	}
+	return nil
+}
+
+// Exemplars are example points that may be used to annotate aggregated
+// Histogram values. They are metadata that gives information about a
+// particular value added to a Histogram bucket.
+type HistogramValue_Bucket_Exemplar struct {
+	// Value of the exemplar point. It determines which bucket the exemplar belongs to.
+	// If bucket_options define bounds for this bucket then this value must be within
+	// the defined bounds.
+	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	// The observation (sampling) time of the above value.
+	TimestampUnixnano int64 `protobuf:"varint,3,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
+	// exemplar_attachments are contextual information about the example value.
+	// Keys in this list must be unique.
+	Attachments          []*StringKeyValuePair `protobuf:"bytes,5,rep,name=attachments,proto3" json:"attachments,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *HistogramValue_Bucket_Exemplar) Reset()         { *m = HistogramValue_Bucket_Exemplar{} }
+func (m *HistogramValue_Bucket_Exemplar) String() string { return proto.CompactTextString(m) }
+func (*HistogramValue_Bucket_Exemplar) ProtoMessage()    {}
+func (*HistogramValue_Bucket_Exemplar) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9a96a8671bd66caf, []int{20, 0, 0}
+}
+
+func (m *HistogramValue_Bucket_Exemplar) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HistogramValue_Bucket_Exemplar.Unmarshal(m, b)
+}
+func (m *HistogramValue_Bucket_Exemplar) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HistogramValue_Bucket_Exemplar.Marshal(b, m, deterministic)
+}
+func (m *HistogramValue_Bucket_Exemplar) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HistogramValue_Bucket_Exemplar.Merge(m, src)
+}
+func (m *HistogramValue_Bucket_Exemplar) XXX_Size() int {
+	return xxx_messageInfo_HistogramValue_Bucket_Exemplar.Size(m)
+}
+func (m *HistogramValue_Bucket_Exemplar) XXX_DiscardUnknown() {
+	xxx_messageInfo_HistogramValue_Bucket_Exemplar.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HistogramValue_Bucket_Exemplar proto.InternalMessageInfo
+
+func (m *HistogramValue_Bucket_Exemplar) GetValue() float64 {
+	if m != nil {
+		return m.Value
 	}
 	return 0
 }
 
-func (m *HistogramValue_Bucket) GetExemplarTimestampUnixnano() int64 {
+func (m *HistogramValue_Bucket_Exemplar) GetTimestampUnixnano() int64 {
 	if m != nil {
-		return m.ExemplarTimestampUnixnano
+		return m.TimestampUnixnano
 	}
 	return 0
 }
 
-func (m *HistogramValue_Bucket) GetExemplarTimestampUnspecified() bool {
+func (m *HistogramValue_Bucket_Exemplar) GetAttachments() []*StringKeyValuePair {
 	if m != nil {
-		return m.ExemplarTimestampUnspecified
-	}
-	return false
-}
-
-func (m *HistogramValue_Bucket) GetExemplarAttachments() []*StringKeyValuePair {
-	if m != nil {
-		return m.ExemplarAttachments
+		return m.Attachments
 	}
 	return nil
 }
@@ -728,7 +1596,7 @@ func (m *StringKeyValuePair) Reset()         { *m = StringKeyValuePair{} }
 func (m *StringKeyValuePair) String() string { return proto.CompactTextString(m) }
 func (*StringKeyValuePair) ProtoMessage()    {}
 func (*StringKeyValuePair) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{7}
+	return fileDescriptor_9a96a8671bd66caf, []int{21}
 }
 
 func (m *StringKeyValuePair) XXX_Unmarshal(b []byte) error {
@@ -765,18 +1633,27 @@ func (m *StringKeyValuePair) GetValue() string {
 
 // The start_timestamp only applies to the count and sum in the SummaryValue.
 type SummaryValue struct {
+	// start_time_unixnano is the time when the cumulative value was reset to zero.
+	// The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates that timestamp is unspecified. In that case the timestamp
+	// may be decided by the backend.
+	StartTimeUnixnano int64 `protobuf:"varint,1,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// timestamp_unixnano is the moment when this point was recorded.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	TimestampUnixnano int64 `protobuf:"varint,2,opt,name=timestamp_unixnano,json=timestampUnixnano,proto3" json:"timestamp_unixnano,omitempty"`
 	// The total number of recorded values since start_time. Optional since
 	// some systems don't expose this.
-	Count int64 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	Count int64 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
 	// The total sum of recorded values since start_time. Optional since some
 	// systems don't expose this. If count is zero then this field must be zero.
-	Sum float64 `protobuf:"fixed64,2,opt,name=sum,proto3" json:"sum,omitempty"`
+	Sum float64 `protobuf:"fixed64,4,opt,name=sum,proto3" json:"sum,omitempty"`
 	// count_and_sum_unspecified must be set to true if count and sum values are unknown or
 	// unspecified.
-	CountAndSumUnspecified bool `protobuf:"varint,3,opt,name=count_and_sum_unspecified,json=countAndSumUnspecified,proto3" json:"count_and_sum_unspecified,omitempty"`
+	CountAndSumUnspecified bool `protobuf:"varint,5,opt,name=count_and_sum_unspecified,json=countAndSumUnspecified,proto3" json:"count_and_sum_unspecified,omitempty"`
 	// A list of values at different percentiles of the distribution calculated
 	// from the current snapshot. The percentiles must be strictly increasing.
-	PercentileValues     []*SummaryValue_ValueAtPercentile `protobuf:"bytes,4,rep,name=percentile_values,json=percentileValues,proto3" json:"percentile_values,omitempty"`
+	PercentileValues     []*SummaryValue_ValueAtPercentile `protobuf:"bytes,6,rep,name=percentile_values,json=percentileValues,proto3" json:"percentile_values,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}                          `json:"-"`
 	XXX_unrecognized     []byte                            `json:"-"`
 	XXX_sizecache        int32                             `json:"-"`
@@ -786,7 +1663,7 @@ func (m *SummaryValue) Reset()         { *m = SummaryValue{} }
 func (m *SummaryValue) String() string { return proto.CompactTextString(m) }
 func (*SummaryValue) ProtoMessage()    {}
 func (*SummaryValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{8}
+	return fileDescriptor_9a96a8671bd66caf, []int{22}
 }
 
 func (m *SummaryValue) XXX_Unmarshal(b []byte) error {
@@ -806,6 +1683,20 @@ func (m *SummaryValue) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_SummaryValue proto.InternalMessageInfo
+
+func (m *SummaryValue) GetStartTimeUnixnano() int64 {
+	if m != nil {
+		return m.StartTimeUnixnano
+	}
+	return 0
+}
+
+func (m *SummaryValue) GetTimestampUnixnano() int64 {
+	if m != nil {
+		return m.TimestampUnixnano
+	}
+	return 0
+}
 
 func (m *SummaryValue) GetCount() int64 {
 	if m != nil {
@@ -851,7 +1742,7 @@ func (m *SummaryValue_ValueAtPercentile) Reset()         { *m = SummaryValue_Val
 func (m *SummaryValue_ValueAtPercentile) String() string { return proto.CompactTextString(m) }
 func (*SummaryValue_ValueAtPercentile) ProtoMessage()    {}
 func (*SummaryValue_ValueAtPercentile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9a96a8671bd66caf, []int{8, 0}
+	return fileDescriptor_9a96a8671bd66caf, []int{22, 0}
 }
 
 func (m *SummaryValue_ValueAtPercentile) XXX_Unmarshal(b []byte) error {
@@ -888,15 +1779,30 @@ func (m *SummaryValue_ValueAtPercentile) GetValue() float64 {
 
 func init() {
 	proto.RegisterEnum("otlp.MetricDescriptor_Type", MetricDescriptor_Type_name, MetricDescriptor_Type_value)
-	proto.RegisterEnum("otlp.Point_ValueType", Point_ValueType_name, Point_ValueType_value)
 	proto.RegisterType((*ResourceMetrics)(nil), "otlp.ResourceMetrics")
 	proto.RegisterType((*Metric)(nil), "otlp.Metric")
 	proto.RegisterType((*MetricDescriptor)(nil), "otlp.MetricDescriptor")
-	proto.RegisterType((*TimeSeries)(nil), "otlp.TimeSeries")
+	proto.RegisterType((*GaugeInt64TimeSeriesList)(nil), "otlp.GaugeInt64TimeSeriesList")
+	proto.RegisterType((*GaugeDoubleTimeSeriesList)(nil), "otlp.GaugeDoubleTimeSeriesList")
+	proto.RegisterType((*CounterInt64TimeSeriesList)(nil), "otlp.CounterInt64TimeSeriesList")
+	proto.RegisterType((*CounterDoubleTimeSeriesList)(nil), "otlp.CounterDoubleTimeSeriesList")
+	proto.RegisterType((*HistogramTimeSeriesList)(nil), "otlp.HistogramTimeSeriesList")
+	proto.RegisterType((*SummaryTimeSeriesList)(nil), "otlp.SummaryTimeSeriesList")
+	proto.RegisterType((*GaugeInt64TimeSeries)(nil), "otlp.GaugeInt64TimeSeries")
+	proto.RegisterType((*GaugeDoubleTimeSeries)(nil), "otlp.GaugeDoubleTimeSeries")
+	proto.RegisterType((*CounterInt64TimeSeries)(nil), "otlp.CounterInt64TimeSeries")
+	proto.RegisterType((*CounterDoubleTimeSeries)(nil), "otlp.CounterDoubleTimeSeries")
+	proto.RegisterType((*HistogramTimeSeries)(nil), "otlp.HistogramTimeSeries")
+	proto.RegisterType((*HistogramTimeSeries_ExplicitBounds)(nil), "otlp.HistogramTimeSeries.ExplicitBounds")
+	proto.RegisterType((*SummaryTimeSeries)(nil), "otlp.SummaryTimeSeries")
 	proto.RegisterType((*LabelValue)(nil), "otlp.LabelValue")
-	proto.RegisterType((*Point)(nil), "otlp.Point")
+	proto.RegisterType((*GaugeInt64Value)(nil), "otlp.GaugeInt64Value")
+	proto.RegisterType((*GaugeDoubleValue)(nil), "otlp.GaugeDoubleValue")
+	proto.RegisterType((*CounterInt64Value)(nil), "otlp.CounterInt64Value")
+	proto.RegisterType((*CounterDoubleValue)(nil), "otlp.CounterDoubleValue")
 	proto.RegisterType((*HistogramValue)(nil), "otlp.HistogramValue")
 	proto.RegisterType((*HistogramValue_Bucket)(nil), "otlp.HistogramValue.Bucket")
+	proto.RegisterType((*HistogramValue_Bucket_Exemplar)(nil), "otlp.HistogramValue.Bucket.Exemplar")
 	proto.RegisterType((*StringKeyValuePair)(nil), "otlp.StringKeyValuePair")
 	proto.RegisterType((*SummaryValue)(nil), "otlp.SummaryValue")
 	proto.RegisterType((*SummaryValue_ValueAtPercentile)(nil), "otlp.SummaryValue.ValueAtPercentile")
@@ -905,68 +1811,84 @@ func init() {
 func init() { proto.RegisterFile("metric_data.proto", fileDescriptor_9a96a8671bd66caf) }
 
 var fileDescriptor_9a96a8671bd66caf = []byte{
-	// 999 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x56, 0x5d, 0x6f, 0xe3, 0x44,
-	0x17, 0x5e, 0xc7, 0xf9, 0x68, 0x4e, 0x3e, 0xea, 0x4c, 0xb3, 0x95, 0xdb, 0xee, 0xbb, 0x6f, 0xf0,
-	0x02, 0x0a, 0x20, 0x0c, 0xdb, 0x96, 0x45, 0x48, 0xb0, 0x52, 0x92, 0x86, 0x36, 0x6a, 0xd3, 0x84,
-	0x49, 0x52, 0x89, 0x2b, 0xcb, 0x71, 0x66, 0xb7, 0x56, 0xe3, 0x0f, 0x79, 0xc6, 0xab, 0xcd, 0xaf,
-	0xe0, 0x96, 0x1b, 0x7e, 0x01, 0x17, 0xfc, 0x11, 0x7e, 0x09, 0xbf, 0x80, 0x4b, 0xe4, 0x19, 0x7f,
-	0xa5, 0xed, 0x22, 0xee, 0x66, 0x9e, 0xf3, 0x3c, 0x73, 0xe6, 0x9c, 0xf3, 0x78, 0x64, 0x68, 0x39,
-	0x84, 0x05, 0xb6, 0x65, 0xac, 0x4c, 0x66, 0xea, 0x7e, 0xe0, 0x31, 0x0f, 0x15, 0x3d, 0xb6, 0xf6,
-	0x0f, 0xdb, 0x8c, 0xac, 0x49, 0x14, 0xdc, 0xe4, 0x62, 0x1a, 0x81, 0x5d, 0x4c, 0xa8, 0x17, 0x06,
-	0x16, 0x19, 0x73, 0x21, 0x45, 0x9f, 0xc3, 0x4e, 0x10, 0x43, 0xaa, 0xd4, 0x91, 0xba, 0xb5, 0xe3,
-	0xa6, 0x1e, 0x9d, 0xa0, 0x27, 0x44, 0x9c, 0xc6, 0xd1, 0xa7, 0x50, 0x11, 0xf9, 0xa8, 0x5a, 0xe8,
-	0xc8, 0xdd, 0xda, 0x71, 0x5d, 0x50, 0xc5, 0x59, 0x38, 0x09, 0x6a, 0xbf, 0x4b, 0x50, 0x16, 0x18,
-	0x1a, 0x64, 0x57, 0x24, 0xd4, 0x0a, 0x6c, 0x9f, 0x79, 0x41, 0x9c, 0x67, 0x3f, 0x2f, 0x3e, 0x4b,
-	0xa3, 0x58, 0x71, 0xee, 0x21, 0xe8, 0x6b, 0x00, 0x66, 0x3b, 0x84, 0x92, 0xc0, 0x26, 0x49, 0x6a,
-	0x45, 0xa8, 0xe7, 0xb6, 0x43, 0x66, 0x1c, 0xc7, 0x39, 0xce, 0x56, 0x55, 0xf2, 0xbf, 0x57, 0xa5,
-	0xfd, 0x59, 0x00, 0xe5, 0xfe, 0x25, 0x10, 0x82, 0xa2, 0x6b, 0x3a, 0xa2, 0x25, 0x55, 0xcc, 0xd7,
-	0xa8, 0x03, 0xb5, 0xa4, 0x08, 0xdb, 0x73, 0xd5, 0x02, 0x0f, 0xe5, 0xa1, 0x48, 0x15, 0xba, 0x36,
-	0xe3, 0x29, 0xab, 0x98, 0xaf, 0xd1, 0x57, 0x50, 0x64, 0x1b, 0x9f, 0xa8, 0xc5, 0x8e, 0xd4, 0x6d,
-	0x1e, 0x1f, 0x3d, 0x5e, 0xb4, 0x3e, 0xdf, 0xf8, 0x04, 0x73, 0x22, 0xfa, 0x1f, 0xc0, 0xda, 0x5c,
-	0x92, 0xb5, 0x71, 0x47, 0x36, 0x54, 0x2d, 0x75, 0xe4, 0x6e, 0x15, 0x57, 0x39, 0x72, 0x49, 0x36,
-	0x54, 0xfb, 0x4d, 0x82, 0x62, 0xc4, 0x46, 0xbb, 0x50, 0x5b, 0x5c, 0xcf, 0xa6, 0xc3, 0xc1, 0xe8,
-	0xc7, 0xd1, 0xf0, 0x4c, 0x79, 0x12, 0x01, 0xe7, 0xbd, 0xc5, 0xf9, 0xd0, 0x18, 0x5d, 0xcf, 0x5f,
-	0x9d, 0x2a, 0x12, 0x52, 0xa0, 0x2e, 0x80, 0xb3, 0xc9, 0xa2, 0x7f, 0x35, 0x54, 0x0a, 0x68, 0x0f,
-	0x76, 0x05, 0x72, 0x31, 0x9a, 0xcd, 0x27, 0xe7, 0xb8, 0x37, 0x56, 0x64, 0xd4, 0x82, 0xc6, 0x60,
-	0xb2, 0xb8, 0x9e, 0x0f, 0x71, 0xac, 0x2c, 0x22, 0x04, 0xcd, 0x04, 0x8a, 0xb5, 0x25, 0xa4, 0x42,
-	0x7b, 0xb0, 0x18, 0x2f, 0xae, 0x7a, 0xf3, 0xd1, 0x4d, 0xfe, 0x80, 0x32, 0xaa, 0x41, 0x65, 0xb6,
-	0x18, 0x8f, 0x7b, 0xf8, 0x67, 0xa5, 0xa2, 0xbd, 0x01, 0xc8, 0x86, 0x82, 0x4e, 0xa0, 0x2e, 0x8a,
-	0x79, 0x67, 0xae, 0x43, 0x42, 0x55, 0x29, 0x3f, 0xbc, 0xab, 0x28, 0x72, 0x13, 0x05, 0x70, 0x6d,
-	0x9d, 0xae, 0x29, 0x7a, 0x01, 0x65, 0xdf, 0xb3, 0x5d, 0x96, 0xcc, 0xba, 0x26, 0xe8, 0xd3, 0x08,
-	0xc3, 0x71, 0x48, 0x9b, 0x00, 0x64, 0x7a, 0xd4, 0x86, 0x12, 0xcf, 0x10, 0x0f, 0x4c, 0x6c, 0xd0,
-	0x17, 0xd0, 0xe2, 0x0b, 0x23, 0x74, 0xa9, 0x4f, 0x2c, 0xfb, 0x8d, 0x4d, 0x56, 0x7c, 0x6e, 0x3b,
-	0x58, 0xe1, 0x81, 0x45, 0x86, 0x6b, 0x7f, 0xcb, 0x50, 0xe2, 0x29, 0x90, 0x0e, 0x7b, 0x94, 0x99,
-	0x01, 0x33, 0x22, 0x47, 0x19, 0xa1, 0x6b, 0xbf, 0x77, 0x4d, 0xd7, 0xe3, 0x47, 0xcb, 0xb8, 0xc5,
-	0x43, 0x51, 0x89, 0x8b, 0x38, 0x80, 0x4e, 0x61, 0x7f, 0x8b, 0x7f, 0x3f, 0x57, 0x3b, 0x27, 0x49,
-	0x63, 0xe8, 0x4b, 0x40, 0xdc, 0xb1, 0xcc, 0x74, 0xfc, 0x2c, 0x89, 0x2c, 0x92, 0xa4, 0x91, 0x34,
-	0xc9, 0x09, 0x3c, 0xcd, 0xd3, 0xb3, 0x1c, 0x45, 0x91, 0x23, 0xa7, 0xc8, 0x72, 0x7c, 0x16, 0x9b,
-	0xaf, 0xc4, 0xcd, 0xf7, 0x34, 0xd7, 0x47, 0x9d, 0xf7, 0x2d, 0x67, 0xbb, 0xff, 0x43, 0xcd, 0x76,
-	0xd9, 0xab, 0x53, 0x31, 0x29, 0xb5, 0xcc, 0xef, 0x01, 0x1c, 0x12, 0x2d, 0xfe, 0x08, 0xea, 0x2b,
-	0x2f, 0x5c, 0xae, 0x49, 0xcc, 0xa8, 0x74, 0xa4, 0xae, 0x84, 0x6b, 0x02, 0x13, 0x94, 0x1f, 0x60,
-	0xf7, 0xd6, 0xa6, 0xcc, 0x7b, 0x1b, 0x98, 0x4e, 0xcc, 0xda, 0xe1, 0x5f, 0x5f, 0x5b, 0x64, 0xbe,
-	0x48, 0x82, 0x62, 0xe8, 0xcd, 0xdb, 0xad, 0x3d, 0xfa, 0x16, 0x1a, 0x34, 0x74, 0x1c, 0x33, 0xd8,
-	0xc4, 0xe2, 0x2a, 0x17, 0x23, 0x21, 0x9e, 0x89, 0x90, 0x90, 0xd6, 0x69, 0x6e, 0xa7, 0xbd, 0x86,
-	0x6a, 0x5a, 0x0e, 0xaa, 0x42, 0x49, 0xd8, 0xf8, 0x09, 0x02, 0x28, 0xc7, 0xf6, 0x95, 0x50, 0x03,
-	0xaa, 0x99, 0x67, 0x0b, 0x79, 0xcf, 0xca, 0xda, 0x1f, 0x32, 0x34, 0xb7, 0xef, 0x16, 0x19, 0xca,
-	0xf2, 0x42, 0x97, 0xc5, 0x53, 0x17, 0x1b, 0xa4, 0x80, 0x4c, 0x43, 0x87, 0x8f, 0x55, 0xc2, 0xd1,
-	0x12, 0xbd, 0x80, 0xc6, 0x32, 0xb4, 0xee, 0x08, 0x33, 0x96, 0x5e, 0xe8, 0xae, 0xa8, 0x2a, 0x77,
-	0xe4, 0xae, 0x84, 0xeb, 0x02, 0xec, 0x73, 0x0c, 0x7d, 0x03, 0x15, 0xb1, 0xa7, 0x6a, 0x91, 0x3b,
-	0xfa, 0xe8, 0xb1, 0x7e, 0xe8, 0x7d, 0xce, 0xc1, 0x09, 0xf7, 0xf0, 0xd7, 0x02, 0x94, 0x05, 0xf6,
-	0x81, 0xeb, 0x7c, 0x02, 0x4d, 0xf2, 0x9e, 0x38, 0xfe, 0xda, 0x0c, 0xe2, 0x8e, 0x89, 0x9b, 0x35,
-	0x12, 0x54, 0xd4, 0xf2, 0x1a, 0x8e, 0x52, 0xda, 0x07, 0x2d, 0x77, 0x90, 0x50, 0xe6, 0x0f, 0xac,
-	0x77, 0x06, 0xcf, 0x1f, 0xd5, 0xdf, 0xf7, 0xe0, 0xb3, 0x47, 0x8e, 0xc8, 0xbc, 0x78, 0x09, 0xed,
-	0xf4, 0x14, 0x93, 0x31, 0xd3, 0xba, 0x75, 0x48, 0xf4, 0x8d, 0x97, 0x78, 0x47, 0xd4, 0x78, 0xc8,
-	0x2c, 0xb0, 0xdd, 0xb7, 0x97, 0x44, 0x0c, 0x76, 0x6a, 0xda, 0x01, 0xde, 0x4b, 0x54, 0xbd, 0x4c,
-	0xa4, 0x7d, 0x0f, 0xe8, 0x21, 0x35, 0x1a, 0xcf, 0x1d, 0xd9, 0xc4, 0x6f, 0x40, 0xb4, 0xcc, 0xde,
-	0x85, 0x42, 0xee, 0x5d, 0xd0, 0x7e, 0x29, 0x40, 0x3d, 0x6f, 0xa7, 0xff, 0x3c, 0xed, 0xef, 0xe0,
-	0x80, 0x87, 0x0c, 0xd3, 0x5d, 0x19, 0x34, 0x74, 0xb6, 0x9a, 0x20, 0xf3, 0x26, 0xec, 0x73, 0x42,
-	0xcf, 0x5d, 0xcd, 0x42, 0x27, 0x5f, 0xfe, 0x4f, 0xd0, 0xf2, 0x49, 0x60, 0x11, 0x97, 0xd9, 0xc9,
-	0x27, 0x94, 0xb8, 0xe1, 0xe3, 0x87, 0x06, 0x17, 0x9f, 0x67, 0x8f, 0x4d, 0x53, 0x09, 0x56, 0x32,
-	0xb9, 0x78, 0x27, 0x0f, 0x47, 0xd0, 0x7a, 0x40, 0x43, 0xcf, 0x01, 0x32, 0x22, 0xaf, 0x47, 0xc2,
-	0x39, 0x64, 0xbb, 0x23, 0x52, 0xdc, 0x91, 0xfe, 0x05, 0x3c, 0xb3, 0x3d, 0xdd, 0xf3, 0x89, 0x6b,
-	0x11, 0x97, 0x86, 0x54, 0xfc, 0x30, 0xe8, 0x2c, 0x30, 0x2d, 0xa2, 0xbf, 0x7b, 0xd9, 0x87, 0x79,
-	0xb4, 0x9a, 0x46, 0xe0, 0x54, 0xfa, 0xab, 0x70, 0x30, 0xf1, 0x89, 0x3b, 0x10, 0x4c, 0x0e, 0xea,
-	0x3c, 0xae, 0xdf, 0xbc, 0x5c, 0x96, 0xb9, 0xf2, 0xe4, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x5a,
-	0x7b, 0xc7, 0x74, 0x9b, 0x08, 0x00, 0x00,
+	// 1249 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x97, 0xd9, 0x6e, 0xdb, 0x46,
+	0x14, 0x86, 0x43, 0x6d, 0xb6, 0x8f, 0x1c, 0x89, 0x1a, 0x3b, 0xb6, 0xac, 0x2c, 0x75, 0x89, 0xa0,
+	0x30, 0x92, 0x86, 0x59, 0x1b, 0xa0, 0x45, 0x2f, 0xa2, 0x2d, 0xb6, 0x12, 0xcb, 0x56, 0x47, 0x92,
+	0x8b, 0x5e, 0x09, 0x34, 0x35, 0x55, 0x88, 0x88, 0x0b, 0x38, 0xc3, 0xc0, 0x2a, 0x8a, 0xa2, 0x97,
+	0x0d, 0xfa, 0x0c, 0x7d, 0x96, 0xbe, 0x40, 0xfb, 0x22, 0xbd, 0xc8, 0x33, 0x14, 0x9c, 0x21, 0x25,
+	0x52, 0x14, 0x1d, 0xc0, 0x05, 0x82, 0xde, 0x18, 0xc3, 0xb3, 0x7c, 0xe7, 0x70, 0xe6, 0xfc, 0x43,
+	0x19, 0x2a, 0x26, 0x61, 0xae, 0xa1, 0x8f, 0xc6, 0x1a, 0xd3, 0x54, 0xc7, 0xb5, 0x99, 0x8d, 0x72,
+	0x36, 0x9b, 0x3a, 0xb5, 0x6d, 0x46, 0xa6, 0xc4, 0x77, 0xce, 0x22, 0x3e, 0x85, 0x40, 0x19, 0x13,
+	0x6a, 0x7b, 0xae, 0x4e, 0xba, 0x3c, 0x91, 0xa2, 0x7b, 0xb0, 0xee, 0x06, 0xa6, 0xaa, 0xb4, 0x2f,
+	0x1d, 0x14, 0x9f, 0x94, 0x54, 0x9f, 0xa0, 0x86, 0x81, 0x78, 0xee, 0x47, 0x5f, 0xc0, 0x9a, 0xa8,
+	0x47, 0xab, 0x99, 0xfd, 0xec, 0x41, 0xf1, 0xc9, 0xa6, 0x08, 0x15, 0x2c, 0x1c, 0x3a, 0x95, 0xbf,
+	0x73, 0x50, 0x10, 0x36, 0xd4, 0x5c, 0xb4, 0x48, 0xa8, 0xee, 0x1a, 0x0e, 0xb3, 0xdd, 0xa0, 0xce,
+	0x4e, 0x34, 0xb9, 0x35, 0xf7, 0x62, 0xd9, 0x5c, 0xb2, 0xc4, 0x7a, 0xcc, 0x7c, 0xa4, 0xc7, 0x57,
+	0x20, 0x4f, 0x34, 0x6f, 0x42, 0x46, 0x86, 0xc5, 0x9e, 0x3f, 0xe3, 0x2f, 0x5f, 0xcd, 0xf2, 0x9c,
+	0x3b, 0x22, 0xe7, 0xd0, 0xf7, 0x76, 0x7c, 0xe7, 0xc0, 0x30, 0x49, 0x9f, 0xb8, 0x06, 0xa1, 0xc7,
+	0x06, 0x65, 0x47, 0xd7, 0x70, 0x69, 0x32, 0xf7, 0xb5, 0x34, 0xa6, 0xa1, 0x2e, 0x54, 0x04, 0x6b,
+	0x6c, 0x7b, 0xe7, 0x53, 0x22, 0x60, 0x39, 0x0e, 0xfb, 0x2c, 0x02, 0x6b, 0x71, 0x6f, 0x82, 0x56,
+	0x9e, 0x2c, 0x9c, 0x1c, 0xd7, 0x03, 0xa4, 0xdb, 0x9e, 0xc5, 0x88, 0x1b, 0x6d, 0x2e, 0xcf, 0x79,
+	0xfb, 0x82, 0xd7, 0x14, 0xfe, 0xd5, 0xed, 0xc9, 0x7a, 0xc4, 0xcb, 0x89, 0x7d, 0xd8, 0x0a, 0x89,
+	0xd1, 0x16, 0x0b, 0x1c, 0xf9, 0x79, 0x0c, 0x99, 0xd2, 0x64, 0x45, 0x8f, 0xba, 0x39, 0xf4, 0x25,
+	0x94, 0xde, 0x18, 0x94, 0xd9, 0x13, 0x57, 0x33, 0x05, 0x6f, 0x8d, 0xf3, 0x6e, 0x0b, 0xde, 0x51,
+	0xe8, 0x4b, 0xb0, 0xae, 0xcf, 0xd3, 0x38, 0xe7, 0x05, 0x6c, 0x52, 0xcf, 0x34, 0xb5, 0x60, 0x04,
+	0xab, 0xeb, 0x9c, 0x72, 0x53, 0x50, 0xfa, 0xc2, 0x93, 0x60, 0x14, 0x83, 0x14, 0x9f, 0xd0, 0x28,
+	0x40, 0xce, 0xcf, 0x54, 0xfe, 0xca, 0x80, 0xbc, 0x3c, 0x26, 0x08, 0x41, 0xce, 0xd2, 0x4c, 0x31,
+	0xb4, 0x1b, 0x98, 0xaf, 0xd1, 0x3e, 0x14, 0xc3, 0x31, 0x33, 0x6c, 0x8b, 0xcf, 0xca, 0x06, 0x8e,
+	0x9a, 0xfc, 0x2c, 0xcf, 0x32, 0x18, 0x1f, 0x89, 0x0d, 0xcc, 0xd7, 0xe8, 0x21, 0xe4, 0xd8, 0xcc,
+	0x21, 0xfc, 0x64, 0x4b, 0x61, 0x83, 0xcb, 0xf5, 0xd4, 0xc1, 0xcc, 0x21, 0x98, 0x07, 0xa2, 0xdb,
+	0x00, 0x53, 0xed, 0x9c, 0x4c, 0x47, 0x6f, 0xc9, 0x8c, 0x56, 0xf3, 0xfb, 0xd9, 0x83, 0x0d, 0xbc,
+	0xc1, 0x2d, 0xaf, 0xc9, 0x8c, 0x2a, 0x7f, 0x48, 0x90, 0xf3, 0xa3, 0x51, 0x19, 0x8a, 0xc3, 0x93,
+	0x7e, 0xaf, 0xdd, 0xec, 0xbc, 0xec, 0xb4, 0x5b, 0xf2, 0x35, 0xdf, 0x70, 0x58, 0x1f, 0x1e, 0xb6,
+	0x47, 0x9d, 0x93, 0xc1, 0xf3, 0x67, 0xb2, 0x84, 0x64, 0xd8, 0x14, 0x86, 0xd6, 0xe9, 0xb0, 0x71,
+	0xdc, 0x96, 0x33, 0x68, 0x0b, 0xca, 0xc2, 0x72, 0xd4, 0xe9, 0x0f, 0x4e, 0x0f, 0x71, 0xbd, 0x2b,
+	0x67, 0x51, 0x05, 0xae, 0x37, 0x4f, 0x87, 0x27, 0x83, 0x36, 0x0e, 0x32, 0x73, 0x08, 0x41, 0x29,
+	0x34, 0x05, 0xb9, 0x79, 0x54, 0x85, 0xed, 0xe6, 0xb0, 0x3b, 0x3c, 0xae, 0x0f, 0x3a, 0x67, 0x51,
+	0x40, 0x01, 0x15, 0x61, 0xad, 0x3f, 0xec, 0x76, 0xeb, 0xf8, 0x07, 0x79, 0x4d, 0x79, 0x05, 0xd5,
+	0x34, 0x11, 0x20, 0x15, 0x72, 0x53, 0x83, 0xb2, 0xaa, 0xc4, 0xf5, 0x5d, 0x4b, 0x97, 0x0c, 0xe6,
+	0x71, 0xca, 0x31, 0xec, 0xa5, 0x6a, 0xc0, 0xdf, 0xd8, 0x08, 0xec, 0xe6, 0x25, 0x92, 0x09, 0x68,
+	0x27, 0x50, 0x4b, 0x57, 0x00, 0x7a, 0x14, 0xc3, 0xdd, 0xba, 0x4c, 0x31, 0x01, 0xaf, 0x07, 0x37,
+	0x2f, 0x19, 0x7f, 0xf4, 0x38, 0x06, 0xbc, 0x7d, 0xa9, 0x5e, 0x02, 0xe2, 0x11, 0xec, 0xa6, 0x08,
+	0x00, 0x3d, 0x88, 0xd1, 0xf6, 0x52, 0xd5, 0x12, 0x90, 0x5a, 0x70, 0x63, 0xa5, 0x08, 0xd0, 0xfd,
+	0x18, 0x67, 0x37, 0x45, 0x2f, 0x01, 0xe5, 0x27, 0xd8, 0x5e, 0x75, 0x3a, 0xe8, 0x29, 0x6c, 0x8a,
+	0x11, 0x7d, 0xa7, 0x4d, 0x3d, 0x42, 0x03, 0x98, 0x2c, 0x60, 0xc7, 0xbe, 0xe7, 0xcc, 0x77, 0xe0,
+	0xe2, 0x74, 0xbe, 0xa6, 0xe8, 0x01, 0x14, 0x1c, 0xdb, 0xb0, 0x58, 0x78, 0xbd, 0xdf, 0x58, 0x3e,
+	0x7e, 0x91, 0x13, 0x04, 0x29, 0x3f, 0xc3, 0x8d, 0x95, 0x87, 0x79, 0xb5, 0xe2, 0xea, 0x52, 0xf1,
+	0x9d, 0xc4, 0xb8, 0xc4, 0xab, 0xff, 0x02, 0x3b, 0xab, 0xcf, 0xfe, 0x6a, 0xe5, 0x1f, 0x2e, 0x95,
+	0xdf, 0x4d, 0x8e, 0x57, 0xbc, 0xfe, 0xaf, 0x12, 0xec, 0xa6, 0xcc, 0xca, 0xd5, 0x3a, 0x78, 0xb4,
+	0xd4, 0x41, 0x75, 0xc5, 0x3c, 0xc6, 0x5b, 0x78, 0x9f, 0x81, 0xad, 0x15, 0x03, 0x76, 0xb5, 0xf2,
+	0x7d, 0x28, 0x93, 0x0b, 0x67, 0x6a, 0xe8, 0x06, 0x1b, 0x9d, 0xdb, 0x9e, 0x35, 0xa6, 0xc1, 0xb7,
+	0xf6, 0x20, 0x75, 0x92, 0xd5, 0x76, 0x90, 0xd0, 0xe0, 0xf1, 0xfe, 0x17, 0x94, 0xc4, 0x2c, 0xe8,
+	0xcb, 0xf9, 0x3b, 0x65, 0x79, 0x0f, 0xdb, 0x4b, 0xac, 0xd8, 0xfb, 0xd4, 0x0e, 0xa0, 0x14, 0x27,
+	0xa2, 0x1d, 0x28, 0x04, 0xbd, 0xf8, 0xef, 0x20, 0xe1, 0xe0, 0xa9, 0x21, 0x43, 0xe9, 0xdc, 0xd3,
+	0xdf, 0x12, 0x36, 0xb2, 0xf9, 0xbd, 0x4e, 0x15, 0x06, 0x95, 0x84, 0x46, 0xae, 0xb6, 0x11, 0xf7,
+	0x96, 0xce, 0x01, 0xc5, 0x14, 0x18, 0x3f, 0x81, 0x53, 0x80, 0x05, 0x06, 0x6d, 0x43, 0x9e, 0x17,
+	0x0a, 0xbe, 0x49, 0xe2, 0x01, 0xdd, 0x87, 0x0a, 0x5f, 0x8c, 0x3c, 0x8b, 0x3a, 0x44, 0x37, 0x7e,
+	0x34, 0xc8, 0x98, 0x6f, 0xed, 0x3a, 0x96, 0xb9, 0x63, 0xb8, 0xb0, 0x2b, 0x67, 0x50, 0x5e, 0x92,
+	0x1b, 0x7a, 0x00, 0x88, 0x19, 0x26, 0xa1, 0x4c, 0x33, 0x9d, 0x91, 0x67, 0x19, 0x17, 0x96, 0x66,
+	0xd9, 0xbc, 0x44, 0x16, 0x57, 0xe6, 0x9e, 0x61, 0xe0, 0x58, 0x34, 0x91, 0xe1, 0x11, 0xe2, 0x41,
+	0xf9, 0x1e, 0xe4, 0x65, 0x25, 0xfd, 0x27, 0xb0, 0x14, 0x82, 0x7f, 0x93, 0xa0, 0x92, 0x10, 0x09,
+	0x52, 0x61, 0x8b, 0x32, 0xcd, 0x65, 0x23, 0x1f, 0x93, 0x60, 0x73, 0x97, 0x7f, 0x4c, 0x73, 0xf6,
+	0xea, 0x56, 0x32, 0x1f, 0x6d, 0x25, 0x1b, 0x7d, 0xc7, 0xf7, 0x12, 0xa0, 0xa4, 0x5a, 0x3e, 0x69,
+	0x2f, 0xf3, 0x6d, 0xf9, 0x33, 0x0b, 0xa5, 0xf8, 0x94, 0x7f, 0x82, 0x3e, 0xf8, 0x6f, 0xb9, 0x70,
+	0x4f, 0xf8, 0x03, 0x92, 0x21, 0x4b, 0x3d, 0x93, 0xff, 0xb4, 0x91, 0xb0, 0xbf, 0x44, 0x5f, 0xc1,
+	0x9a, 0x90, 0x0e, 0xad, 0x16, 0xa2, 0xdf, 0xe5, 0x78, 0xb7, 0x6a, 0x83, 0xc7, 0xe0, 0x30, 0xb6,
+	0xf6, 0x41, 0x82, 0x82, 0xb0, 0x2d, 0x2a, 0x49, 0xd1, 0x4a, 0x2f, 0x60, 0x9d, 0x5c, 0x10, 0xd3,
+	0x99, 0x6a, 0x6e, 0x70, 0x71, 0xdc, 0xbd, 0x04, 0xac, 0xb6, 0x83, 0x58, 0x3c, 0xcf, 0xaa, 0xfd,
+	0x2e, 0xc1, 0x7a, 0x68, 0x5e, 0x3d, 0x6d, 0x29, 0x7b, 0x92, 0x4d, 0xdb, 0x93, 0x6f, 0xa0, 0xa8,
+	0x31, 0xa6, 0xe9, 0x6f, 0x4c, 0xe2, 0xeb, 0x39, 0x1f, 0xbd, 0x57, 0xfb, 0xcc, 0x35, 0xac, 0xc9,
+	0x6b, 0x22, 0x14, 0xdd, 0xd3, 0x0c, 0x17, 0x47, 0x83, 0x95, 0x6f, 0x01, 0x25, 0x43, 0xfc, 0xfd,
+	0x7c, 0x4b, 0x66, 0x81, 0xc0, 0xfd, 0x65, 0xbc, 0xd1, 0x50, 0xf4, 0xca, 0x87, 0x0c, 0x6c, 0x46,
+	0x6f, 0x8c, 0xff, 0xcb, 0xe9, 0x7f, 0x0d, 0x7b, 0xdc, 0x35, 0xd2, 0xac, 0xf1, 0x88, 0x7a, 0x66,
+	0xec, 0x52, 0xca, 0xf3, 0x4b, 0x69, 0x87, 0x07, 0xd4, 0xad, 0x71, 0xdf, 0x33, 0x23, 0x57, 0x13,
+	0xfa, 0x0e, 0x2a, 0x0e, 0x71, 0x75, 0x62, 0x31, 0x63, 0x4a, 0xc2, 0x1b, 0x55, 0x8c, 0xd0, 0xdd,
+	0xe4, 0x15, 0xa9, 0xf2, 0xbf, 0x75, 0xd6, 0x9b, 0xa7, 0x60, 0x79, 0x91, 0x2e, 0xae, 0xda, 0x5a,
+	0x07, 0x2a, 0x89, 0x30, 0x74, 0x07, 0x60, 0x11, 0xc8, 0x37, 0x48, 0xc2, 0x11, 0xcb, 0xea, 0xc9,
+	0x68, 0x1c, 0xc1, 0x2d, 0xc3, 0x56, 0x6d, 0x87, 0x58, 0x3a, 0xb1, 0xa8, 0x47, 0xc5, 0x7f, 0xbc,
+	0x2a, 0x73, 0x35, 0x9d, 0xa8, 0xef, 0x1e, 0x37, 0x60, 0xe0, 0xaf, 0x7a, 0xbe, 0xb1, 0x27, 0xfd,
+	0x93, 0xd9, 0x3b, 0x75, 0x88, 0xd5, 0x14, 0x91, 0xdc, 0xa8, 0x72, 0xbf, 0x7a, 0xf6, 0xf8, 0xbc,
+	0xc0, 0x33, 0x9f, 0xfe, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x60, 0xe0, 0xbf, 0x7a, 0x5c, 0x0f, 0x00,
+	0x00,
 }
