@@ -61,6 +61,19 @@ message ResourceMetrics {
 //                       |+-----+-----+-----+-----+   +-----+|
 //                       +-----------------------------------+
 //
+//-----------------------------------------------------------------------
+// TimeSeries contain an array of values, each value corresponding to a given moment in
+// time. Each element of TimeSeries array is timestamped. The timestamps value in the
+// array are differential, encoded as the number of nanoseconds since the previous
+// element's timestamp. The first element's timestamp is the number of nanoseconds since
+// UNIX Epoch 00:00:00 UTC on 1 January 1970. Differential timestamp encoding reduces
+// encoded (wire) size significantly due to Protobuf varint encoding favouring smaller
+// integer numbers.
+//
+// TimeSeries are strongly typed: the element of a TimeSeries array has
+// a specific Protobuf message depending on the type of the metric and thus
+// there are currently 6 TimeSeriesList and 6 TimeSeries messages, which
+// correspond to the types of metric values.
 message Metric {
   // metric_descriptor describes the Metric.
   MetricDescriptor metric_descriptor = 1;
@@ -300,9 +313,11 @@ message LabelValue {
 
 // GaugeInt64Value is a timestamped measurement of int64 Gauge.
 message GaugeInt64Value {
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 1;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 1;
 
   // value of Gauge.
   int64 value = 2;
@@ -310,9 +325,11 @@ message GaugeInt64Value {
 
 // GaugeDoubleValue is a timestamped measurement of double Gauge.
 message GaugeDoubleValue {
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 1;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 1;
 
   // value of Gauge.
   double value = 2;
@@ -323,13 +340,20 @@ message CounterInt64Value {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  // Value of 0 indicates that timestamp is unspecified. In that case the timestamp
-  // may be decided by the backend.
+  //
+  // Value of 0 indicates that the start_time is the same as that of the previous
+  // data point in this timeseries. When create timeseries of this type it is recommended
+  // to omit this value if the start_time does not change, since it results in more
+  // compact encoding on the wire.
+  // If the value of 0 occurs for the first data point in the timeseries it means that
+  // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 2;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 2;
 
   // value of Counter.
   int64 value = 3;
@@ -340,13 +364,20 @@ message CounterDoubleValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  // Value of 0 indicates that timestamp is unspecified. In that case the timestamp
-  // may be decided by the backend.
+  //
+  // Value of 0 indicates that the start_time is the same as that of the previous
+  // data point in this timeseries. When create timeseries of this type it is recommended
+  // to omit this value if the start_time does not change, since it results in more
+  // compact encoding on the wire.
+  // If the value of 0 occurs for the first data point in the timeseries it means that
+  // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 2;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 2;
 
   // value of Counter.
   double value = 3;
@@ -358,14 +389,21 @@ message HistogramValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  // Value of 0 indicates that timestamp is unspecified. In that case the timestamp
-  // may be decided by the backend.
-  // Note: this field is always unspecified if MetricDescriptor.type==GAUGE_HISTOGRAM.
+  //
+  // Value of 0 indicates that the start_time is the same as that of the previous
+  // data point in this timeseries. When create timeseries of this type it is recommended
+  // to omit this value if the start_time does not change, since it results in more
+  // compact encoding on the wire.
+  // If the value of 0 occurs for the first data point in the timeseries it means that
+  // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
+  // Note: this field is always unspecified and ignored if MetricDescriptor.type==GAUGE_HISTOGRAM.
   int64 start_time_unixnano = 1;
 
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 2;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 2;
 
   // count is the number of values in the population. Must be non-negative. This value
   // must be equal to the sum of the "count" fields in buckets if a histogram is
@@ -429,13 +467,20 @@ message SummaryValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  // Value of 0 indicates that timestamp is unspecified. In that case the timestamp
-  // may be decided by the backend.
+  //
+  // Value of 0 indicates that the start_time is the same as that of the previous
+  // data point in this timeseries. When create timeseries of this type it is recommended
+  // to omit this value if the start_time does not change, since it results in more
+  // compact encoding on the wire.
+  // If the value of 0 occurs for the first data point in the timeseries it means that
+  // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_unixnano is the moment when this point was recorded.
-  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_unixnano = 2;
+  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
+  // of previous data point in this timeseries to get the timestamp of this data point.
+  // If this is the first data point in the timeseries then timestamp_deltanano is
+  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
+  int64 timestamp_deltanano = 2;
 
   // The total number of recorded values since start_time. Optional since
   // some systems don't expose this.

@@ -120,15 +120,18 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 5; j++ {
 			var points []*GaugeInt64Value
 
+			prevPointTs := int64(0)
 			for k := 0; k < 5; k++ {
-				pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
+				pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+				diffTs := pointTs - prevPointTs
+				prevPointTs = pointTs
 
 				point := GaugeInt64Value{
-					TimestampUnixnano: core.TimeToTimestamp(pointTs),
-					Value:             int64(i * j * k),
+					TimestampDeltanano: diffTs,
+					Value:              int64(i * j * k),
 				}
 
-				//sz := unsafe.Sizeof(point)
+				//sz := unsafe.Sizeof(SummaryValue{})
 				//log.Printf("size=%v", sz)
 
 				points = append(points, &point)
@@ -167,13 +170,16 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 		for j := 0; j < 1; j++ {
 			var points []*HistogramValue
 
+			prevPointTs := int64(0)
 			for k := 0; k < 5; k++ {
 				pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+				diffTs := pointTs - prevPointTs
+				prevPointTs = pointTs
 				val := float64(i * j * k)
 				point := HistogramValue{
-					TimestampUnixnano: pointTs,
-					Count:             1,
-					Sum:               val,
+					TimestampDeltanano: diffTs,
+					Count:              1,
+					Sum:                val,
 					Buckets: []*HistogramValue_Bucket{
 						{
 							Count: 1,
