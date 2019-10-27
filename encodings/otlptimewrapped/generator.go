@@ -56,7 +56,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
 			StartTimeUnixnano: timeToTimestamp(startTime),
-			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			EndTimeUnixnano:   timeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 		}
 
 		if attrsPerSpan >= 0 {

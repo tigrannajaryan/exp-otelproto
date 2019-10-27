@@ -62,7 +62,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			Kind:       Span_CLIENT,
 			Attributes: &Span_Attributes{},
 			StartTime:  timeToTimestamp(startTime),
-			EndTime:    timeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			EndTime:    timeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 		}
 
 		if attrsPerSpan >= 0 {
