@@ -154,17 +154,27 @@ func TestEncodeSize(t *testing.T) {
 
 	variation := []struct {
 		name                 string
-		trace                bool
+		genFunc              func(gen core.Generator) core.ExportRequest
 		firstUncompessedSize int
 		firstCompressedSize  int
 	}{
 		{
-			name:  "Trace",
-			trace: true,
+			name: "Trace",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateSpanBatch(100, 3, 0)
+			},
 		},
 		{
-			name:  "Metric",
-			trace: false,
+			name: "Event",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateSpanBatch(100, 0, 3)
+			},
+		},
+		{
+			name: "Metric",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateMetricBatch(100)
+			},
 		},
 	}
 
@@ -176,12 +186,7 @@ func TestEncodeSize(t *testing.T) {
 			t.Run(test.name, func(t *testing.T) {
 				gen := test.gen()
 
-				var batch core.ExportRequest
-				if v.trace {
-					batch = gen.GenerateSpanBatch(100, 3, 0)
-				} else {
-					batch = gen.GenerateMetricBatch(100)
-				}
+				batch := v.genFunc(gen)
 				if batch == nil {
 					// Skip this case.
 					return

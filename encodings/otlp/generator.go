@@ -84,7 +84,8 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
 				span.TimedEvents = append(span.TimedEvents, &Span_TimedEvent{
-					TimeUnixnano: core.TimeToTimestamp(startTime),
+					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
 						{Key: "te", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)},
 					},

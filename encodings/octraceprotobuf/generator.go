@@ -88,8 +88,9 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		if timedEventsPerSpan > 0 {
 			span.TimeEvents = &Span_TimeEvents{}
 			for i := 0; i < timedEventsPerSpan; i++ {
+				ts := startTime.Add(time.Duration(i) * time.Millisecond)
 				span.TimeEvents.TimeEvent = append(span.TimeEvents.TimeEvent, &Span_TimeEvent{
-					Time: timeToTimestamp(startTime),
+					Time: timeToTimestamp(ts),
 					Value: &Span_TimeEvent_Annotation_{
 						Annotation: &Span_TimeEvent_Annotation{
 							Attributes: &Span_Attributes{
