@@ -129,12 +129,118 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 	}
 }
 
+func genInt64Gauge(startTime time.Time, i int, labelKeys []*LabelKey) *Metric {
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys:   labelKeys,
+	}
+
+	var timeseries []*TimeSeries
+	for j := 0; j < 5; j++ {
+		var points []*Point
+
+		for k := 0; k < 5; k++ {
+			pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
+			point := Point{
+				Timestamp: timeToTimestamp(pointTs),
+				Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
+			}
+			points = append(points, &point)
+		}
+
+		ts := TimeSeries{
+			StartTimestamp: timeToTimestamp(startTime),
+			LabelValues: []*LabelValue{
+				{Value: "val1", HasValue: true},
+				{Value: "val2", HasValue: true},
+			},
+			Points: points,
+		}
+		timeseries = append(timeseries, &ts)
+	}
+
+	metric1 := &Metric{
+		MetricDescriptor: descr,
+		Timeseries:       timeseries,
+	}
+
+	return metric1
+}
+
+func genHistogram(startTime time.Time, i int, labelKeys []*LabelKey) *Metric {
+	// Add Histogram
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_DISTRIBUTION,
+		LabelKeys:   labelKeys,
+	}
+
+	timeseries := []*TimeSeries{}
+	for j := 0; j < 1; j++ {
+		var points []*Point
+
+		for k := 0; k < 5; k++ {
+			pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			val := float64(i * j * k)
+			point := Point{
+				Timestamp: pointTs,
+				Value: &Point_DistributionValue{
+					&DistributionValue{
+						Count:                 1,
+						Sum:                   val,
+						SumOfSquaredDeviation: 123,
+						BucketOptions: &DistributionValue_BucketOptions{
+							Type: &DistributionValue_BucketOptions_Explicit_{
+								Explicit: &DistributionValue_BucketOptions_Explicit{
+									Bounds: []float64{0, val},
+								},
+							},
+						},
+						Buckets: []*DistributionValue_Bucket{
+							{
+								Count: 12,
+								Exemplar: &DistributionValue_Exemplar{
+									Value:     val,
+									Timestamp: pointTs,
+								},
+							},
+							{
+								Count: 345,
+							},
+						},
+					},
+				},
+			}
+			points = append(points, &point)
+		}
+
+		ts := TimeSeries{
+			StartTimestamp: timeToTimestamp(startTime),
+			LabelValues: []*LabelValue{
+				{Value: "val1", HasValue: true},
+				{Value: "val2", HasValue: true},
+			},
+			Points: points,
+		}
+		timeseries = append(timeseries, &ts)
+	}
+
+	metric2 := &Metric{
+		MetricDescriptor: descr,
+		Timeseries:       timeseries,
+	}
+
+	return metric2
+}
+
 func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
 	batch := &ExportMetricsServiceRequest{
 		Resource: genResource(),
 	}
 	for i := 0; i < metricsPerBatch/2; i++ {
-
 		startTime := time.Now()
 
 		labelKeys := []*LabelKey{
@@ -142,109 +248,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			{Key: "label2"},
 		}
 
-		// Add int64 Gauge
-		descr := &MetricDescriptor{
-			Name:        "metric" + strconv.Itoa(i),
-			Description: "some description: " + strconv.Itoa(i),
-			Type:        MetricDescriptor_GAUGE_INT64,
-			LabelKeys:   labelKeys,
-		}
-
-		var timeseries []*TimeSeries
-		for j := 0; j < 5; j++ {
-			var points []*Point
-
-			for k := 0; k < 5; k++ {
-				pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
-				point := Point{
-					Timestamp: timeToTimestamp(pointTs),
-					Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
-				}
-				points = append(points, &point)
-			}
-
-			ts := TimeSeries{
-				StartTimestamp: timeToTimestamp(startTime),
-				LabelValues: []*LabelValue{
-					{Value: "val1", HasValue: true},
-					{Value: "val2", HasValue: true},
-				},
-				Points: points,
-			}
-			timeseries = append(timeseries, &ts)
-		}
-
-		metric1 := &Metric{
-			MetricDescriptor: descr,
-			Timeseries:       timeseries,
-		}
-
-		batch.Metrics = append(batch.Metrics, metric1)
-
-		// Add Histogram
-		descr = &MetricDescriptor{
-			Name:        "metric" + strconv.Itoa(i),
-			Description: "some description: " + strconv.Itoa(i),
-			Type:        MetricDescriptor_GAUGE_DISTRIBUTION,
-			LabelKeys:   labelKeys,
-		}
-
-		timeseries = []*TimeSeries{}
-		for j := 0; j < 1; j++ {
-			var points []*Point
-
-			for k := 0; k < 5; k++ {
-				pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
-				val := float64(i * j * k)
-				point := Point{
-					Timestamp: pointTs,
-					Value: &Point_DistributionValue{
-						&DistributionValue{
-							Count:                 1,
-							Sum:                   val,
-							SumOfSquaredDeviation: 123,
-							BucketOptions: &DistributionValue_BucketOptions{
-								Type: &DistributionValue_BucketOptions_Explicit_{
-									Explicit: &DistributionValue_BucketOptions_Explicit{
-										Bounds: []float64{0, val},
-									},
-								},
-							},
-							Buckets: []*DistributionValue_Bucket{
-								{
-									Count: 12,
-									Exemplar: &DistributionValue_Exemplar{
-										Value:     val,
-										Timestamp: pointTs,
-									},
-								},
-								{
-									Count: 345,
-								},
-							},
-						},
-					},
-				}
-				points = append(points, &point)
-			}
-
-			ts := TimeSeries{
-				StartTimestamp: timeToTimestamp(startTime),
-				LabelValues: []*LabelValue{
-					{Value: "val1", HasValue: true},
-					{Value: "val2", HasValue: true},
-				},
-				Points: points,
-			}
-			timeseries = append(timeseries, &ts)
-		}
-
-		metric2 := &Metric{
-			MetricDescriptor: descr,
-			Timeseries:       timeseries,
-		}
-
-		batch.Metrics = append(batch.Metrics, metric2)
+		batch.Metrics = append(batch.Metrics, genInt64Gauge(startTime, i, labelKeys))
+		batch.Metrics = append(batch.Metrics, genHistogram(startTime, i, labelKeys))
 	}
 	return batch
 }

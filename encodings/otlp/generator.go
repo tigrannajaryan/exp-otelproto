@@ -98,6 +98,123 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	return batch
 }
 
+func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys:   labelKeys,
+	}
+
+	var timeseries []*GaugeInt64TimeSeries
+	for j := 0; j < 5; j++ {
+		var points []*GaugeInt64Value
+
+		prevPointTs := int64(0)
+		for k := 0; k < 5; k++ {
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			diffTs := pointTs - prevPointTs
+			prevPointTs = pointTs
+
+			point := GaugeInt64Value{
+				TimestampDeltanano: diffTs,
+				Value:              int64(i * j * k),
+			}
+
+			//sz := unsafe.Sizeof(SummaryValue{})
+			//log.Printf("size=%v", sz)
+
+			points = append(points, &point)
+		}
+
+		ts := GaugeInt64TimeSeries{
+			LabelValues: []*LabelValue{
+				{Value: "val1"},
+				{Value: "val2"},
+			},
+			Points: points,
+		}
+		timeseries = append(timeseries, &ts)
+	}
+
+	metric1 := &Metric{
+		MetricDescriptor: descr,
+		Data: &Metric_GaugeInt64Data{
+			GaugeInt64Data: &GaugeInt64TimeSeriesList{
+				List: timeseries,
+			},
+		},
+	}
+
+	return metric1
+}
+
+func genHistogram(startTime time.Time, i int, labelKeys []string) *Metric {
+	// Add Histogram
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys:   labelKeys,
+	}
+
+	var timeseries2 []*HistogramTimeSeries
+	for j := 0; j < 1; j++ {
+		var points []*HistogramValue
+
+		prevPointTs := int64(0)
+		for k := 0; k < 5; k++ {
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			diffTs := pointTs - prevPointTs
+			prevPointTs = pointTs
+			val := float64(i * j * k)
+			point := HistogramValue{
+				TimestampDeltanano: diffTs,
+				Count:              1,
+				Sum:                val,
+				Buckets: []*HistogramValue_Bucket{
+					{
+						Count: 12,
+						Exemplar: &HistogramValue_Bucket_Exemplar{
+							Value:             val,
+							TimestampUnixnano: pointTs,
+						},
+					},
+					{
+						Count: 345,
+					},
+				},
+			}
+			points = append(points, &point)
+		}
+
+		ts := HistogramTimeSeries{
+			LabelValues: []*LabelValue{
+				{Value: "val1"},
+				{Value: "val2"},
+			},
+			BucketOptions: &HistogramTimeSeries_ExplicitBounds_{
+				ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
+					Bounds: []float64{0, 1000000},
+				},
+			},
+			Points: points,
+		}
+		timeseries2 = append(timeseries2, &ts)
+	}
+
+	metric2 := &Metric{
+		MetricDescriptor: descr,
+		Data: &Metric_HistogramData{
+			HistogramData: &HistogramTimeSeriesList{
+				List: timeseries2,
+			},
+		},
+	}
+
+	return metric2
+}
+
 func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
 
 	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: genResource()}}}
@@ -109,119 +226,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			"label2",
 		}
 
-		// Add int64 Gauge
-		descr := &MetricDescriptor{
-			Name:        "metric" + strconv.Itoa(i),
-			Description: "some description: " + strconv.Itoa(i),
-			Type:        MetricDescriptor_GAUGE_INT64,
-			LabelKeys:   labelKeys,
-		}
-
-		var timeseries []*GaugeInt64TimeSeries
-		for j := 0; j < 5; j++ {
-			var points []*GaugeInt64Value
-
-			prevPointTs := int64(0)
-			for k := 0; k < 5; k++ {
-				pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
-				diffTs := pointTs - prevPointTs
-				prevPointTs = pointTs
-
-				point := GaugeInt64Value{
-					TimestampDeltanano: diffTs,
-					Value:              int64(i * j * k),
-				}
-
-				//sz := unsafe.Sizeof(SummaryValue{})
-				//log.Printf("size=%v", sz)
-
-				points = append(points, &point)
-			}
-
-			ts := GaugeInt64TimeSeries{
-				LabelValues: []*LabelValue{
-					{Value: "val1"},
-					{Value: "val2"},
-				},
-				Points: points,
-			}
-			timeseries = append(timeseries, &ts)
-		}
-
-		metric1 := &Metric{
-			MetricDescriptor: descr,
-			Data: &Metric_GaugeInt64Data{
-				GaugeInt64Data: &GaugeInt64TimeSeriesList{
-					List: timeseries,
-				},
-			},
-		}
-
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, metric1)
-
-		// Add Histogram
-		descr = &MetricDescriptor{
-			Name:        "metric" + strconv.Itoa(i),
-			Description: "some description: " + strconv.Itoa(i),
-			Type:        MetricDescriptor_GAUGE_INT64,
-			LabelKeys:   labelKeys,
-		}
-
-		var timeseries2 []*HistogramTimeSeries
-		for j := 0; j < 1; j++ {
-			var points []*HistogramValue
-
-			prevPointTs := int64(0)
-			for k := 0; k < 5; k++ {
-				pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
-				diffTs := pointTs - prevPointTs
-				prevPointTs = pointTs
-				val := float64(i * j * k)
-				point := HistogramValue{
-					TimestampDeltanano: diffTs,
-					Count:              1,
-					Sum:                val,
-					Buckets: []*HistogramValue_Bucket{
-						{
-							Count: 12,
-							Exemplar: &HistogramValue_Bucket_Exemplar{
-								Value:             val,
-								TimestampUnixnano: pointTs,
-							},
-						},
-						{
-							Count: 345,
-						},
-					},
-				}
-				points = append(points, &point)
-			}
-
-			ts := HistogramTimeSeries{
-				LabelValues: []*LabelValue{
-					{Value: "val1"},
-					{Value: "val2"},
-				},
-				BucketOptions: &HistogramTimeSeries_ExplicitBounds_{
-					ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
-						Bounds: []float64{0, 1000000},
-					},
-				},
-				Points: points,
-			}
-			timeseries2 = append(timeseries2, &ts)
-		}
-
-		metric2 := &Metric{
-			MetricDescriptor: descr,
-			Data: &Metric_HistogramData{
-				HistogramData: &HistogramTimeSeriesList{
-					List: timeseries2,
-				},
-			},
-		}
-
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, metric2)
+		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys))
+		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys))
 	}
 	return batch
 }
