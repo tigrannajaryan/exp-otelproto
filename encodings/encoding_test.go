@@ -152,6 +152,8 @@ func decode(bytes []byte, pb proto.Message) {
 
 func TestEncodeSize(t *testing.T) {
 
+	const batchSize = 1000
+
 	variation := []struct {
 		name                 string
 		genFunc              func(gen core.Generator) core.ExportRequest
@@ -161,19 +163,19 @@ func TestEncodeSize(t *testing.T) {
 		{
 			name: "Trace",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateSpanBatch(100, 3, 0)
+				return gen.GenerateSpanBatch(batchSize, 3, 0)
 			},
 		},
 		{
 			name: "Event",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateSpanBatch(100, 0, 3)
+				return gen.GenerateSpanBatch(batchSize, 0, 3)
 			},
 		},
 		{
 			name: "Metric",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateMetricBatch(100)
+				return gen.GenerateMetricBatch(batchSize)
 			},
 		},
 	}
