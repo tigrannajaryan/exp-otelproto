@@ -212,11 +212,14 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 							},
 							Buckets: []*DistributionValue_Bucket{
 								{
-									Count: 1,
+									Count: 12,
 									Exemplar: &DistributionValue_Exemplar{
 										Value:     val,
 										Timestamp: pointTs,
 									},
+								},
+								{
+									Count: 345,
 								},
 							},
 						},
