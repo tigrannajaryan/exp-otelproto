@@ -8,8 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
-
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
@@ -21,10 +19,10 @@ var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	{
+	/*{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	},
+	},*/
 	{
 		name: "Baseline",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
