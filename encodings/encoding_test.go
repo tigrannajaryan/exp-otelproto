@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -22,6 +24,10 @@ var tests = []struct {
 	{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	},
+	{
+		name: "Experimental",
+		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
 	{
 		name: "OTLP",
