@@ -106,19 +106,19 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
 		LabelKeys:   labelKeys,
 	}
 
-	var timeseries []*GaugeInt64TimeSeries
+	var timeseries []*Int64TimeSeries
 	for j := 0; j < 5; j++ {
-		var points []*GaugeInt64Value
+		var points []*Int64Value
 
-		prevPointTs := int64(0)
+		// prevPointTs := int64(0)
 		for k := 0; k < 5; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
-			diffTs := pointTs - prevPointTs
-			prevPointTs = pointTs
+			// diffTs := pointTs - prevPointTs
+			// prevPointTs = pointTs
 
-			point := GaugeInt64Value{
-				TimestampDeltanano: diffTs,
-				Value:              int64(i * j * k),
+			point := Int64Value{
+				TimestampUnixnano: pointTs,
+				Value:             int64(i * j * k),
 			}
 
 			//sz := unsafe.Sizeof(SummaryValue{})
@@ -127,7 +127,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
 			points = append(points, &point)
 		}
 
-		ts := GaugeInt64TimeSeries{
+		ts := Int64TimeSeries{
 			LabelValues: []*LabelValue{
 				{Value: "val1"},
 				{Value: "val2"},
@@ -139,8 +139,8 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
 
 	metric1 := &Metric{
 		MetricDescriptor: descr,
-		Data: &Metric_GaugeInt64Data{
-			GaugeInt64Data: &GaugeInt64TimeSeriesList{
+		Data: &Metric_Int64Data{
+			Int64Data: &Int64TimeSeriesList{
 				List: timeseries,
 			},
 		},
@@ -162,16 +162,16 @@ func genHistogram(startTime time.Time, i int, labelKeys []string) *Metric {
 	for j := 0; j < 1; j++ {
 		var points []*HistogramValue
 
-		prevPointTs := int64(0)
+		//prevPointTs := int64(0)
 		for k := 0; k < 5; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
-			diffTs := pointTs - prevPointTs
-			prevPointTs = pointTs
+			//diffTs := pointTs - prevPointTs
+			//prevPointTs = pointTs
 			val := float64(i * j * k)
 			point := HistogramValue{
-				TimestampDeltanano: diffTs,
-				Count:              1,
-				Sum:                val,
+				TimestampUnixnano: pointTs,
+				Count:             1,
+				Sum:               val,
 				Buckets: []*HistogramValue_Bucket{
 					{
 						Count: 12,

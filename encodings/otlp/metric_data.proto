@@ -63,16 +63,11 @@ message ResourceMetrics {
 //
 //-----------------------------------------------------------------------
 // TimeSeries contain an array of values, each value corresponding to a given moment in
-// time. Each element of TimeSeries array is timestamped. The timestamps value in the
-// array are differential, encoded as the number of nanoseconds since the previous
-// element's timestamp. The first element's timestamp is the number of nanoseconds since
-// UNIX Epoch 00:00:00 UTC on 1 January 1970. Differential timestamp encoding reduces
-// encoded (wire) size significantly due to Protobuf varint encoding favouring smaller
-// integer numbers.
+// time. Each element of TimeSeries array is timestamped.
 //
 // TimeSeries are strongly typed: the element of a TimeSeries array has
-// a specific Protobuf message depending on the type of the metric and thus
-// there are currently 6 TimeSeriesList and 6 TimeSeries messages, which
+// a specific Protobuf message depending on the value type of the metric and thus
+// there are currently 4 TimeSeriesList and 4 TimeSeries messages, which
 // correspond to the types of metric values.
 message Metric {
   // metric_descriptor describes the Metric.
@@ -87,10 +82,8 @@ message Metric {
   // one or more points. Only one of the following fields is used for the data, depending on
   // the type of the metric defined by MetricDescriptor.type field.
   oneof data {
-    GaugeInt64TimeSeriesList gauge_int64_data = 3;
-    GaugeDoubleTimeSeriesList gauge_double_data = 4;
-    CounterInt64TimeSeriesList counter_int64_data = 5;
-    CounterDoubleTimeSeriesList counter_double_data = 6;
+    Int64TimeSeriesList int64_data = 3;
+    DoubleTimeSeriesList double_data = 4;
     HistogramTimeSeriesList histogram_data = 7;
     SummaryTimeSeriesList summary_data = 8;
   }
@@ -121,11 +114,11 @@ message MetricDescriptor {
     UNSPECIFIED = 0;
 
     // Integer gauge. The value can go both up and down over time.
-    // Corresponding values are stored in GaugeInt64TimeSeriesList.
+    // Corresponding values are stored in Int64TimeSeriesList.
     GAUGE_INT64 = 1;
 
     // Floating point gauge. The value can go both up and down over time.
-    // Corresponding values are stored in GaugeDoubleTimeSeriesList.
+    // Corresponding values are stored in DoubleTimeSeriesList.
     GAUGE_DOUBLE = 2;
 
     // Histogram gauge measurement.
@@ -137,13 +130,13 @@ message MetricDescriptor {
 
     // Integer counter measurement. The value cannot decrease; if value is reset then
     // CounterInt64Value.start_time_unixnano should also be reset.
-    // Corresponding values are stored in CounterInt64TimeSeriesList.
+    // Corresponding values are stored in Int64TimeSeriesList.
     COUNTER_INT64 = 4;
 
     // Floating point counter measurement. The value cannot decrease, if
     // resets then the CounterDoubleValue.start_time_unixnano should also be reset.
     // Recorded values are always >= 0.
-    // Corresponding values are stored in CounterDoubleTimeSeriesList.
+    // Corresponding values are stored in DoubleTimeSeriesList.
     COUNTER_DOUBLE = 5;
 
     // Histogram cumulative measurement.
@@ -167,25 +160,16 @@ message MetricDescriptor {
   repeated string label_keys = 5;
 }
 
-// GaugeInt64TimeSeriesList is a list of timeseries of int64 Gauge.
-message GaugeInt64TimeSeriesList {
-  repeated GaugeInt64TimeSeries list = 1;
+// Int64TimeSeriesList is a list of timeseries of int64 values.
+message Int64TimeSeriesList {
+  repeated Int64TimeSeries list = 1;
 }
 
-// GaugeDoubleTimeSeriesList is a list of timeseries of double Gauge.
-message GaugeDoubleTimeSeriesList {
-  repeated GaugeDoubleTimeSeries list = 1;
+// DoubleTimeSeriesList is a list of timeseries of double values.
+message DoubleTimeSeriesList {
+  repeated DoubleTimeSeries list = 1;
 }
 
-// CounterInt64TimeSeriesList is a list of timeseries of int64 Counter.
-message CounterInt64TimeSeriesList {
-  repeated CounterInt64TimeSeries list = 1;
-}
-
-// CounterDoubleTimeSeriesList is a list of timeseries of double Counter.
-message CounterDoubleTimeSeriesList {
-  repeated CounterDoubleTimeSeries list = 1;
-}
 
 // HistogramTimeSeriesList is a list of timeseries of Histogram.
 message HistogramTimeSeriesList {
@@ -197,52 +181,28 @@ message SummaryTimeSeriesList {
   repeated SummaryTimeSeries list = 1;
 }
 
-// GaugeInt64TimeSeries is a list of data points that describes the time-varying values
-// of a int64 Gauge metric.
-message GaugeInt64TimeSeries {
+// Int64TimeSeries is a list of data points that describes the time-varying values
+// of a int64 metric.
+message Int64TimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
   // The data points of this timeseries.
-  repeated GaugeInt64Value points = 2;
+  repeated Int64Value points = 2;
 }
 
-// GaugeDoubleTimeSeries is a list of data points that describes the time-varying values
-// of a double Gauge metric.
-message GaugeDoubleTimeSeries {
+// eDoubleTimeSeries is a list of data points that describes the time-varying values
+// of a double metric.
+message DoubleTimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
   // The data points of this timeseries.
-  repeated GaugeDoubleValue points = 2;
-}
-
-// CounterInt64TimeSeries is a list of data points that describes the time-varying values
-// of a int64 Counter metric.
-message CounterInt64TimeSeries {
-  // The set of label values that uniquely identify this timeseries. Applies to
-  // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
-
-  // The data points of this timeseries.
-  repeated CounterInt64Value points = 2;
-}
-
-// CounterDoubleTimeSeries is a list of data points that describes the time-varying values
-// of a double Counter metric.
-message CounterDoubleTimeSeries {
-  // The set of label values that uniquely identify this timeseries. Applies to
-  // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
-
-  // The data points of this timeseries.
-  repeated CounterDoubleValue points = 2;
+  repeated DoubleValue points = 2;
 }
 
 // HistogramTimeSeries is a list of data points that describes the time-varying values
@@ -311,75 +271,53 @@ message LabelValue {
   bool value_unspecified = 2;
 }
 
-// GaugeInt64Value is a timestamped measurement of int64 Gauge.
-message GaugeInt64Value {
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 1;
-
-  // value of Gauge.
-  int64 value = 2;
-}
-
-// GaugeDoubleValue is a timestamped measurement of double Gauge.
-message GaugeDoubleValue {
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 1;
-
-  // value of Gauge.
-  double value = 2;
-}
-
-// CounterInt64Value is a timestamped measurement of int64 counter or cumulative value.
-message CounterInt64Value {
+// Int64Value is a timestamped measurement of int64 value.
+message Int64Value {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
+  // This is used for Counter type only. For Gauge the value is not specified and
+  // defaults to 0.
+  //
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
-  // data point in this timeseries. When create timeseries of this type it is recommended
+  // data point in this timeseries. When creating timeseries of this type it is recommended
   // to omit this value if the start_time does not change, since it results in more
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 2;
+  // timestamp_unixnano is the moment when this value was recorded.
+  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+  sfixed64 timestamp_unixnano = 2;
 
-  // value of Counter.
+  // value itself.
   int64 value = 3;
 }
 
-// CounterDoubleValue is a timestamped measurement of double counter or cumulative value.
-message CounterDoubleValue {
+// DoubleValue is a timestamped measurement of double value.
+message DoubleValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
+  // This is used for Counter type only. For Gauge the value is not specified and
+  // defaults to 0.
+  //
   // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
-  // data point in this timeseries. When create timeseries of this type it is recommended
+  // data point in this timeseries. When creating timeseries of this type it is recommended
   // to omit this value if the start_time does not change, since it results in more
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 2;
+  // timestamp_unixnano is the moment when this value was recorded.
+  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+  sfixed64 timestamp_unixnano = 2;
 
-  // value of Counter.
+  // value itself.
   double value = 3;
 }
 
@@ -391,7 +329,7 @@ message HistogramValue {
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
-  // data point in this timeseries. When create timeseries of this type it is recommended
+  // data point in this timeseries. When creating timeseries of this type it is recommended
   // to omit this value if the start_time does not change, since it results in more
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
@@ -399,11 +337,9 @@ message HistogramValue {
   // Note: this field is always unspecified and ignored if MetricDescriptor.type==GAUGE_HISTOGRAM.
   int64 start_time_unixnano = 1;
 
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 2;
+  // timestamp_unixnano is the moment when this value was recorded.
+  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+  sfixed64 timestamp_unixnano = 2;
 
   // count is the number of values in the population. Must be non-negative. This value
   // must be equal to the sum of the "count" fields in buckets if a histogram is
@@ -430,8 +366,9 @@ message HistogramValue {
       // the defined bounds.
       double value = 2;
 
-      // The observation (sampling) time of the above value.
-      int64 timestamp_unixnano = 3;
+      // timestamp_unixnano is the moment when this exemplar was recorded.
+      // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+      sfixed64 timestamp_unixnano = 3;
 
       // exemplar_attachments are contextual information about the example value.
       // Keys in this list must be unique.
@@ -469,18 +406,16 @@ message SummaryValue {
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
-  // data point in this timeseries. When create timeseries of this type it is recommended
+  // data point in this timeseries. When creating timeseries of this type it is recommended
   // to omit this value if the start_time does not change, since it results in more
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   int64 start_time_unixnano = 1;
 
-  // timestamp_deltanano is number of nanoseconds that must be added to the timestamp
-  // of previous data point in this timeseries to get the timestamp of this data point.
-  // If this is the first data point in the timeseries then timestamp_deltanano is
-  // the number of nanoseconds since UNIX Epoch 00:00:00 UTC on 1 January 1970.
-  int64 timestamp_deltanano = 2;
+  // timestamp_unixnano is the moment when this value was recorded.
+  // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+  sfixed64 timestamp_unixnano = 2;
 
   // The total number of recorded values since start_time. Optional since
   // some systems don't expose this.
