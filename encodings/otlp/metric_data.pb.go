@@ -196,8 +196,8 @@ func (m *ResourceMetrics) GetMetrics() []*Metric {
 // time. Each element of TimeSeries array is timestamped.
 //
 // TimeSeries are strongly typed: the element of a TimeSeries array has
-// a specific Protobuf message depending on the type of the metric and thus
-// there are currently 6 TimeSeriesList and 6 TimeSeries messages, which
+// a specific Protobuf message depending on the value type of the metric and thus
+// there are currently 4 TimeSeriesList and 4 TimeSeries messages, which
 // correspond to the types of metric values.
 type Metric struct {
 	// metric_descriptor describes the Metric.

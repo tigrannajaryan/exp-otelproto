@@ -98,7 +98,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	return batch
 }
 
-func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
+func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
 	descr := &MetricDescriptor{
 		Name:        "metric" + strconv.Itoa(i),
 		Description: "some description: " + strconv.Itoa(i),
@@ -111,7 +111,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
 		var points []*Int64Value
 
 		// prevPointTs := int64(0)
-		for k := 0; k < 5; k++ {
+		for k := 0; k < valuesPerTimeseries; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			// diffTs := pointTs - prevPointTs
 			// prevPointTs = pointTs
@@ -149,7 +149,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string) *Metric {
 	return metric1
 }
 
-func genHistogram(startTime time.Time, i int, labelKeys []string) *Metric {
+func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
 	// Add Histogram
 	descr := &MetricDescriptor{
 		Name:        "metric" + strconv.Itoa(i),
@@ -163,7 +163,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string) *Metric {
 		var points []*HistogramValue
 
 		//prevPointTs := int64(0)
-		for k := 0; k < 5; k++ {
+		for k := 0; k < valuesPerTimeseries; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
@@ -215,7 +215,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string) *Metric {
 	return metric2
 }
 
-func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries int) core.ExportRequest {
 
 	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: genResource()}}}
 	for i := 0; i < metricsPerBatch/2; i++ {
@@ -226,8 +226,8 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest 
 			"label2",
 		}
 
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys))
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys))
+		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
 	}
 	return batch
 }

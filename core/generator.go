@@ -7,7 +7,7 @@ type SpanGenerator interface {
 
 // MetricGenerator allows to generate a ExportRequest containing a batch of metrics.
 type MetricGenerator interface {
-	GenerateMetricBatch(metricsPerBatch int) ExportRequest
+	GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries int) ExportRequest
 }
 
 type Generator interface {

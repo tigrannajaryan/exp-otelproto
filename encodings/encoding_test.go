@@ -45,7 +45,8 @@ var batchTypes = []struct {
 }{
 	{name: "Attributes", batchGen: generateAttrBatches},
 	{name: "TimedEvent", batchGen: generateTimedEventBatches},
-	{name: "Metrics", batchGen: generateMetricBatches},
+	{name: "MetricOne", batchGen: generateMetricOneBatches},
+	{name: "MetricSeries", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1000
@@ -115,10 +116,22 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	return batches
 }
 
-func generateMetricBatches(gen core.Generator) []core.ExportRequest {
+func generateMetricOneBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100)
+		batch := gen.GenerateMetricBatch(100, 1)
+		if batch == nil {
+			return nil
+		}
+		batches = append(batches, batch)
+	}
+	return batches
+}
+
+func generateMetricSeriesBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batch := gen.GenerateMetricBatch(100, 5)
 		if batch == nil {
 			return nil
 		}
@@ -152,7 +165,7 @@ func decode(bytes []byte, pb proto.Message) {
 
 func TestEncodeSize(t *testing.T) {
 
-	const batchSize = 1000
+	const batchSize = 100
 
 	variation := []struct {
 		name                 string
@@ -173,9 +186,15 @@ func TestEncodeSize(t *testing.T) {
 			},
 		},
 		{
-			name: "Metric",
+			name: "MetricOne",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateMetricBatch(batchSize)
+				return gen.GenerateMetricBatch(batchSize, 1)
+			},
+		},
+		{
+			name: "MetricSeries",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateMetricBatch(batchSize, 5)
 			},
 		},
 	}
