@@ -1,4 +1,4 @@
-package experimental
+package baseline
 
 import (
 	"math/rand"
@@ -111,10 +111,10 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 		var points []*Point
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
 			point := Point{
-				TimestampUnixnano: pointTs,
-				Value:             &Point_Int64Value{Int64Value: int64(i * j * k)},
+				Timestamp: timeToTimestamp(pointTs),
+				Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
 			}
 			points = append(points, &point)
 		}
@@ -151,10 +151,10 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 		var points []*Point
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			val := float64(i * j * k)
 			point := Point{
-				TimestampUnixnano: pointTs,
+				Timestamp: pointTs,
 				Value: &Point_HistogramValue{
 					&HistogramValue{
 						Count: 1,
@@ -170,8 +170,8 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 							{
 								Count: 12,
 								Exemplar: &HistogramValue_Bucket_Exemplar{
-									Value:             val,
-									TimestampUnixnano: pointTs,
+									Value:     val,
+									Timestamp: pointTs,
 								},
 							},
 							{

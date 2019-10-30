@@ -34,6 +34,10 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=plugins=grpc:encodings/experimental
 
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/metric_data.proto --go_out=plugins=grpc:encodings/baseline
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/telemetry_data.proto --go_out=plugins=grpc:encodings/baseline
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/exchange.proto --go_out=plugins=grpc:encodings/baseline
+
 	protoc -I/usr/local/include -I encodings/otlptimewrapped/ encodings/otlptimewrapped/telemetry_data.proto --go_out=plugins=grpc:encodings/otlptimewrapped
 	protoc -I/usr/local/include -I encodings/otlptimewrapped/ encodings/otlptimewrapped/exchange.proto --go_out=plugins=grpc:encodings/otlptimewrapped
 

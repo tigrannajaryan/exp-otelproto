@@ -8,31 +8,33 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
 
 var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	{
+	/*{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	},*/
+	{
+		name: "Baseline",
+		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	{
-		name: "Experimental",
+		name: "Proposed",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	{
+	/*{
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
-	},
+	},*/
 	/* These are historical experiments. Uncomment if interested to see results.
 	{
 		name: "OC+AttrAsMap",
@@ -49,8 +51,8 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	{name: "Attributes", batchGen: generateAttrBatches},
-	{name: "TimedEvent", batchGen: generateTimedEventBatches},
+	//{name: "Attributes", batchGen: generateAttrBatches},
+	//{name: "TimedEvent", batchGen: generateTimedEventBatches},
 	{name: "MetricOne", batchGen: generateMetricOneBatches},
 	{name: "MetricSeries", batchGen: generateMetricSeriesBatches},
 }
@@ -179,7 +181,7 @@ func TestEncodeSize(t *testing.T) {
 		firstUncompessedSize int
 		firstCompressedSize  int
 	}{
-		{
+		/*{
 			name: "Trace",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 3, 0)
@@ -190,7 +192,7 @@ func TestEncodeSize(t *testing.T) {
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 0, 3)
 			},
-		},
+		},*/
 		{
 			name: "MetricOne",
 			genFunc: func(gen core.Generator) core.ExportRequest {
