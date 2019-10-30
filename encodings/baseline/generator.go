@@ -116,6 +116,9 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 				Timestamp: timeToTimestamp(pointTs),
 				Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
 			}
+			if k == 0 {
+				point.StartTimestamp = timeToTimestamp(pointTs)
+			}
 			points = append(points, &point)
 		}
 
@@ -180,6 +183,9 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 						},
 					},
 				},
+			}
+			if k == 0 {
+				point.StartTimestamp = pointTs
 			}
 			points = append(points, &point)
 		}

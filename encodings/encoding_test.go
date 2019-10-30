@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
@@ -19,10 +21,10 @@ var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	/*{
+	{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	},*/
+	},
 	{
 		name: "Baseline",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
@@ -172,6 +174,23 @@ func decode(bytes []byte, pb proto.Message) {
 }
 
 func TestEncodeSize(t *testing.T) {
+
+	//startTime := time.Now()
+	//v := core.TimeToTimestamp(startTime.Add(time.Duration(1) * time.Millisecond))
+	//
+	//vint := &otlp.Vint{V: v}
+	//vbytes, err := proto.Marshal(vint)
+	//if err != nil {
+	//	t.Fatal()
+	//}
+	//fmt.Printf("vbytes=%d\n", len(vbytes))
+	//
+	//fint := &otlp.Fint{V: v}
+	//fbytes, err := proto.Marshal(fint)
+	//if err != nil {
+	//	t.Fatal()
+	//}
+	//fmt.Printf("fbytes=%d\n", len(fbytes))
 
 	const batchSize = 100
 

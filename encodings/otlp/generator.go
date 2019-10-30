@@ -123,6 +123,9 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 
 			//sz := unsafe.Sizeof(SummaryValue{})
 			//log.Printf("size=%v", sz)
+			if k == 0 {
+				point.StartTimeUnixnano = pointTs
+			}
 
 			points = append(points, &point)
 		}
@@ -184,6 +187,9 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 						Count: 345,
 					},
 				},
+			}
+			if k == 0 {
+				point.StartTimeUnixnano = pointTs
 			}
 			points = append(points, &point)
 		}
