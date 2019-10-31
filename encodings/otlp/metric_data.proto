@@ -113,7 +113,7 @@ message MetricPrepared {
     // data is a list of one or more TimeSeries for a single metric, where each timeseries has
     // one or more points. Only one of the following fields is used for the data, depending on
     // the type of the metric defined by MetricDescriptor.type field.
-    repeated Int64TimeSeries int64_timeseries = 3;
+    repeated Int64TimeSeriesPrepared int64_timeseries = 3;
     repeated DoubleTimeSeries double_timeseries = 4;
     repeated HistogramTimeSeries histogram_timeseries = 5;
     repeated SummaryTimeSeries summary_timeseries = 6;
@@ -206,7 +206,7 @@ message Int64TimeSeriesPrepared {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
   // metric descriptor.
-  bytes label_values = 1;
+  repeated bytes label_values = 1;
 
   // The data points of this timeseries.
   repeated Int64Value points = 2;
@@ -305,14 +305,14 @@ message Int64Value {
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
-  int64 start_time_unixnano = 1;
+  sfixed64 start_time_unixnano = 1;
 
   // timestamp_unixnano is the moment when this value was recorded.
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   sfixed64 timestamp_unixnano = 2;
 
   // value itself.
-  int64 value = 3;
+  sfixed64 value = 3;
 }
 
 // DoubleValue is a timestamped measurement of double value.
@@ -330,7 +330,7 @@ message DoubleValue {
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
-  int64 start_time_unixnano = 1;
+  sfixed64 start_time_unixnano = 1;
 
   // timestamp_unixnano is the moment when this value was recorded.
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
@@ -354,7 +354,7 @@ message HistogramValue {
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
   // Note: this field is always unspecified and ignored if MetricDescriptor.type==GAUGE_HISTOGRAM.
-  int64 start_time_unixnano = 1;
+  sfixed64 start_time_unixnano = 1;
 
   // timestamp_unixnano is the moment when this value was recorded.
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
@@ -430,7 +430,7 @@ message SummaryValue {
   // compact encoding on the wire.
   // If the value of 0 occurs for the first data point in the timeseries it means that
   // the timestamp is unspecified. In that case the timestamp may be decided by the backend.
-  int64 start_time_unixnano = 1;
+  sfixed64 start_time_unixnano = 1;
 
   // timestamp_unixnano is the moment when this value was recorded.
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
