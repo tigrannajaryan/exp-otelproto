@@ -142,11 +142,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 
 	metric1 := &Metric{
 		MetricDescriptor: descr,
-		Data: &Metric_Int64Data{
-			Int64Data: &Int64TimeSeriesList{
-				List: timeseries,
-			},
-		},
+		Int64Timeseries:  timeseries,
 	}
 
 	return metric1
@@ -212,12 +208,8 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	}
 
 	metric2 := &Metric{
-		MetricDescriptor: descr,
-		Data: &Metric_HistogramData{
-			HistogramData: &HistogramTimeSeriesList{
-				List: timeseries2,
-			},
-		},
+		MetricDescriptor:    descr,
+		HistogramTimeseries: timeseries2,
 	}
 
 	return metric2

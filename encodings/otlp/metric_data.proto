@@ -16,6 +16,12 @@ message ResourceMetrics {
   repeated Metric metrics = 2;
 }
 
+// A list of prepared metrics from a Resource.
+message ResourceMetricsPrepared {
+  Resource resource = 1;
+  repeated MetricPrepared metrics = 2;
+}
+
 // Defines a Metric which has one or more timeseries.
 //
 // The data model and relation between entities is shown in the diagram below.
@@ -81,12 +87,36 @@ message Metric {
   // data is a list of one or more TimeSeries for a single metric, where each timeseries has
   // one or more points. Only one of the following fields is used for the data, depending on
   // the type of the metric defined by MetricDescriptor.type field.
-  oneof data {
-    Int64TimeSeriesList int64_data = 3;
-    DoubleTimeSeriesList double_data = 4;
-    HistogramTimeSeriesList histogram_data = 7;
-    SummaryTimeSeriesList summary_data = 8;
-  }
+  repeated Int64TimeSeries int64_timeseries = 3;
+  repeated DoubleTimeSeries double_timeseries = 4;
+  repeated HistogramTimeSeries histogram_timeseries = 5;
+  repeated SummaryTimeSeries summary_timeseries = 6;
+}
+
+// MetricPrepared is the prepared version of Metric.
+//
+// MetricPrepared is byte-level compatible with Metric. A byte-array encoding of
+// MetricPrepared can be decoded as Metric and vice-versa. This allows senders that
+// need to continuously create and encode instances of Metric with unchanging
+// MetricDescriptor and Resource values to prepare and encode metric_descriptor and
+// resource fields once and then create instances MetricPrepared messages where only
+// timeseries data changes.
+message MetricPrepared {
+    // metric_descriptor is byte array representation of MetricDescriptor encoded
+    // in ProtoBuf format using proto.Marshal().
+    bytes metric_descriptor = 1;
+
+    // resource is byte array representation of Resource encoded
+    // in ProtoBuf format using proto.Marshal().
+    bytes resource = 2;
+
+    // data is a list of one or more TimeSeries for a single metric, where each timeseries has
+    // one or more points. Only one of the following fields is used for the data, depending on
+    // the type of the metric defined by MetricDescriptor.type field.
+    repeated Int64TimeSeries int64_timeseries = 3;
+    repeated DoubleTimeSeries double_timeseries = 4;
+    repeated HistogramTimeSeries histogram_timeseries = 5;
+    repeated SummaryTimeSeries summary_timeseries = 6;
 }
 
 // Defines a metric type and its schema.
@@ -160,27 +190,6 @@ message MetricDescriptor {
   repeated string label_keys = 5;
 }
 
-// Int64TimeSeriesList is a list of timeseries of int64 values.
-message Int64TimeSeriesList {
-  repeated Int64TimeSeries list = 1;
-}
-
-// DoubleTimeSeriesList is a list of timeseries of double values.
-message DoubleTimeSeriesList {
-  repeated DoubleTimeSeries list = 1;
-}
-
-
-// HistogramTimeSeriesList is a list of timeseries of Histogram.
-message HistogramTimeSeriesList {
-  repeated HistogramTimeSeries list = 1;
-}
-
-// SummaryTimeSeriesList is a list of timeseries of Summary.
-message SummaryTimeSeriesList {
-  repeated SummaryTimeSeries list = 1;
-}
-
 // Int64TimeSeries is a list of data points that describes the time-varying values
 // of a int64 metric.
 message Int64TimeSeries {
@@ -188,6 +197,16 @@ message Int64TimeSeries {
   // all points. The order of label values must match that of label keys in the
   // metric descriptor.
   repeated LabelValue label_values = 1;
+
+  // The data points of this timeseries.
+  repeated Int64Value points = 2;
+}
+
+message Int64TimeSeriesPrepared {
+  // The set of label values that uniquely identify this timeseries. Applies to
+  // all points. The order of label values must match that of label keys in the
+  // metric descriptor.
+  bytes label_values = 1;
 
   // The data points of this timeseries.
   repeated Int64Value points = 2;
