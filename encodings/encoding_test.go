@@ -8,14 +8,10 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 var tests = []struct {
@@ -34,10 +30,10 @@ var tests = []struct {
 		name: "Proposed",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	{
-		name: "OTLP",
-		gen:  func() core.Generator { return otlp.NewGenerator() },
-	},
+	//{
+	//	name: "OTLP",
+	//	gen:  func() core.Generator { return otlp.NewGenerator() },
+	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -57,9 +53,9 @@ var batchTypes = []struct {
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
 	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	{name: "Metric/HistogramOne", batchGen: generateMetricHistogramBatches},
+	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
 	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
-	{name: "Metric/MixOne", batchGen: generateMetricOneBatches},
+	{name: "Metric/Mix", batchGen: generateMetricOneBatches},
 	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
