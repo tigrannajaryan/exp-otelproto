@@ -106,26 +106,34 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 		LabelKeys:   labelKeys,
 	}
 
-	var timeseries []*TimeSeries
+	var timeseries []*Int64TimeSeries
 	for j := 0; j < 5; j++ {
-		var points []*Point
+		var points []*Int64Value
 
+		// prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := startTime.Add(time.Duration(j*k) * time.Millisecond)
-			point := Point{
-				Timestamp: timeToTimestamp(pointTs),
-				Value:     &Point_Int64Value{Int64Value: int64(i * j * k)},
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			// diffTs := pointTs - prevPointTs
+			// prevPointTs = pointTs
+
+			point := Int64Value{
+				TimestampUnixnano: pointTs,
+				Value:             int64(i * j * k),
 			}
+
+			//sz := unsafe.Sizeof(SummaryValue{})
+			//log.Printf("size=%v", sz)
 			if k == 0 {
-				point.StartTimestamp = timeToTimestamp(pointTs)
+				point.StartTimeUnixnano = pointTs
 			}
+
 			points = append(points, &point)
 		}
 
-		ts := TimeSeries{
+		ts := Int64TimeSeries{
 			LabelValues: []*LabelValue{
-				{Value: "val1", HasValue: true},
-				{Value: "val2", HasValue: true},
+				{Value: "val1"},
+				{Value: "val2"},
 			},
 			Points: points,
 		}
@@ -134,7 +142,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 
 	metric1 := &Metric{
 		MetricDescriptor: descr,
-		Timeseries:       timeseries,
+		Int64Timeseries:  timeseries,
 	}
 
 	return metric1
@@ -145,64 +153,63 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	descr := &MetricDescriptor{
 		Name:        "metric" + strconv.Itoa(i),
 		Description: "some description: " + strconv.Itoa(i),
-		Type:        MetricDescriptor_GAUGE_HISTOGRAM,
+		Type:        MetricDescriptor_GAUGE_INT64,
 		LabelKeys:   labelKeys,
 	}
 
-	timeseries := []*TimeSeries{}
+	var timeseries2 []*HistogramTimeSeries
 	for j := 0; j < 1; j++ {
-		var points []*Point
+		var points []*HistogramValue
 
+		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			//diffTs := pointTs - prevPointTs
+			//prevPointTs = pointTs
 			val := float64(i * j * k)
-			point := Point{
-				Timestamp: pointTs,
-				Value: &Point_HistogramValue{
-					&HistogramValue{
-						Count: 1,
-						Sum:   val,
-						BucketOptions: &HistogramValue_BucketOptions{
-							Type: &HistogramValue_BucketOptions_Explicit_{
-								Explicit: &HistogramValue_BucketOptions_Explicit{
-									Bounds: []float64{0, val},
-								},
-							},
+			point := HistogramValue{
+				TimestampUnixnano: pointTs,
+				Count:             1,
+				Sum:               val,
+				BucketOptions: &HistogramValue_BucketOptions{
+					Type: &HistogramValue_BucketOptions_Explicit_{
+						Explicit: &HistogramValue_BucketOptions_Explicit{
+							Bounds: []float64{0, val},
 						},
-						Buckets: []*HistogramValue_Bucket{
-							{
-								Count: 12,
-								Exemplar: &HistogramValue_Bucket_Exemplar{
-									Value:     val,
-									Timestamp: pointTs,
-								},
-							},
-							{
-								Count: 345,
-							},
+					},
+				},
+				Buckets: []*HistogramValue_Bucket{
+					{
+						Count: 12,
+						Exemplar: &HistogramValue_Bucket_Exemplar{
+							Value:             val,
+							TimestampUnixnano: pointTs,
 						},
+					},
+					{
+						Count: 345,
 					},
 				},
 			}
 			if k == 0 {
-				point.StartTimestamp = pointTs
+				point.StartTimeUnixnano = pointTs
 			}
 			points = append(points, &point)
 		}
 
-		ts := TimeSeries{
+		ts := HistogramTimeSeries{
 			LabelValues: []*LabelValue{
-				{Value: "val1", HasValue: true},
-				{Value: "val2", HasValue: true},
+				{Value: "val1"},
+				{Value: "val2"},
 			},
 			Points: points,
 		}
-		timeseries = append(timeseries, &ts)
+		timeseries2 = append(timeseries2, &ts)
 	}
 
 	metric2 := &Metric{
-		MetricDescriptor: descr,
-		Timeseries:       timeseries,
+		MetricDescriptor:    descr,
+		HistogramTimeseries: timeseries2,
 	}
 
 	return metric2
