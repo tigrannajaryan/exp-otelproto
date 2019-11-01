@@ -8,8 +8,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"

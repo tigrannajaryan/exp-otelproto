@@ -48,7 +48,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: GenResource()}}}
 	for i := 0; i < spansPerBatch; i++ {
-		startTime := time.Now()
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
@@ -234,7 +234,7 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries
 
 	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: GenResource()}}}
 	for i := 0; i < metricsPerBatch/2; i++ {
-		startTime := time.Now()
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		labelKeys := []string{
 			"label1",

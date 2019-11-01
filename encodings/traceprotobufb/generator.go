@@ -42,7 +42,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 
 	batch := &ExportRequest{SpanBatch: []*SpanBatch{{Resource: &resource}}}
 	for i := 0; i < spansPerBatch; i++ {
-		startTime := time.Now()
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
