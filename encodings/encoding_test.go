@@ -8,10 +8,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
@@ -24,10 +20,10 @@ var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	{
-		name: "OpenCensus",
-		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	},
+	//{
+	//	name: "OpenCensus",
+	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	//},
 	{
 		name: "Baseline",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
@@ -36,10 +32,10 @@ var tests = []struct {
 		name: "Proposed",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	{
-		name: "OTLP",
-		gen:  func() core.Generator { return otlp.NewGenerator() },
-	},
+	//{
+	//	name: "OTLP",
+	//	gen:  func() core.Generator { return otlp.NewGenerator() },
+	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -59,7 +55,8 @@ var batchTypes = []struct {
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
 	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
+	{name: "Metric/HistogramOne", batchGen: generateMetricHistogramBatches},
+	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
 	{name: "Metric/MixOne", batchGen: generateMetricOneBatches},
 	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
@@ -179,6 +176,18 @@ func generateMetricHistogramBatches(gen core.Generator) []core.ExportRequest {
 	return batches
 }
 
+func generateMetricHistogramSeriesBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batch := gen.GenerateMetricBatch(100, 5, false, true, false)
+		if batch == nil {
+			return nil
+		}
+		batches = append(batches, batch)
+	}
+	return batches
+}
+
 func generateMetricSummaryBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
@@ -237,13 +246,19 @@ func TestEncodeSize(t *testing.T) {
 			},
 		},
 		{
-			name: "Metric/One",
+			name: "Metric/Histogram",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateMetricBatch(batchSize, 1, false, true, false)
+			},
+		},
+		{
+			name: "Metric/MixOne",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateMetricBatch(batchSize, 1, true, true, true)
 			},
 		},
 		{
-			name: "Metric/Series",
+			name: "Metric/MixSeries",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateMetricBatch(batchSize, 5, true, true, true)
 			},
