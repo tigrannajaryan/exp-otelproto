@@ -100,6 +100,6 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	return batch
 }
 
-func (g *Generator) GenerateMetricBatch(metricsPerBatch int) core.ExportRequest {
+func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries int) core.ExportRequest {
 	return nil
 }

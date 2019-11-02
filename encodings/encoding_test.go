@@ -8,6 +8,9 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
@@ -20,10 +23,10 @@ var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	/*{
+	{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	},*/
+	},
 	{
 		name: "Baseline",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
@@ -32,30 +35,29 @@ var tests = []struct {
 		name: "Proposed",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	/*{
+	{
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
-	},*/
-	/* These are historical experiments. Uncomment if interested to see results.
-	{
-		name: "OC+AttrAsMap",
-		gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
 	},
-	{
-		name: "OC+AttrAsList+TimeWrapped",
-		gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
-	},
-	*/
+	//// These are historical experiments. Uncomment if interested to see results.
+	//{
+	//	name: "OC+AttrAsMap",
+	//	gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
+	//},
+	//{
+	//	name: "OC+AttrAsList+TimeWrapped",
+	//	gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
+	//},
 }
 
 var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	{name: "Attributes", batchGen: generateAttrBatches},
-	{name: "TimedEvent", batchGen: generateTimedEventBatches},
-	{name: "MetricOne", batchGen: generateMetricOneBatches},
-	{name: "MetricSeries", batchGen: generateMetricSeriesBatches},
+	{name: "Trace/Attribs", batchGen: generateAttrBatches},
+	{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	{name: "Metric/One", batchGen: generateMetricOneBatches},
+	{name: "Metric/Series", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1000
@@ -183,25 +185,25 @@ func TestEncodeSize(t *testing.T) {
 		firstCompressedSize  int
 	}{
 		{
-			name: "Trace",
+			name: "Trace/Attribs",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 3, 0)
 			},
 		},
 		{
-			name: "Event",
+			name: "Trace/Events",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 0, 3)
 			},
 		},
 		{
-			name: "MetricOne",
+			name: "Metric/One",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateMetricBatch(batchSize, 1)
 			},
 		},
 		{
-			name: "MetricSeries",
+			name: "Metric/Series",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateMetricBatch(batchSize, 5)
 			},

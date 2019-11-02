@@ -171,13 +171,6 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 				TimestampUnixnano: pointTs,
 				Count:             1,
 				Sum:               val,
-				BucketOptions: &HistogramValue_BucketOptions{
-					Type: &HistogramValue_BucketOptions_Explicit_{
-						Explicit: &HistogramValue_BucketOptions_Explicit{
-							Bounds: []float64{0, val},
-						},
-					},
-				},
 				Buckets: []*HistogramValue_Bucket{
 					{
 						Count: 12,
@@ -201,6 +194,11 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 			LabelValues: []*LabelValue{
 				{Value: "val1"},
 				{Value: "val2"},
+			},
+			BucketOptions: &HistogramTimeSeries_ExplicitBounds_{
+				ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
+					Bounds: []float64{0, 1000000},
+				},
 			},
 			Points: points,
 		}
