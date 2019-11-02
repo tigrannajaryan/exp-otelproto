@@ -195,10 +195,8 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 				{Value: "val1"},
 				{Value: "val2"},
 			},
-			BucketOptions: &HistogramTimeSeries_ExplicitBounds_{
-				ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
-					Bounds: []float64{0, 1000000},
-				},
+			ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
+				Bounds: []float64{0, 1000000},
 			},
 			Points: points,
 		}
