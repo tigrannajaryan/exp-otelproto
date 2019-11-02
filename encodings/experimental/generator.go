@@ -6,8 +6,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
-
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -232,14 +230,12 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 			val := float64(i * j * k)
 			point := SummaryValue{
 				TimestampUnixnano: pointTs,
-				Count:             &wrappers.Int64Value{Value: 1},
-				Sum:               &wrappers.DoubleValue{Value: val},
-				Snapshot: &SummaryValue_Snapshot{
-					PercentileValues: []*SummaryValue_Snapshot_ValueAtPercentile{
-						{
-							Percentile: 99,
-							Value:      val / 10,
-						},
+				Count:             1,
+				Sum:               val,
+				PercentileValues: []*SummaryValue_ValueAtPercentile{
+					{
+						Percentile: 99,
+						Value:      val / 10,
 					},
 				},
 			}
