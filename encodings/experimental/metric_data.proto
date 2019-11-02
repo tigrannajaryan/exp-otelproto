@@ -184,6 +184,9 @@ message HistogramTimeSeries {
   // metric descriptor.
   repeated LabelValue label_values = 1;
 
+  // The data points of this timeseries.
+  repeated HistogramValue points = 2;
+
   // ExplicitBounds specifies buckets with explicitly defined bounds for values.
   message ExplicitBounds {
     // The bucket boundaries are described by "bounds" field.
@@ -203,21 +206,21 @@ message HistogramTimeSeries {
   }
 
   // A histogram may optionally contain the distribution of the values in the population.
-  // If that is the case then "bucket_options" field below and "buckets" field in
-  // HistogramValue both must be defined. Otherwise both fields must be omitted in
-  // which case the distribution of values in the histogram is unknown and only the
-  // total count and sum are known.
+  // In that case "bucket_options" field below and "buckets" field in HistogramValue
+  // both must be defined. Otherwise both fields must be omitted in which case the
+  // distribution of values in the histogram is unknown and only the total count and sum
+  // are known.
+  //
   // bucket_options apply to all points in this HistogramTimeSeries. To define
-  // different bucket_options to different points create separate instances of
+  // different bucket_options for different points create separate instances of
   // HistogramTimeSeries each with its own bucket_options.
   oneof bucket_options {
-    // explicit_bounds is the only supported option currently. Other options such
-    // linear buckets or exponential buckets may be added in the future.
-    ExplicitBounds explicit_bounds = 2;
-  }
+    // explicit_bounds is the only supported option currently.
+    ExplicitBounds explicit_bounds = 3;
 
-  // The data points of this timeseries.
-  repeated HistogramValue points = 3;
+    // Other options such linear buckets or exponential buckets may be added below
+    // in the future.
+  }
 }
 
 // SummaryTimeSeries is a list of data points that describes the time-varying values
@@ -290,7 +293,7 @@ message DoubleValue {
   double value = 3;
 }
 
-// Histogram contains summary statistics for a population of values. It may
+// HistogramValue contains summary statistics for a population of values. It may
 // optionally contain the distribution of those values across a set of buckets.
 message HistogramValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
