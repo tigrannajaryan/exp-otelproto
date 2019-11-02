@@ -7,6 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
+
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -236,11 +238,72 @@ func genHistogram(startTime time.Time, i int, labelKeys []*LabelKey, valuesPerTi
 	return metric2
 }
 
-func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries int) core.ExportRequest {
+func genSummary(startTime time.Time, i int, labelKeys []*LabelKey, valuesPerTimeseries int) *Metric {
+	// Add Histogram
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_SUMMARY,
+		LabelKeys:   labelKeys,
+	}
+
+	timeseries := []*TimeSeries{}
+	for j := 0; j < 1; j++ {
+		var points []*Point
+
+		for k := 0; k < valuesPerTimeseries; k++ {
+			pointTs := timeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			val := float64(i * j * k)
+			point := Point{
+				Timestamp: pointTs,
+				Value: &Point_SummaryValue{
+					&SummaryValue{
+						Count: &wrappers.Int64Value{Value: 1},
+						Sum:   &wrappers.DoubleValue{Value: val},
+						Snapshot: &SummaryValue_Snapshot{
+							PercentileValues: []*SummaryValue_Snapshot_ValueAtPercentile{
+								{
+									Percentile: 99,
+									Value:      val / 10,
+								},
+							},
+						},
+					},
+				},
+			}
+			points = append(points, &point)
+		}
+
+		ts := TimeSeries{
+			StartTimestamp: timeToTimestamp(startTime),
+			LabelValues: []*LabelValue{
+				{Value: "val1", HasValue: true},
+				{Value: "val2", HasValue: true},
+			},
+			Points: points,
+		}
+		timeseries = append(timeseries, &ts)
+	}
+
+	metric2 := &Metric{
+		MetricDescriptor: descr,
+		Timeseries:       timeseries,
+	}
+
+	return metric2
+}
+
+func (g *Generator) GenerateMetricBatch(
+	metricsPerBatch int,
+	valuesPerTimeseries int,
+	int64 bool,
+	histogram bool,
+	summary bool,
+) core.ExportRequest {
 	batch := &ExportMetricsServiceRequest{
 		Resource: genResource(),
 	}
-	for i := 0; i < metricsPerBatch/2; i++ {
+	for i := 0; i < metricsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		labelKeys := []*LabelKey{
@@ -248,8 +311,15 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries
 			{Key: "label2"},
 		}
 
-		batch.Metrics = append(batch.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
-		batch.Metrics = append(batch.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+		if int64 {
+			batch.Metrics = append(batch.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+		}
+		if histogram {
+			batch.Metrics = append(batch.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+		}
+		if summary {
+			batch.Metrics = append(batch.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
+		}
 	}
 	return batch
 }

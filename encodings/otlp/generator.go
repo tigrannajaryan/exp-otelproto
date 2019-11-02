@@ -230,10 +230,67 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	return metric2
 }
 
-func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries int) core.ExportRequest {
+func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+	// Add Histogram
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys:   labelKeys,
+	}
+
+	var timeseries2 []*SummaryTimeSeries
+	for j := 0; j < 1; j++ {
+		var points []*SummaryValue
+
+		for k := 0; k < valuesPerTimeseries; k++ {
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			val := float64(i * j * k)
+			point := SummaryValue{
+				TimestampUnixnano: pointTs,
+				Count:             1,
+				Sum:               val,
+				PercentileValues: []*SummaryValue_ValueAtPercentile{
+					{
+						Percentile: 99,
+						Value:      val / 10,
+					},
+				},
+			}
+			if k == 0 {
+				point.StartTimeUnixnano = pointTs
+			}
+			points = append(points, &point)
+		}
+
+		ts := SummaryTimeSeries{
+			LabelValues: []*LabelValue{
+				{Value: "val1"},
+				{Value: "val2"},
+			},
+			Points: points,
+		}
+		timeseries2 = append(timeseries2, &ts)
+	}
+
+	metric2 := &Metric{
+		MetricDescriptor:  descr,
+		SummaryTimeseries: timeseries2,
+	}
+
+	return metric2
+}
+
+func (g *Generator) GenerateMetricBatch(
+	metricsPerBatch int,
+	valuesPerTimeseries int,
+	int64 bool,
+	histogram bool,
+	summary bool,
+) core.ExportRequest {
 
 	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: GenResource()}}}
-	for i := 0; i < metricsPerBatch/2; i++ {
+	for i := 0; i < metricsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		labelKeys := []string{
@@ -241,8 +298,15 @@ func (g *Generator) GenerateMetricBatch(metricsPerBatch int, valuesPerTimeseries
 			"label2",
 		}
 
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
-		batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+		if int64 {
+			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+		}
+		if histogram {
+			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+		}
+		if summary {
+			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
+		}
 	}
 	return batch
 }
