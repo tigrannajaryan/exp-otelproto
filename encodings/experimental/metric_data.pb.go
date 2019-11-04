@@ -1044,6 +1044,7 @@ func (m *HistogramValue_Bucket_Exemplar) GetAttachments() []*StringKeyValuePair 
 }
 
 // StringKeyValuePair is a pair of key/value strings.
+// TODO: consider unifying this with Resource and Span Attribute key/value pairs.
 type StringKeyValuePair struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
