@@ -6,8 +6,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
-
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -173,13 +171,6 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 				TimestampUnixnano: pointTs,
 				Count:             1,
 				Sum:               val,
-				BucketOptions: &HistogramValue_BucketOptions{
-					Type: &HistogramValue_BucketOptions_Explicit_{
-						Explicit: &HistogramValue_BucketOptions_Explicit{
-							Bounds: []float64{0, val},
-						},
-					},
-				},
 				Buckets: []*HistogramValue_Bucket{
 					{
 						Count: 12,
@@ -203,6 +194,9 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 			LabelValues: []*LabelValue{
 				{Value: "val1"},
 				{Value: "val2"},
+			},
+			ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
+				Bounds: []float64{0, 1000000},
 			},
 			Points: points,
 		}
@@ -234,14 +228,12 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 			val := float64(i * j * k)
 			point := SummaryValue{
 				TimestampUnixnano: pointTs,
-				Count:             &wrappers.Int64Value{Value: 1},
-				Sum:               &wrappers.DoubleValue{Value: val},
-				Snapshot: &SummaryValue_Snapshot{
-					PercentileValues: []*SummaryValue_Snapshot_ValueAtPercentile{
-						{
-							Percentile: 99,
-							Value:      val / 10,
-						},
+				Count:             1,
+				Sum:               val,
+				PercentileValues: []*SummaryValue_ValueAtPercentile{
+					{
+						Percentile: 99,
+						Value:      val / 10,
 					},
 				},
 			}
