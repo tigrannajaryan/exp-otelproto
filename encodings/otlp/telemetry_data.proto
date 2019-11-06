@@ -290,6 +290,6 @@ message Status {
   // when not set.
   StatusCode code = 1;
 
-  // A developer-facing error message, which should be in English.
+  // A developer-facing human readable error message.
   string message = 2;
 }

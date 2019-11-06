@@ -829,7 +829,7 @@ type Status struct {
 	// The status code. This is optional field. It is safe to assume 0 (OK)
 	// when not set.
 	Code Status_StatusCode `protobuf:"varint,1,opt,name=code,proto3,enum=otlp.Status_StatusCode" json:"code,omitempty"`
-	// A developer-facing error message, which should be in English.
+	// A developer-facing human readable error message.
 	Message              string   `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

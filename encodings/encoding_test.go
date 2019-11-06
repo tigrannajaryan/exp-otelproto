@@ -51,8 +51,8 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	//{name: "Attributes", batchGen: generateAttrBatches},
-	//{name: "TimedEvent", batchGen: generateTimedEventBatches},
+	{name: "Attributes", batchGen: generateAttrBatches},
+	{name: "TimedEvent", batchGen: generateTimedEventBatches},
 	{name: "MetricOne", batchGen: generateMetricOneBatches},
 	{name: "MetricSeries", batchGen: generateMetricSeriesBatches},
 }
@@ -181,7 +181,7 @@ func TestEncodeSize(t *testing.T) {
 		firstUncompessedSize int
 		firstCompressedSize  int
 	}{
-		/*{
+		{
 			name: "Trace",
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 3, 0)
@@ -192,7 +192,7 @@ func TestEncodeSize(t *testing.T) {
 			genFunc: func(gen core.Generator) core.ExportRequest {
 				return gen.GenerateSpanBatch(batchSize, 0, 3)
 			},
-		},*/
+		},
 		{
 			name: "MetricOne",
 			genFunc: func(gen core.Generator) core.ExportRequest {
