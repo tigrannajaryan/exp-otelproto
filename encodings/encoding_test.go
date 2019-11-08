@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
@@ -32,10 +34,10 @@ var tests = []struct {
 		name: "Proposed",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	//{
-	//	name: "OTLP",
-	//	gen:  func() core.Generator { return otlp.NewGenerator() },
-	//},
+	{
+		name: "OTLP",
+		gen:  func() core.Generator { return otlp.NewGenerator() },
+	},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",

@@ -35,8 +35,8 @@ func (g *Generator) genRandByteString(len int) string {
 func GenResource() *Resource {
 	return &Resource{
 		Labels: []*AttributeKeyValue{
-			{Key: "StartTimeUnixnano", Int64Value: 12345678},
-			{Key: "Pid", Int64Value: 1234},
+			{Key: "StartTimeUnixnano", IntValue: 12345678},
+			{Key: "Pid", IntValue: 1234},
 			{Key: "HostName", StringValue: "fakehost"},
 			{Key: "ServiceName", StringValue: "generator"},
 		},
@@ -69,9 +69,9 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)})
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT64, Int64Value: int64(traceID)})
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
@@ -87,7 +87,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
-						{Key: "te", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)},
+						{Key: "te", Type: AttributeKeyValue_INT, IntValue: int64(spanID)},
 					},
 				})
 			}
