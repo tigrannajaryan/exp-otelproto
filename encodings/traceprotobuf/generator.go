@@ -55,8 +55,8 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			SpanId:            core.GenerateSpanID(spanID),
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
-			StartTimeUnixnano: core.TimeToTimestamp(startTime),
-			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			StartTimeUnixnano: int64(core.TimeToTimestamp(startTime)),
+			EndTimeUnixnano:   int64(core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -83,7 +83,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			span.TimeEvents = &Span_TimeEvents{}
 			for i := 0; i < timedEventsPerSpan; i++ {
 				span.TimeEvents.TimeEvent = append(span.TimeEvents.TimeEvent, &Span_TimeEvent{
-					TimeUnixnano: core.TimeToTimestamp(startTime),
+					TimeUnixnano: int64(core.TimeToTimestamp(startTime)),
 					Value: &Span_TimeEvent_Annotation_{
 						Annotation: &Span_TimeEvent_Annotation{
 							Attributes: map[string]*AttributeValue{

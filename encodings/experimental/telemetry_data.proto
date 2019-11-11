@@ -171,7 +171,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 start_time_unixnano = 8;
+  fixed64 start_time_unixnano = 8;
 
   // end_time_unixnano is the end time of the span. On the client side, this is the time
   // kept by the local machine where the span execution ends. On the server side, this
@@ -182,7 +182,7 @@ message Span {
   // keep end_time > start_time for consistency.
   //
   // This field is required.
-  int64 end_time_unixnano = 9;
+  fixed64 end_time_unixnano = 9;
 
   // attributes is a collection of attribute key/value pairs. The value can be a string,
   // an integer, a double or the Boolean values `true` or `false`. Note, global attributes
@@ -203,7 +203,7 @@ message Span {
   // user-supplied key-value pairs, or details of a message sent/received between Spans.
   message TimedEvent {
     // time_unixnano is the time the event occurred.
-    int64 time_unixnano = 1;
+    fixed64 time_unixnano = 1;
 
     // name is a user-supplied description of the event.
     string name = 2;

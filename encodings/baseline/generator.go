@@ -59,8 +59,8 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			ParentSpanId:      []byte{},
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
-			StartTimeUnixnano: core.TimeToTimestamp(startTime),
-			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			StartTimeUnixnano: int64(core.TimeToTimestamp(startTime)),
+			EndTimeUnixnano:   int64(core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond))),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -84,7 +84,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
 				span.TimedEvents = append(span.TimedEvents, &Span_TimedEvent{
-					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+					TimeUnixnano: int64(core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond))),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
 						{Key: "te", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)},
@@ -112,7 +112,7 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 
 		// prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := int64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
 			// diffTs := pointTs - prevPointTs
 			// prevPointTs = pointTs
 
@@ -160,7 +160,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 
 		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := int64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
 			val := float64(i * j * k)
@@ -218,7 +218,7 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 		var points []*SummaryValue
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := int64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
 			val := float64(i * j * k)
 			point := SummaryValue{
 				TimestampUnixnano: pointTs,

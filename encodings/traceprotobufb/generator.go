@@ -52,8 +52,8 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			SpanId:            core.GenerateTraceID(spanID),
 			Name:              "load-Generator-span",
 			Kind:              Span_CLIENT,
-			StartTimeUnixnano: core.TimeToTimestamp(startTime),
-			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond))),
+			StartTimeUnixnano: int64(core.TimeToTimestamp(startTime)),
+			EndTimeUnixnano:   int64(core.TimeToTimestamp(startTime.Add(time.Duration(time.Millisecond)))),
 		}
 
 		if attrsPerSpan >= 0 {

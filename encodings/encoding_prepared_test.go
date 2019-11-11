@@ -35,7 +35,7 @@ func TestPreparedMetric(t *testing.T) {
 
 	data := []*otlp.Int64Value{
 		{
-			TimestampUnixnano: time.Now().UnixNano(),
+			TimestampUnixnano: uint64(time.Now().UnixNano()),
 			Value:             123,
 		},
 	}

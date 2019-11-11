@@ -17,6 +17,6 @@ func GenerateSpanID(id uint64) []byte {
 	return spanID[:]
 }
 
-func TimeToTimestamp(t time.Time) int64 {
-	return t.UnixNano()
+func TimeToTimestamp(t time.Time) uint64 {
+	return uint64(t.UnixNano())
 }
