@@ -131,11 +131,8 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 		}
 
 		ts := Int64TimeSeries{
-			LabelValues: []*LabelValue{
-				{Value: "val1"},
-				{Value: "val2"},
-			},
-			Points: points,
+			LabelValues: []string{"val1", "val2"},
+			Points:      points,
 		}
 		timeseries = append(timeseries, &ts)
 	}
@@ -191,10 +188,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 		}
 
 		ts := HistogramTimeSeries{
-			LabelValues: []*LabelValue{
-				{Value: "val1"},
-				{Value: "val2"},
-			},
+			LabelValues: []string{"val1", "val2"},
 			ExplicitBounds: &HistogramTimeSeries_ExplicitBounds{
 				Bounds: []float64{0, 1000000},
 			},
@@ -244,11 +238,8 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 		}
 
 		ts := SummaryTimeSeries{
-			LabelValues: []*LabelValue{
-				{Value: "val1"},
-				{Value: "val2"},
-			},
-			Points: points,
+			LabelValues: []string{"val1", "val2"},
+			Points:      points,
 		}
 		timeseries2 = append(timeseries2, &ts)
 	}
