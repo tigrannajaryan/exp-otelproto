@@ -113,7 +113,7 @@ message MetricPrepared {
     // data is a list of one or more TimeSeries for a single metric, where each timeseries has
     // one or more points. Only one of the following fields is used for the data, depending on
     // the type of the metric defined by MetricDescriptor.type field.
-    repeated Int64TimeSeriesPrepared int64_timeseries = 3;
+    repeated Int64TimeSeries int64_timeseries = 3;
     repeated DoubleTimeSeries double_timeseries = 4;
     repeated HistogramTimeSeries histogram_timeseries = 5;
     repeated SummaryTimeSeries summary_timeseries = 6;
@@ -195,30 +195,24 @@ message MetricDescriptor {
 message Int64TimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
+  // metric descriptor. Each element in this array is the value of the key defined at the
+  // corresponding index of MetricDescriptor.label_keys array. The number of elements
+  // in this array and MetricDescriptor.label_keys array must be the same.
+  repeated string label_values = 1;
 
   // The data points of this timeseries.
   repeated Int64Value points = 2;
 }
 
-message Int64TimeSeriesPrepared {
-  // The set of label values that uniquely identify this timeseries. Applies to
-  // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated bytes label_values = 1;
-
-  // The data points of this timeseries.
-  repeated Int64Value points = 2;
-}
-
-// eDoubleTimeSeries is a list of data points that describes the time-varying values
+// DoubleTimeSeries is a list of data points that describes the time-varying values
 // of a double metric.
 message DoubleTimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
+  // metric descriptor. Each element in this array is the value of the key defined at the
+  // corresponding index of MetricDescriptor.label_keys array. The number of elements
+  // in this array and MetricDescriptor.label_keys array must be the same.
+  repeated string label_values = 1;
 
   // The data points of this timeseries.
   repeated DoubleValue points = 2;
@@ -229,8 +223,13 @@ message DoubleTimeSeries {
 message HistogramTimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
+  // metric descriptor. Each element in this array is the value of the key defined at the
+  // corresponding index of MetricDescriptor.label_keys array. The number of elements
+  // in this array and MetricDescriptor.label_keys array must be the same.
+  repeated string label_values = 1;
+
+  // The data points of this timeseries.
+  repeated HistogramValue points = 2;
 
   // ExplicitBounds specifies buckets with explicitly defined bounds for values.
   message ExplicitBounds {
@@ -251,21 +250,17 @@ message HistogramTimeSeries {
   }
 
   // A histogram may optionally contain the distribution of the values in the population.
-  // If that is the case then "bucket_options" field below and "buckets" field in
-  // HistogramValue both must be defined. Otherwise both fields must be omitted in
-  // which case the distribution of values in the histogram is unknown and only the
+  // In that case one of the option fields below and "buckets" field in HistogramValue
+  // both must be defined. Otherwise all option fields and "buckets" field must be omitted
+  // in which case the distribution of values in the histogram is unknown and only the
   // total count and sum are known.
-  // bucket_options apply to all points in this HistogramTimeSeries. To define
-  // different bucket_options to different points create separate instances of
-  // HistogramTimeSeries each with its own bucket_options.
-  oneof bucket_options {
-    // explicit_bounds is the only supported option currently. Other options such
-    // linear buckets or exponential buckets may be added in the future.
-    ExplicitBounds explicit_bounds = 2;
-  }
+  //
+  // Bucket options apply to all points in this HistogramTimeSeries. To define
+  // different bucket options for different points create separate instances of
+  // HistogramTimeSeries each with its own bucket options.
 
-  // The data points of this timeseries.
-  repeated HistogramValue points = 3;
+  // explicit_bounds is the only supported bucket option currently.
+  ExplicitBounds explicit_bounds = 3;
 }
 
 // SummaryTimeSeries is a list of data points that describes the time-varying values
@@ -273,8 +268,10 @@ message HistogramTimeSeries {
 message SummaryTimeSeries {
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
-  // metric descriptor.
-  repeated LabelValue label_values = 1;
+  // metric descriptor. Each element in this array is the value of the key defined at the
+  // corresponding index of MetricDescriptor.label_keys array. The number of elements
+  // in this array and MetricDescriptor.label_keys array must be the same.
+  repeated string label_values = 1;
 
   // The data points of this timeseries.
   repeated SummaryValue points = 2;

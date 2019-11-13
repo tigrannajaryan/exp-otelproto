@@ -12,11 +12,8 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
-func createLabels() []*otlp.LabelValue {
-	return []*otlp.LabelValue{
-		{Value: "val1"},
-		{Value: "val2"},
-	}
+func createLabels() []string {
+	return []string{"val1", "val2"}
 }
 
 func TestPreparedMetric(t *testing.T) {
@@ -63,14 +60,12 @@ func TestPreparedMetric(t *testing.T) {
 		t.Fatal()
 	}
 
-	labelValuesBytes := encodeLabelValues(labelValues)
-
 	metric2 := &otlp.MetricPrepared{
 		MetricDescriptor: descrBytes,
 		Resource:         resourceBytes,
-		Int64Timeseries: []*otlp.Int64TimeSeriesPrepared{
+		Int64Timeseries: []*otlp.Int64TimeSeries{
 			{
-				LabelValues: labelValuesBytes,
+				LabelValues: labelValues,
 				Points:      data,
 			},
 		},
@@ -157,14 +152,13 @@ func encodePrepared(metricCount int) proto.Message {
 	}
 
 	labelValues := createLabels()
-	labelValuesBytes := encodeLabelValues(labelValues)
 
 	for i := 0; i < metricCount; i++ {
 		metric := &otlp.MetricPrepared{
 			MetricDescriptor: descrBytes,
-			Int64Timeseries: []*otlp.Int64TimeSeriesPrepared{
+			Int64Timeseries: []*otlp.Int64TimeSeries{
 				{
-					LabelValues: labelValuesBytes,
+					LabelValues: labelValues,
 					Points:      genInt64DataPoints(i),
 				},
 			},
@@ -174,7 +168,7 @@ func encodePrepared(metricCount int) proto.Message {
 	return batch
 }
 
-func BenchmarkEncode1000Single(b *testing.B) {
+func BenchmarkEncode100Single(b *testing.B) {
 	tests := []struct {
 		name    string
 		encoder func(metricCount int) proto.Message
@@ -192,7 +186,7 @@ func BenchmarkEncode1000Single(b *testing.B) {
 	for _, test := range tests {
 		b.Run(test.name, func(b *testing.B) {
 			b.StopTimer()
-			batch := test.encoder(1000)
+			batch := test.encoder(100)
 			runtime.GC()
 			b.ResetTimer()
 			b.StartTimer()
