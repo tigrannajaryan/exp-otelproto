@@ -7,13 +7,14 @@ import (
 
 func GenerateTraceID(id uint64) []byte {
 	var traceID [16]byte
-	binary.PutUvarint(traceID[:], id)
+	binary.LittleEndian.PutUint64(traceID[:], id)
+	binary.LittleEndian.PutUint64(traceID[8:], 0x123456780abcdef0)
 	return traceID[:]
 }
 
 func GenerateSpanID(id uint64) []byte {
 	var spanID [8]byte
-	binary.PutUvarint(spanID[:], id)
+	binary.LittleEndian.PutUint64(spanID[:], id)
 	return spanID[:]
 }
 

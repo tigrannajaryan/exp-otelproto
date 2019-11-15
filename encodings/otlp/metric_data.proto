@@ -441,12 +441,6 @@ message SummaryValue {
   // systems don't expose this. If count is zero then this field must be zero.
   double sum = 4;
 
-  // count_unspecified must be set to true if count value is unknown or unspecified.
-  bool count_unspecified = 5;
-
-  // sum_unspecified must be set to true if sum value is unknown or unspecified.
-  bool sum_unspecified = 6;
-
   // Represents the value at a given percentile of a distribution.
   message ValueAtPercentile {
     // The percentile of a distribution. Must be in the interval
@@ -459,5 +453,5 @@ message SummaryValue {
 
   // A list of values at different percentiles of the distribution calculated
   // from the current snapshot. The percentiles must be strictly increasing.
-  repeated ValueAtPercentile percentile_values = 7;
+  repeated ValueAtPercentile percentile_values = 5;
 }
