@@ -3,6 +3,7 @@ package encodings
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"runtime"
@@ -319,5 +320,31 @@ func TestEncodeSize(t *testing.T) {
 			})
 		}
 		fmt.Println("")
+	}
+}
+
+func BenchmarkEndianness(b *testing.B) {
+	var tests = []struct {
+		name  string
+		order binary.ByteOrder
+	}{
+		{
+			name:  "Little",
+			order: binary.LittleEndian,
+		},
+		{
+			name:  "Big",
+			order: binary.BigEndian,
+		},
+	}
+
+	for _, test := range tests {
+		b.Run(test.name, func(b *testing.B) {
+			b.StartTimer()
+			var spanID [8]byte
+			for i := 0; i < b.N; i++ {
+				test.order.PutUint64(spanID[:], uint64(i))
+			}
+		})
 	}
 }

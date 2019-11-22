@@ -12,6 +12,14 @@ func GenerateTraceID(id uint64) []byte {
 	return traceID[:]
 }
 
+func GenerateTraceIDLow(id uint64) uint64 {
+	return id
+}
+
+func GenerateTraceIDHigh(id uint64) uint64 {
+	return 0
+}
+
 func GenerateSpanID(id uint64) []byte {
 	var spanID [8]byte
 	binary.LittleEndian.PutUint64(spanID[:], id)

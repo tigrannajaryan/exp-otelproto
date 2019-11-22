@@ -54,9 +54,10 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 		// Create a span.
 		span := &Span{
-			TraceId:           core.GenerateTraceID(traceID),
-			SpanId:            core.GenerateSpanID(spanID),
-			ParentSpanId:      []byte{},
+			TraceIdLow:        core.GenerateTraceIDLow(traceID),
+			TraceIdHigh:       core.GenerateTraceIDHigh(traceID),
+			SpanId:            spanID,
+			ParentSpanId:      0,
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
 			StartTimeUnixnano: core.TimeToTimestamp(startTime),
@@ -83,7 +84,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
-				span.TimedEvents = append(span.TimedEvents, &Span_TimedEvent{
+				span.Events = append(span.Events, &Span_Event{
 					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
