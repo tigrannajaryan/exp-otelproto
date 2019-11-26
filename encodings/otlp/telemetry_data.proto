@@ -60,7 +60,7 @@ message AttributeKeyValue {
 // multiple root spans, or none at all. Spans do not need to be
 // contiguous - there may be gaps or overlaps between spans in a trace.
 //
-// The next field id is 19.
+// The next field id is 18.
 message Span {
   // trace_id is the unique identifier of a trace. All spans from the same trace share
   // the same `trace_id`.
@@ -106,11 +106,6 @@ message Span {
   // field must be 0. See span_id for ID value byte order explanation.
   fixed64 parent_span_id = 5;
 
-  // An optional resource that is associated with this span. If not set, this span
-  // should be part of a ResourceSpans that does include the resource information, unless
-  // resource information is unknown.
-  Resource resource = 6;
-
   // A description of the span's operation.
   //
   // For example, the name can be a qualified method name or a file name
@@ -124,33 +119,34 @@ message Span {
   // receiver to fix the empty span name.
   //
   // This field is required.
-  string name = 7;
+  string name = 6;
 
-  // Type of span. Can be used to specify additional relationships between spans
+  // SpanKind is the type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
   enum SpanKind {
     // Unspecified. Do NOT use as default.
     // Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
     SPAN_KIND_UNSPECIFIED = 0;
 
-    // Indicates that the span is used internally. Default value.
+    // Indicates that the span represents an internal operation within an application,
+    // as opposed to an operations happening at the boundaries. Default value.
     INTERNAL = 1;
 
     // Indicates that the span covers server-side handling of an RPC or other
     // remote network request.
     SERVER = 2;
 
-    // Indicates that the span covers the client-side wrapper around an RPC or
-    // other remote request.
+    // Indicates that the span describes a request to some remote service.
     CLIENT = 3;
 
-    // Indicates that the span describes producer sending a message to a broker.
-    // Unlike client and  server, there is no direct critical path latency relationship
-    // between producer and consumer spans.
+    // Indicates that the span describes a producer sending a message to a broker.
+    // Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
+    // between producer and consumer spans. A PRODUCER span ends when the message was accepted
+    // by the broker while the logical processing of the message might span a much longer time.
     PRODUCER = 4;
 
-    // Indicates that the span describes consumer recieving a message from a broker.
-    // Unlike client and  server, there is no direct critical path latency relationship
+    // Indicates that the span describes consumer receiving a message from a broker.
+    // Like the PRODUCER kind, there is often no direct critical path latency relationship
     // between producer and consumer spans.
     CONSUMER = 5;
   }
@@ -158,7 +154,7 @@ message Span {
   // Distinguishes between spans generated in a particular context. For example,
   // two spans with the same name may be distinguished using `CLIENT` (caller)
   // and `SERVER` (callee) to identify queueing latency associated with the span.
-  SpanKind kind = 8;
+  SpanKind kind = 7;
 
   // start_time_unixnano is the start time of the span. On the client side, this is the time
   // kept by the local machine where the span execution starts. On the server side, this
@@ -166,7 +162,7 @@ message Span {
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // This field is semantically required and it is expected that end_time >= start_time.
-  fixed64 start_time_unixnano = 9;
+  fixed64 start_time_unixnano = 8;
 
   // end_time_unixnano is the end time of the span. On the client side, this is the time
   // kept by the local machine where the span execution ends. On the server side, this
@@ -174,7 +170,7 @@ message Span {
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // This field is semantically required and it is expected that end_time >= start_time.
-  fixed64 end_time_unixnano = 10;
+  fixed64 end_time_unixnano = 9;
 
   // attributes is a collection of key/value pairs. The value can be a string,
   // an integer, a double or the Boolean values `true` or `false`. Note, global attributes
@@ -184,12 +180,12 @@ message Span {
   //     "/http/server_latency": 300
   //     "abc.com/myattribute": true
   //     "abc.com/score": 10.239
-  repeated AttributeKeyValue attributes = 11;
+  repeated AttributeKeyValue attributes = 10;
 
   // dropped_attributes_count is the number of attributes that were discarded. Attributes
   // can be discarded because their keys are too long or because there are too many
   // attributes. If this value is 0, then no attributes were dropped.
-  int32 dropped_attributes_count = 12;
+  uint32 dropped_attributes_count = 11;
 
   // Event is a time-stamped annotation of the span, consisting of user-supplied
   // text description and key-value pairs.
@@ -205,15 +201,15 @@ message Span {
 
     // dropped_attributes_count is the number of dropped attributes. If the value is 0,
     // then no attributes were dropped.
-    int32 dropped_attributes_count = 4;
+    uint32 dropped_attributes_count = 4;
   }
 
   // events is a collection of Event items.
-  repeated Event events = 13;
+  repeated Event events = 12;
 
   // dropped_events_count is the number of dropped events. If the value is 0, then no
   // events were dropped.
-  uint32 dropped_events_count = 14;
+  uint32 dropped_events_count = 13;
 
   // A pointer from the current span to another span in the same trace or in a
   // different trace. For example, this can be used in batching operations,
@@ -237,25 +233,26 @@ message Span {
 
     // dropped_attributes_count is the number of dropped attributes. If the value is 0,
     // then no attributes were dropped.
-    int32 dropped_attributes_count = 6;
+    uint32 dropped_attributes_count = 6;
   }
 
   // links is a collection of Links, which are references from this span to a span
   // in the same or different trace.
-  repeated Link links = 15;
+  repeated Link links = 14;
 
   // dropped_links_count is the number of dropped links after the maximum size was
   // enforced. If this value is 0, then no links were dropped.
-  int32 dropped_links_count = 16;
+  uint32 dropped_links_count = 15;
 
   // An optional final status for this span. Semantically when Status
   // wasn't set it is means span ended without errors and assume
   // Status.Ok (code = 0).
-  Status status = 17;
+  Status status = 16;
 
-  // child_span_count is an optional number of local child spans that were generated while this
-  // span was active. If set, allows an implementation to detect missing child spans.
-  int32 child_span_count = 18;
+  // An optional number of local child spans that were generated while this span
+  // was active. Value of -1 indicates that the number of local child spans is unknown.
+  // If local_child_span_count>=0, allows an implementation to detect missing child spans.
+  sfixed32 local_child_span_count = 17;
 }
 
 // The Status type defines a logical error model that is suitable for different

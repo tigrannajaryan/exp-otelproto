@@ -9,32 +9,33 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
-	//{
-	//	name: "OpenCensus",
-	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	//},
 	{
-		name: "Baseline",
-		gen:  func() core.Generator { return baseline.NewGenerator() },
-	},
-	{
-		name: "Proposed",
-		gen:  func() core.Generator { return experimental.NewGenerator() },
+		name: "OpenCensus",
+		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	},
 	//{
-	//	name: "OTLP",
-	//	gen:  func() core.Generator { return otlp.NewGenerator() },
+	//	name: "Baseline",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
+	//{
+	//	name: "Proposed",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
+	{
+		name: "OTLP",
+		gen:  func() core.Generator { return otlp.NewGenerator() },
+	},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
