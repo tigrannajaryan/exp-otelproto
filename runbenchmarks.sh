@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=5
+MULTIPLIER=50
 
 echo ====================================================================================
 echo Legend:
@@ -31,13 +31,13 @@ benchmark_all() {
     benchmark streamlbconc
     benchmark opencensus
     benchmark ocack
-    benchmark streamsync
-    benchmark streamlbalwayssync
+    #benchmark streamsync
+    #benchmark streamlbalwayssync
     benchmark streamlbtimedsync
-    benchmark streamlbsrv
+    #benchmark streamlbsrv
     benchmark wsstreamsync
     benchmark wsstreamasync
-    benchmark wsstreamasynczlib
+    #benchmark wsstreamasynczlib
     echo
 }
 
@@ -55,6 +55,18 @@ tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 echo
 
 cd bin
+
+let BATCHES=3200*MULTIPLIER
+SPANSPERBATCH=1
+ATTRPERSPAN=4
+benchmark_all nano
+
+
+let BATCHES=1600*MULTIPLIER
+SPANSPERBATCH=10
+ATTRPERSPAN=4
+benchmark_all tiny
+
 
 let BATCHES=800*MULTIPLIER
 SPANSPERBATCH=100
