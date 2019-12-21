@@ -33,7 +33,7 @@ func main() {
 	var protocol string
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
-			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,"+
+			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasyncconc,"+
 			"wsstreamasynczlib)",
 	)
 
@@ -84,9 +84,11 @@ func main() {
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE)
+		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE, 1)
+	case "wsstreamasyncconc":
+		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE, 10)
 	case "wsstreamasynczlib":
-		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB)
+		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB, 1)
 	default:
 		flag.Usage()
 	}
@@ -210,7 +212,7 @@ func benchmarkWSStreamSync(options core.Options) {
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMethod) {
+func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMethod, concurrency int) {
 	var suffix string
 	switch compression {
 	case otlp.CompressionMethod_NONE:
@@ -222,9 +224,9 @@ func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMe
 	}
 
 	benchmarkImpl(
-		"WebSocket/Stream/Async"+suffix,
+		"WebSocket/Stream/Async/"+strconv.Itoa(concurrency)+suffix,
 		options,
-		func() core.Client { return &ws_stream_async.Client{Compression: compression} },
+		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
 		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)

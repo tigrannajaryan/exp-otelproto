@@ -19,12 +19,14 @@ type Server struct {
 var upgrader = websocket.Upgrader{} // use default options
 
 func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(batch core.ExportRequest, spanCount int)) {
+	//log.Printf("Incoming WS connection.")
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal("upgrade:", err)
 		return
 	}
 	defer c.Close()
+	lastId := uint64(0)
 	for {
 		mt, bytes, err := c.ReadMessage()
 		if err != nil {
@@ -34,15 +36,20 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		request := encodings.Decode(bytes)
 
-		if request.GetExport().Id == 0 {
+		Id := request.GetExport().Id
+		if Id == 0 {
 			log.Fatal("Received 0 Id")
 		}
+		if Id != lastId+1 {
+			log.Fatalf("Received out of order request ID=%d", Id)
+		}
+		lastId = Id
 
 		onReceive(request, len(request.GetExport().ResourceSpans[0].Spans))
 
 		response := &otlp.Response{
 			Body: &otlp.Response_Export{
-				&otlp.ExportResponse{Id: request.GetExport().Id},
+				Export: &otlp.ExportResponse{Id: Id},
 			},
 		}
 		responseBytes, err := proto.Marshal(response)

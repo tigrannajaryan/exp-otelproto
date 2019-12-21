@@ -15,16 +15,78 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
-// Client can connect to a server and send a batch of spans.
 type Client struct {
+	Compression   otlp.CompressionMethod
+	clientStreams []*clientStream
+	Concurrency   int
+	requestsCh    chan *otlp.TraceExportRequest
+	//semaphor   chan int
+	nextStream int64
+}
+
+// clientStream can connect to a server and send a batch of spans.
+type clientStream struct {
 	conn            *websocket.Conn
 	pendingAck      map[uint64]core.ExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 	Compression     otlp.CompressionMethod
+	requestsCh      chan *otlp.TraceExportRequest
 }
 
 func (c *Client) Connect(server string) error {
+	//c.semaphor = make(chan int, c.Concurrency)
+	c.requestsCh = make(chan *otlp.TraceExportRequest, c.Concurrency)
+	c.clientStreams = make([]*clientStream, c.Concurrency)
+
+	for i := 0; i < c.Concurrency; i++ {
+		c.clientStreams[i] = newClientStream(c)
+		err := c.clientStreams[i].Connect(server)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func newClientStream(client *Client) *clientStream {
+	c := clientStream{}
+	// c.client = client
+	c.requestsCh = client.requestsCh
+	//c.requestsCh = make(chan *otlp.TraceExportRequest, 0)
+	c.Compression = client.Compression
+	//c.sentCh = client.sentCh
+	// c.pendingAckList = list.New()
+	// go c.processTimeouts()
+	go c.processSendRequests()
+	return &c
+}
+
+func (c *Client) Export(batch core.ExportRequest) {
+	if c.Concurrency == 1 {
+		c.clientStreams[0].sendRequest(batch.(*otlp.TraceExportRequest))
+		return
+	}
+
+	// Make sure we have only up to c.Concurrency Export calls in progress
+	// concurrently. It means no single stream has concurrent sendRequests
+	// in progress, so sendRequest does not need to be safe for concurrent call.
+
+	//si := atomic.AddInt64(&c.nextStream, 1)
+	//c.semaphor <- 1
+	//c.clientStreams[si%int64(c.Concurrency)].requestsCh <- batch.(*otlp.TraceExportRequest)
+	//<-c.semaphor
+
+	c.requestsCh <- batch.(*otlp.TraceExportRequest)
+}
+
+func (c *Client) Shutdown() {
+	for _, cs := range c.clientStreams {
+		cs.Shutdown()
+	}
+}
+
+func (c *clientStream) Connect(server string) error {
 	// Set up a connection to the server.
 	c.pendingAck = make(map[uint64]core.ExportRequest)
 
@@ -41,8 +103,16 @@ func (c *Client) Connect(server string) error {
 	return nil
 }
 
-func (c *Client) readStream() {
+func (c *clientStream) processSendRequests() {
+	for request := range c.requestsCh {
+		c.sendRequest(request)
+		//c.sentCh <- true
+	}
+}
+
+func (c *clientStream) readStream() {
 	// defer close(done)
+	lastId := uint64(0)
 	for {
 		_, bytes, err := c.conn.ReadMessage()
 		if err != nil {
@@ -57,35 +127,44 @@ func (c *Client) readStream() {
 		}
 
 		Id := response.GetExport().Id
-
-		c.pendingAckMutex.Lock()
-		_, ok := c.pendingAck[Id]
-		if !ok {
-			c.pendingAckMutex.Unlock()
-			log.Fatalf("Received ack on batch ID that does not exist: %v", Id)
+		if Id != lastId+1 {
+			log.Fatalf("Received out of order response ID=%d", Id)
 		}
-		delete(c.pendingAck, Id)
-		c.pendingAckMutex.Unlock()
+		lastId = Id
+
+		//c.pendingAckMutex.Lock()
+		//_, ok := c.pendingAck[Id]
+		//if !ok {
+		//	c.pendingAckMutex.Unlock()
+		//	log.Fatalf("Received ack on batch ID that does not exist: %v", Id)
+		//}
+		//delete(c.pendingAck, Id)
+		//c.pendingAckMutex.Unlock()
 	}
 }
 
-func (c *Client) Export(batch core.ExportRequest) {
+func (c *clientStream) sendRequest(batch core.ExportRequest) {
 	request := batch.(*otlp.TraceExportRequest)
-	request.Id = atomic.AddUint64(&c.nextId, 1)
+	if request.Id != 0 {
+		log.Fatal("Request already assigned ID")
+	}
+
+	Id := atomic.AddUint64(&c.nextId, 1)
+	request.Id = Id
 
 	body := &otlp.RequestBody{Body: &otlp.RequestBody_Export{request}}
 	bytes := encodings.Encode(body, c.Compression)
+
+	//// Add the ID to pendingAck map
+	//c.pendingAckMutex.Lock()
+	//c.pendingAck[Id] = batch
+	//c.pendingAckMutex.Unlock()
 
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		log.Fatal("write:", err)
 	}
-
-	// Add the ID to pendingAck map
-	c.pendingAckMutex.Lock()
-	c.pendingAck[request.Id] = batch
-	c.pendingAckMutex.Unlock()
 }
 
-func (c *Client) Shutdown() {
+func (c *clientStream) Shutdown() {
 }

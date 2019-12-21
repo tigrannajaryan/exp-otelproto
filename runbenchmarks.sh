@@ -15,7 +15,7 @@ echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly,
 echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
 echo "GRPC/Stream/LBSrv/Async     - GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
-echo "WebSocket/Stream/Async      - WebSocket, streaming, unknown load balancer friendliness, with async ack"
+echo "WebSocket/Stream/Async/N    - WebSocket, N streams, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
 echo
 
@@ -25,19 +25,20 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
+    benchmark wsstreamsync
+    benchmark wsstreamasync
+    benchmark wsstreamasyncconc
+    #benchmark wsstreamasynczlib
     benchmark unary
     benchmark unaryasync
     benchmark streamlbasync
     benchmark streamlbconc
     benchmark opencensus
-    benchmark ocack
+    #benchmark ocack
     #benchmark streamsync
     #benchmark streamlbalwayssync
-    benchmark streamlbtimedsync
+    #benchmark streamlbtimedsync
     #benchmark streamlbsrv
-    benchmark wsstreamsync
-    benchmark wsstreamasync
-    #benchmark wsstreamasynczlib
     echo
 }
 
