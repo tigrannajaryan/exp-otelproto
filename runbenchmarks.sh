@@ -57,7 +57,7 @@ echo
 
 cd bin
 
-let BATCHES=3200*MULTIPLIER
+let BATCHES=6400*MULTIPLIER
 SPANSPERBATCH=1
 ATTRPERSPAN=4
 benchmark_all nano
@@ -99,8 +99,8 @@ echo
 let BATCHES=4*MULTIPLIER*10
 SPANSPERBATCH=500
 ATTRPERSPAN=10
-echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
 echo 200ms network roundtrip latency
+echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
 
 tc qdisc add dev lo root netem delay 100ms
 benchmark unaryasync
@@ -108,7 +108,8 @@ benchmark opencensus
 benchmark streamlbasync
 benchmark streamlbconc
 benchmark wsstreamasync
-benchmark wsstreamasynczlib
+benchmark wsstreamasyncconc
+#benchmark wsstreamasynczlib
 tc qdisc delete dev lo root netem delay 100ms
 
 echo ====================================================================================

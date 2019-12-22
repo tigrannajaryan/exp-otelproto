@@ -36,7 +36,7 @@ type clientStream struct {
 
 func (c *Client) Connect(server string) error {
 	//c.semaphor = make(chan int, c.Concurrency)
-	c.requestsCh = make(chan *otlp.TraceExportRequest, c.Concurrency)
+	c.requestsCh = make(chan *otlp.TraceExportRequest, 10*c.Concurrency)
 	c.clientStreams = make([]*clientStream, c.Concurrency)
 
 	for i := 0; i < c.Concurrency; i++ {
