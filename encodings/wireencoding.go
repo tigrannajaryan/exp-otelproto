@@ -15,7 +15,7 @@ type RequestHeader byte
 const RequestHeaderSize = 1
 
 const (
-	RequestHeader_CompressionMethodMask  = 0x03
+	RequestHeader_CompressionMethodMask  = 0x07
 	RequestHeader_CompressionMethod_NONE = 0x00
 	RequestHeader_CompressionMethod_ZLIB = 0x01
 	RequestHeader_CompressionMethod_LZ4  = 0x02
