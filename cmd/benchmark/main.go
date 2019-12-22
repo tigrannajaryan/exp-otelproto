@@ -20,6 +20,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb_srv"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_unary_async"
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/http11"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_async"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_stream_sync"
 )
@@ -34,7 +35,7 @@ func main() {
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
 			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasyncconc,"+
-			"wsstreamasynczlib)",
+			"wsstreamasynczlib,http11)",
 	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
@@ -89,6 +90,8 @@ func main() {
 		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE, 10)
 	case "wsstreamasynczlib":
 		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB, 1)
+	case "http11":
+		benchmarkHttp11(options, 10)
 	default:
 		flag.Usage()
 	}
@@ -228,6 +231,16 @@ func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMe
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
+	)
+}
+
+func benchmarkHttp11(options core.Options, concurrency int) {
+	benchmarkImpl(
+		"HTTP1.1/"+strconv.Itoa(concurrency),
+		options,
+		func() core.Client { return &http11.Client{Concurrency: concurrency} },
+		func() core.Server { return &http11.Server{} },
 		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }

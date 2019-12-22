@@ -17,6 +17,7 @@ echo "GRPC/Stream/LBSrv/Async     - GRPC Streaming. Load balancer friendly, serv
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async/N    - WebSocket, N streams, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
+echo "HTTP1.1/N                   - HTTP 1.1, N concurrent requests. Load balacner friendly.  "
 echo
 
 benchmark() {
@@ -25,6 +26,7 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
+    benchmark http11
     benchmark wsstreamsync
     benchmark wsstreamasync
     benchmark wsstreamasyncconc
@@ -49,6 +51,23 @@ benchmark_all_latency() {
     benchmark_all large
     tc qdisc delete dev lo root netem delay ${1}ms
 }
+
+benchmark_some_latency() {
+    echo 200ms network roundtrip latency
+    echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
+
+    tc qdisc add dev lo root netem delay 100ms
+    benchmark http11
+    benchmark unaryasync
+    benchmark opencensus
+    benchmark streamlbasync
+    benchmark streamlbconc
+    benchmark wsstreamasync
+    benchmark wsstreamasyncconc
+    #benchmark wsstreamasynczlib
+    tc qdisc delete dev lo root netem delay 100ms
+}
+
 
 ./beforebenchmarks.sh
 
@@ -95,22 +114,10 @@ SPANSPERBATCH=500
 ATTRPERSPAN=10
 benchmark_all_latency 100
 
-echo
 let BATCHES=4*MULTIPLIER*10
 SPANSPERBATCH=500
 ATTRPERSPAN=10
-echo 200ms network roundtrip latency
-echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
-
-tc qdisc add dev lo root netem delay 100ms
-benchmark unaryasync
-benchmark opencensus
-benchmark streamlbasync
-benchmark streamlbconc
-benchmark wsstreamasync
-benchmark wsstreamasyncconc
-#benchmark wsstreamasynczlib
-tc qdisc delete dev lo root netem delay 100ms
+benchmark_some_latency
 
 echo ====================================================================================
 
