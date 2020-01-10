@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=50
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
@@ -17,7 +17,8 @@ echo "GRPC/Stream/LBSrv/Async     - GRPC Streaming. Load balancer friendly, serv
 echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
 echo "WebSocket/Stream/Async/N    - WebSocket, N streams, unknown load balancer friendliness, with async ack"
 echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
-echo "HTTP1.1/N                   - HTTP 1.1, N concurrent requests. Load balacner friendly.  "
+echo "HTTP1.1/N                   - HTTP 1.1, N concurrent requests. Load balacner friendly."
+echo "SAPM/N                      - SAPM, N concurrent requests. Load balacner friendly."
 echo
 
 benchmark() {
@@ -26,6 +27,7 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
+    benchmark sapm
     benchmark http11
     benchmark wsstreamsync
     benchmark wsstreamasync

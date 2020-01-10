@@ -10,6 +10,10 @@ import (
 	"strconv"
 	"time"
 
+	sapmenc "github.com/tigrannajaryan/exp-otelproto/encodings/sapm"
+
+	"github.com/tigrannajaryan/exp-otelproto/protoimpls/sapm"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -35,7 +39,7 @@ func main() {
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
 			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasyncconc,"+
-			"wsstreamasynczlib,http11)",
+			"wsstreamasynczlib,http11,sapm)",
 	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
@@ -92,6 +96,8 @@ func main() {
 		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB, 1)
 	case "http11":
 		benchmarkHttp11(options, 10)
+	case "sapm":
+		benchmarkSAPM(options, 10)
 	default:
 		flag.Usage()
 	}
@@ -242,6 +248,16 @@ func benchmarkHttp11(options core.Options, concurrency int) {
 		func() core.Client { return &http11.Client{Concurrency: concurrency} },
 		func() core.Server { return &http11.Server{} },
 		func() core.SpanGenerator { return otlp.NewGenerator() },
+	)
+}
+
+func benchmarkSAPM(options core.Options, concurrency int) {
+	benchmarkImpl(
+		"SAPM/"+strconv.Itoa(concurrency),
+		options,
+		func() core.Client { return &sapm.Client{Concurrency: concurrency} },
+		func() core.Server { return &sapm.Server{} },
+		func() core.SpanGenerator { return sapmenc.NewGenerator() },
 	)
 }
 
