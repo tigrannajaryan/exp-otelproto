@@ -91,6 +91,56 @@ func TestPreparedMetric(t *testing.T) {
 	}
 }
 
+func TestPreparedTrace(t *testing.T) {
+
+	g := otlp.NewGenerator()
+	request := g.GenerateSpanBatch(100, 5, 0).(*otlp.TraceExportRequest)
+
+	requestBytes, err := proto.Marshal(request)
+	if err != nil {
+		t.Fatal()
+	}
+
+	var preparedRequest otlp.TraceExportRequestPrepared
+	if err := proto.Unmarshal(requestBytes, &preparedRequest); err != nil {
+		t.Fatal()
+	}
+
+	for i, spans := range preparedRequest.ResourceSpans {
+
+		var resource otlp.Resource
+		if err := proto.Unmarshal(spans.Resource, &resource); err != nil {
+			t.Fatal()
+		}
+
+		if !proto.Equal(&resource, request.ResourceSpans[i].Resource) {
+			t.Fatal()
+		}
+
+		for j, span := range spans.Spans {
+			for k, attrBytes := range span.Attributes {
+				var attr otlp.AttributeKeyValue
+				if err := proto.Unmarshal(attrBytes, &attr); err != nil {
+					t.Fatal()
+				}
+
+				if !proto.Equal(&attr, request.ResourceSpans[i].Spans[j].Attributes[k]) {
+					t.Fatal()
+				}
+			}
+		}
+	}
+
+	preparedRequestBytes, err := proto.Marshal(&preparedRequest)
+	if err != nil {
+		t.Fatal()
+	}
+
+	if c := bytes.Compare(requestBytes, preparedRequestBytes); c != 0 {
+		t.Fatal()
+	}
+}
+
 func genInt64DataPoints(offset int) []*otlp.Int64Value {
 	var points []*otlp.Int64Value
 
@@ -114,7 +164,7 @@ func genInt64DataPoints(offset int) []*otlp.Int64Value {
 	return points
 }
 
-func encodeUnprepared(metricCount int) proto.Message {
+func encodeUnpreparedMetrics(metricCount int) proto.Message {
 	batch := &otlp.ResourceMetrics{}
 	for i := 0; i < metricCount; i++ {
 		metric := &otlp.Metric{
@@ -143,7 +193,7 @@ func encodeLabelValues(labelValues []*otlp.LabelValue) [][]byte {
 	return arr
 }
 
-func encodePrepared(metricCount int) proto.Message {
+func encodePreparedMetrics(metricCount int) proto.Message {
 	batch := &otlp.ResourceMetricsPrepared{}
 	descr := otlp.GenMetricDescriptor(1)
 	descrBytes, err := proto.Marshal(descr)
@@ -168,18 +218,18 @@ func encodePrepared(metricCount int) proto.Message {
 	return batch
 }
 
-func BenchmarkEncode100Single(b *testing.B) {
+func BenchmarkEncode100SingleMetrics(b *testing.B) {
 	tests := []struct {
 		name    string
 		encoder func(metricCount int) proto.Message
 	}{
 		{
 			name:    "Unprepared",
-			encoder: encodeUnprepared,
+			encoder: encodeUnpreparedMetrics,
 		},
 		{
 			name:    "Prepared",
-			encoder: encodePrepared,
+			encoder: encodePreparedMetrics,
 		},
 	}
 
@@ -193,6 +243,106 @@ func BenchmarkEncode100Single(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				var err error
 				bytes, err := proto.Marshal(batch)
+				if err != nil || len(bytes) == 0 {
+					log.Fatal("Cannot encode batch")
+				}
+			}
+		})
+	}
+}
+
+func encodeUnpreparedTraces(spanCount int) proto.Message {
+	g := otlp.NewGenerator()
+	request := g.GenerateSpanBatch(spanCount, 5, 0).(*otlp.TraceExportRequest)
+	return request
+}
+
+func encodePreparedTraces(spanCount int) proto.Message {
+	request := encodeUnpreparedTraces(spanCount)
+
+	requestBytes, err := proto.Marshal(request)
+	if err != nil {
+		log.Fatal()
+	}
+
+	var preparedRequest otlp.TraceExportRequestPrepared
+	if err := proto.Unmarshal(requestBytes, &preparedRequest); err != nil {
+		log.Fatal()
+	}
+
+	return &preparedRequest
+}
+
+func BenchmarkEncodeTraces(b *testing.B) {
+	tests := []struct {
+		name    string
+		encoder func(spanCount int) proto.Message
+	}{
+		{
+			name:    "Unprepared",
+			encoder: encodeUnpreparedTraces,
+		},
+		{
+			name:    "Prepared",
+			encoder: encodePreparedTraces,
+		},
+	}
+
+	for _, test := range tests {
+		b.Run(test.name, func(b *testing.B) {
+			b.StopTimer()
+			batch := test.encoder(100)
+			runtime.GC()
+			b.ResetTimer()
+			b.StartTimer()
+			for i := 0; i < b.N; i++ {
+				var err error
+				bytes, err := proto.Marshal(batch)
+				if err != nil || len(bytes) == 0 {
+					log.Fatal("Cannot encode batch")
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkDecodeEncodeTraces(b *testing.B) {
+	tests := []struct {
+		name            string
+		emptyMsgCreator func() proto.Message
+	}{
+		{
+			name:            "Full",
+			emptyMsgCreator: func() proto.Message { return &otlp.TraceExportRequest{} },
+		},
+		{
+			name:            "Partial",
+			emptyMsgCreator: func() proto.Message { return &otlp.TraceExportRequestPrepared{} },
+		},
+	}
+
+	for _, test := range tests {
+		b.Run(test.name, func(b *testing.B) {
+			b.StopTimer()
+			batch := encodeUnpreparedTraces(100)
+			runtime.GC()
+
+			var err error
+			bytes, err := proto.Marshal(batch)
+			if err != nil || len(bytes) == 0 {
+				log.Fatal("Cannot encode batch")
+			}
+
+			b.ResetTimer()
+			b.StartTimer()
+			for i := 0; i < b.N; i++ {
+				msg := test.emptyMsgCreator()
+				err = proto.Unmarshal(bytes, msg)
+				if err != nil || len(bytes) == 0 {
+					log.Fatal("Cannot decode batch")
+				}
+
+				bytes, err := proto.Marshal(msg)
 				if err != nil || len(bytes) == 0 {
 					log.Fatal("Cannot encode batch")
 				}
