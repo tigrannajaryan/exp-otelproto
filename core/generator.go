@@ -16,7 +16,13 @@ type MetricGenerator interface {
 	) ExportRequest
 }
 
+// LogGenerator allows to generate a ExportRequest containing a batch of log.
+type LogGenerator interface {
+	GenerateLogBatch(logsPerBatch int, attrsPerLog int) ExportRequest
+}
+
 type Generator interface {
 	SpanGenerator
 	MetricGenerator
+	LogGenerator
 }

@@ -1,6 +1,7 @@
 package otlp
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -93,6 +94,47 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		}
 
 		batch.ResourceSpans[0].Spans = append(batch.ResourceSpans[0].Spans, span)
+	}
+	return batch
+}
+
+func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
+	traceID := atomic.AddUint64(&g.tracesSent, 1)
+
+	batch := &ExportLogsServiceRequest{ResourceLogs: []*ResourceLogs{{Resource: GenResource()}}}
+	for i := 0; i < logsPerBatch; i++ {
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+
+		spanID := atomic.AddUint64(&g.spansSent, 1)
+
+		// Create a log.
+		log := &Log{
+			TraceId:      core.GenerateTraceID(traceID),
+			SpanId:       core.GenerateSpanID(spanID),
+			TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			Type:         "auto_generated_event",
+			Message:      fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+		}
+
+		if attrsPerLog >= 0 {
+			// Append attributes.
+			log.Attributes = []*AttributeKeyValue{}
+
+			if attrsPerLog >= 2 {
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
+			}
+
+			for j := len(log.Attributes); j < attrsPerLog; j++ {
+				attrName := g.genRandByteString(g.random.Intn(50) + 1)
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+			}
+		}
+
+		batch.ResourceLogs[0].Logs = append(batch.ResourceLogs[0].Logs, log)
 	}
 	return batch
 }

@@ -111,6 +111,10 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	return batch
 }
 
+func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
+	return nil
+}
+
 func generateTraceID(id uint64) []byte {
 	var traceID [16]byte
 	binary.PutUvarint(traceID[:], id)

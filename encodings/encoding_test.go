@@ -55,8 +55,9 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
+	{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
-	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
 	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
 	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
@@ -265,6 +266,18 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	return batches
 }
 
+func generateLogBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batch := gen.GenerateLogBatch(100, 4)
+		if batch == nil {
+			return nil
+		}
+		batches = append(batches, batch)
+	}
+	return batches
+}
+
 func generateMetricOneBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
@@ -370,6 +383,12 @@ func TestEncodeSize(t *testing.T) {
 		firstUncompessedSize int
 		firstCompressedSize  int
 	}{
+		{
+			name: "Logs",
+			genFunc: func(gen core.Generator) core.ExportRequest {
+				return gen.GenerateLogBatch(batchSize, 4)
+			},
+		},
 		{
 			name: "Trace/Attribs",
 			genFunc: func(gen core.Generator) core.ExportRequest {
