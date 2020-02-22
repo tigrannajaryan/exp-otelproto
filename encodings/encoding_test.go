@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -124,7 +126,7 @@ func BenchmarkDecode(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeFromInternalToOtlp(b *testing.B) {
+func BenchmarkEncodeFromInternal2StepToOtlp(b *testing.B) {
 
 	b.StopTimer()
 	g := otlp.NewGenerator()
@@ -135,9 +137,9 @@ func BenchmarkEncodeFromInternalToOtlp(b *testing.B) {
 		return
 	}
 
-	var intbatch [][]*internal.ResourceSpans
+	var intbatch []*internal.TraceExportRequest
 	for _, b := range batches {
-		intbatch = append(intbatch, internal.FromOtlp(b.(*otlp.TraceExportRequest).ResourceSpans))
+		intbatch = append(intbatch, internal.FromOtlp(b.(*otlp.TraceExportRequest)))
 	}
 
 	runtime.GC()
@@ -145,10 +147,34 @@ func BenchmarkEncodeFromInternalToOtlp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, ib := range intbatch {
 			ot := internal.ToOtlp(ib)
-			tes := &otlp.TraceExportRequest{
-				ResourceSpans: ot,
-			}
-			encode(tes)
+			encode(ot)
+		}
+	}
+
+}
+
+func BenchmarkEncodeFromInternalDirectToOtlp(b *testing.B) {
+
+	b.StopTimer()
+	g := otlp.NewGenerator()
+	batches := generateAttrBatches(g)
+	if batches == nil {
+		// Unsupported test type and batch type combination.
+		b.SkipNow()
+		return
+	}
+
+	var intbatch []*internal.TraceExportRequest
+	for _, b := range batches {
+		intbatch = append(intbatch, internal.FromOtlp(b.(*otlp.TraceExportRequest)))
+	}
+
+	runtime.GC()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for _, ib := range intbatch {
+			_, err := internal.Marshal(ib)
+			assert.NoError(b, err)
 		}
 	}
 
@@ -175,7 +201,7 @@ func BenchmarkDecodeFromOtlpToInternal(b *testing.B) {
 		for _, bytes := range encodedBytes {
 			var tep otlp.TraceExportRequest
 			decode(bytes, &tep)
-			internal.FromOtlp(tep.ResourceSpans)
+			internal.FromOtlp(&tep)
 		}
 	}
 }
