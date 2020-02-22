@@ -9,8 +9,12 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -28,10 +32,10 @@ var tests = []struct {
 	//	name: "Baseline",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
-	//{
-	//	name: "Proposed",
-	//	gen:  func() core.Generator { return experimental.NewGenerator() },
-	//},
+	{
+		name: "Proposed",
+		gen:  func() core.Generator { return experimental.NewGenerator() },
+	},
 	{
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
@@ -52,13 +56,13 @@ var batchTypes = []struct {
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
-	{name: "Trace/Events", batchGen: generateTimedEventBatches},
-	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
-	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
-	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
-	{name: "Metric/Mix", batchGen: generateMetricOneBatches},
-	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
+	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
+	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
+	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
+	//{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
+	//{name: "Metric/Mix", batchGen: generateMetricOneBatches},
+	//{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1000
@@ -117,6 +121,62 @@ func BenchmarkDecode(b *testing.B) {
 			})
 		}
 		fmt.Println("")
+	}
+}
+
+func BenchmarkEncodeFromInternalToOtlp(b *testing.B) {
+
+	b.StopTimer()
+	g := otlp.NewGenerator()
+	batches := generateAttrBatches(g)
+	if batches == nil {
+		// Unsupported test type and batch type combination.
+		b.SkipNow()
+		return
+	}
+
+	var intbatch [][]*internal.ResourceSpans
+	for _, b := range batches {
+		intbatch = append(intbatch, internal.FromOtlp(b.(*otlp.TraceExportRequest).ResourceSpans))
+	}
+
+	runtime.GC()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for _, ib := range intbatch {
+			ot := internal.ToOtlp(ib)
+			tes := &otlp.TraceExportRequest{
+				ResourceSpans: ot,
+			}
+			encode(tes)
+		}
+	}
+
+}
+
+func BenchmarkDecodeFromOtlpToInternal(b *testing.B) {
+	b.StopTimer()
+	g := otlp.NewGenerator()
+	batches := generateAttrBatches(g)
+	if batches == nil {
+		// Unsupported test type and batch type combination.
+		b.SkipNow()
+		return
+	}
+
+	var encodedBytes [][]byte
+	for _, batch := range batches {
+		encodedBytes = append(encodedBytes, encode(batch))
+	}
+
+	runtime.GC()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for _, bytes := range encodedBytes {
+			var tep otlp.TraceExportRequest
+			decode(bytes, &tep)
+			internal.FromOtlp(tep.ResourceSpans)
+		}
 	}
 }
 

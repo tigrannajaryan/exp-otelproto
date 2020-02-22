@@ -32,11 +32,11 @@ func (g *Generator) genRandByteString(len int) string {
 	return string(b)
 }
 
-func genResource() *Resource {
+func GenResource() *Resource {
 	return &Resource{
 		Labels: []*AttributeKeyValue{
-			{Key: "StartTimeUnixnano", Int64Value: 12345678},
-			{Key: "Pid", Int64Value: 1234},
+			{Key: "StartTimeUnixnano", IntValue: 12345678},
+			{Key: "Pid", IntValue: 1234},
 			{Key: "HostName", StringValue: "fakehost"},
 			{Key: "ServiceName", StringValue: "generator"},
 		},
@@ -46,7 +46,7 @@ func genResource() *Resource {
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: genResource()}}}
+	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: GenResource()}}}
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
@@ -56,11 +56,10 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		span := &Span{
 			TraceId:           core.GenerateTraceID(traceID),
 			SpanId:            core.GenerateSpanID(spanID),
-			ParentSpanId:      []byte{},
 			Name:              "load-generator-span",
 			Kind:              Span_CLIENT,
-			StartTimeUnixnano: uint64(core.TimeToTimestamp(startTime)),
-			EndTimeUnixnano:   uint64(core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond))),
+			StartTimeUnixnano: core.TimeToTimestamp(startTime),
+			EndTimeUnixnano:   core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -69,9 +68,9 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)})
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT64, Int64Value: int64(traceID)})
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
@@ -83,11 +82,11 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
-				span.TimedEvents = append(span.TimedEvents, &Span_TimedEvent{
-					TimeUnixnano: uint64(core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond))),
+				span.Events = append(span.Events, &Span_Event{
+					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
-						{Key: "te", Type: AttributeKeyValue_INT64, Int64Value: int64(spanID)},
+						{Key: "te", Type: AttributeKeyValue_INT, IntValue: int64(spanID)},
 					},
 				})
 			}
@@ -98,27 +97,20 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	return batch
 }
 
-func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
-	descr := &MetricDescriptor{
-		Name:        "metric" + strconv.Itoa(i),
-		Description: "some description: " + strconv.Itoa(i),
-		Type:        MetricDescriptor_GAUGE_INT64,
-		LabelKeys:   labelKeys,
-	}
-
+func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int) []*Int64TimeSeries {
 	var timeseries []*Int64TimeSeries
 	for j := 0; j < 5; j++ {
 		var points []*Int64Value
 
 		// prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := uint64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			// diffTs := pointTs - prevPointTs
 			// prevPointTs = pointTs
 
 			point := Int64Value{
 				TimestampUnixnano: pointTs,
-				Value:             int64(i * j * k),
+				Value:             int64(offset * j * k),
 			}
 
 			//sz := unsafe.Sizeof(SummaryValue{})
@@ -137,12 +129,36 @@ func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTime
 		timeseries = append(timeseries, &ts)
 	}
 
+	return timeseries
+}
+
+func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys:   labelKeys,
+	}
+
 	metric1 := &Metric{
 		MetricDescriptor: descr,
-		Int64Timeseries:  timeseries,
+		Int64Timeseries:  GenInt64Timeseries(startTime, i, valuesPerTimeseries),
 	}
 
 	return metric1
+}
+
+func GenMetricDescriptor(i int) *MetricDescriptor {
+	descr := &MetricDescriptor{
+		Name:        "metric" + strconv.Itoa(i),
+		Description: "some description: " + strconv.Itoa(i),
+		Type:        MetricDescriptor_GAUGE_INT64,
+		LabelKeys: []string{
+			"label1",
+			"label2",
+		},
+	}
+	return descr
 }
 
 func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
@@ -160,7 +176,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 
 		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := uint64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
 			val := float64(i * j * k)
@@ -206,10 +222,11 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 }
 
 func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+	// Add Histogram
 	descr := &MetricDescriptor{
 		Name:        "metric" + strconv.Itoa(i),
 		Description: "some description: " + strconv.Itoa(i),
-		Type:        MetricDescriptor_SUMMARY,
+		Type:        MetricDescriptor_GAUGE_INT64,
 		LabelKeys:   labelKeys,
 	}
 
@@ -218,7 +235,7 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 		var points []*SummaryValue
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := uint64(core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond)))
+			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			val := float64(i * j * k)
 			point := SummaryValue{
 				TimestampUnixnano: pointTs,
@@ -260,7 +277,7 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
-	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: genResource()}}}
+	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: GenResource()}}}
 	for i := 0; i < metricsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 

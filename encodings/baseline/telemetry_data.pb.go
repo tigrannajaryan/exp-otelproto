@@ -25,23 +25,23 @@ type AttributeKeyValue_ValueType int32
 
 const (
 	AttributeKeyValue_STRING AttributeKeyValue_ValueType = 0
-	AttributeKeyValue_BOOL   AttributeKeyValue_ValueType = 1
-	AttributeKeyValue_INT64  AttributeKeyValue_ValueType = 2
-	AttributeKeyValue_DOUBLE AttributeKeyValue_ValueType = 3
+	AttributeKeyValue_INT    AttributeKeyValue_ValueType = 1
+	AttributeKeyValue_DOUBLE AttributeKeyValue_ValueType = 2
+	AttributeKeyValue_BOOL   AttributeKeyValue_ValueType = 3
 )
 
 var AttributeKeyValue_ValueType_name = map[int32]string{
 	0: "STRING",
-	1: "BOOL",
-	2: "INT64",
-	3: "DOUBLE",
+	1: "INT",
+	2: "DOUBLE",
+	3: "BOOL",
 }
 
 var AttributeKeyValue_ValueType_value = map[string]int32{
 	"STRING": 0,
-	"BOOL":   1,
-	"INT64":  2,
-	"DOUBLE": 3,
+	"INT":    1,
+	"DOUBLE": 2,
+	"BOOL":   3,
 }
 
 func (x AttributeKeyValue_ValueType) String() string {
@@ -49,7 +49,7 @@ func (x AttributeKeyValue_ValueType) String() string {
 }
 
 func (AttributeKeyValue_ValueType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{2, 0}
+	return fileDescriptor_9161fdd1e0292445, []int{3, 0}
 }
 
 // SpanKind is the type of span. Can be used to specify additional relationships between spans
@@ -102,7 +102,132 @@ func (x Span_SpanKind) String() string {
 }
 
 func (Span_SpanKind) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{3, 0}
+	return fileDescriptor_9161fdd1e0292445, []int{4, 0}
+}
+
+// StatusCode mirrors the codes defined at
+// https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/api-tracing.md#statuscanonicalcode
+type Status_StatusCode int32
+
+const (
+	Status_Ok                 Status_StatusCode = 0
+	Status_Cancelled          Status_StatusCode = 1
+	Status_UnknownError       Status_StatusCode = 2
+	Status_InvalidArgument    Status_StatusCode = 3
+	Status_DeadlineExceeded   Status_StatusCode = 4
+	Status_NotFound           Status_StatusCode = 5
+	Status_AlreadyExists      Status_StatusCode = 6
+	Status_PermissionDenied   Status_StatusCode = 7
+	Status_ResourceExhausted  Status_StatusCode = 8
+	Status_FailedPrecondition Status_StatusCode = 9
+	Status_Aborted            Status_StatusCode = 10
+	Status_OutOfRange         Status_StatusCode = 11
+	Status_Unimplemented      Status_StatusCode = 12
+	Status_InternalError      Status_StatusCode = 13
+	Status_Unavailable        Status_StatusCode = 14
+	Status_DataLoss           Status_StatusCode = 15
+	Status_Unauthenticated    Status_StatusCode = 16
+)
+
+var Status_StatusCode_name = map[int32]string{
+	0:  "Ok",
+	1:  "Cancelled",
+	2:  "UnknownError",
+	3:  "InvalidArgument",
+	4:  "DeadlineExceeded",
+	5:  "NotFound",
+	6:  "AlreadyExists",
+	7:  "PermissionDenied",
+	8:  "ResourceExhausted",
+	9:  "FailedPrecondition",
+	10: "Aborted",
+	11: "OutOfRange",
+	12: "Unimplemented",
+	13: "InternalError",
+	14: "Unavailable",
+	15: "DataLoss",
+	16: "Unauthenticated",
+}
+
+var Status_StatusCode_value = map[string]int32{
+	"Ok":                 0,
+	"Cancelled":          1,
+	"UnknownError":       2,
+	"InvalidArgument":    3,
+	"DeadlineExceeded":   4,
+	"NotFound":           5,
+	"AlreadyExists":      6,
+	"PermissionDenied":   7,
+	"ResourceExhausted":  8,
+	"FailedPrecondition": 9,
+	"Aborted":            10,
+	"OutOfRange":         11,
+	"Unimplemented":      12,
+	"InternalError":      13,
+	"Unavailable":        14,
+	"DataLoss":           15,
+	"Unauthenticated":    16,
+}
+
+func (x Status_StatusCode) String() string {
+	return proto.EnumName(Status_StatusCode_name, int32(x))
+}
+
+func (Status_StatusCode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_9161fdd1e0292445, []int{5, 0}
+}
+
+// SpanKind is the type of span. Can be used to specify additional relationships between spans
+// in addition to a parent/child relationship.
+type SpanPrepared_SpanKind int32
+
+const (
+	// Unspecified. Do NOT use as default.
+	// Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
+	SpanPrepared_SPAN_KIND_UNSPECIFIED SpanPrepared_SpanKind = 0
+	// Indicates that the span represents an internal operation within an application,
+	// as opposed to an operations happening at the boundaries. Default value.
+	SpanPrepared_INTERNAL SpanPrepared_SpanKind = 1
+	// Indicates that the span covers server-side handling of an RPC or other
+	// remote network request.
+	SpanPrepared_SERVER SpanPrepared_SpanKind = 2
+	// Indicates that the span describes a request to some remote service.
+	SpanPrepared_CLIENT SpanPrepared_SpanKind = 3
+	// Indicates that the span describes a producer sending a message to a broker.
+	// Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
+	// between producer and consumer spans. A PRODUCER span ends when the message was accepted
+	// by the broker while the logical processing of the message might span a much longer time.
+	SpanPrepared_PRODUCER SpanPrepared_SpanKind = 4
+	// Indicates that the span describes consumer receiving a message from a broker.
+	// Like the PRODUCER kind, there is often no direct critical path latency relationship
+	// between producer and consumer spans.
+	SpanPrepared_CONSUMER SpanPrepared_SpanKind = 5
+)
+
+var SpanPrepared_SpanKind_name = map[int32]string{
+	0: "SPAN_KIND_UNSPECIFIED",
+	1: "INTERNAL",
+	2: "SERVER",
+	3: "CLIENT",
+	4: "PRODUCER",
+	5: "CONSUMER",
+}
+
+var SpanPrepared_SpanKind_value = map[string]int32{
+	"SPAN_KIND_UNSPECIFIED": 0,
+	"INTERNAL":              1,
+	"SERVER":                2,
+	"CLIENT":                3,
+	"PRODUCER":              4,
+	"CONSUMER":              5,
+}
+
+func (x SpanPrepared_SpanKind) String() string {
+	return proto.EnumName(SpanPrepared_SpanKind_name, int32(x))
+}
+
+func (SpanPrepared_SpanKind) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_9161fdd1e0292445, []int{6, 0}
 }
 
 // A collection of spans from a Resource.
@@ -153,6 +278,54 @@ func (m *ResourceSpans) GetSpans() []*Span {
 	return nil
 }
 
+// A collection of spans from a Resource.
+type ResourceSpansPrepared struct {
+	Resource             []byte          `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	Spans                []*SpanPrepared `protobuf:"bytes,2,rep,name=spans,proto3" json:"spans,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *ResourceSpansPrepared) Reset()         { *m = ResourceSpansPrepared{} }
+func (m *ResourceSpansPrepared) String() string { return proto.CompactTextString(m) }
+func (*ResourceSpansPrepared) ProtoMessage()    {}
+func (*ResourceSpansPrepared) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9161fdd1e0292445, []int{1}
+}
+
+func (m *ResourceSpansPrepared) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ResourceSpansPrepared.Unmarshal(m, b)
+}
+func (m *ResourceSpansPrepared) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ResourceSpansPrepared.Marshal(b, m, deterministic)
+}
+func (m *ResourceSpansPrepared) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResourceSpansPrepared.Merge(m, src)
+}
+func (m *ResourceSpansPrepared) XXX_Size() int {
+	return xxx_messageInfo_ResourceSpansPrepared.Size(m)
+}
+func (m *ResourceSpansPrepared) XXX_DiscardUnknown() {
+	xxx_messageInfo_ResourceSpansPrepared.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ResourceSpansPrepared proto.InternalMessageInfo
+
+func (m *ResourceSpansPrepared) GetResource() []byte {
+	if m != nil {
+		return m.Resource
+	}
+	return nil
+}
+
+func (m *ResourceSpansPrepared) GetSpans() []*SpanPrepared {
+	if m != nil {
+		return m.Spans
+	}
+	return nil
+}
+
 // Resource information. This describes the source of telemetry data.
 type Resource struct {
 	// labels is a collection of attributes that describe the resource. See OpenTelemetry
@@ -171,7 +344,7 @@ func (m *Resource) Reset()         { *m = Resource{} }
 func (m *Resource) String() string { return proto.CompactTextString(m) }
 func (*Resource) ProtoMessage()    {}
 func (*Resource) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{1}
+	return fileDescriptor_9161fdd1e0292445, []int{2}
 }
 
 func (m *Resource) XXX_Unmarshal(b []byte) error {
@@ -212,25 +385,21 @@ type AttributeKeyValue struct {
 	// key part of the key-value pair.
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	// type of the value.
-	Type AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=baseline.AttributeKeyValue_ValueType" json:"type,omitempty"`
-	// A string up to 256 bytes long.
-	StringValue string `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
-	// A 64-bit signed integer.
-	Int64Value int64 `protobuf:"varint,4,opt,name=int64_value,json=int64Value,proto3" json:"int64_value,omitempty"`
-	// A Boolean value represented by `true` or `false`.
-	BoolValue bool `protobuf:"varint,5,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
-	// A double value.
-	DoubleValue          float64  `protobuf:"fixed64,6,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Type                 AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=baseline.AttributeKeyValue_ValueType" json:"type,omitempty"`
+	StringValue          string                      `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
+	IntValue             int64                       `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
+	DoubleValue          float64                     `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
+	BoolValue            bool                        `protobuf:"varint,6,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
+	XXX_unrecognized     []byte                      `json:"-"`
+	XXX_sizecache        int32                       `json:"-"`
 }
 
 func (m *AttributeKeyValue) Reset()         { *m = AttributeKeyValue{} }
 func (m *AttributeKeyValue) String() string { return proto.CompactTextString(m) }
 func (*AttributeKeyValue) ProtoMessage()    {}
 func (*AttributeKeyValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{2}
+	return fileDescriptor_9161fdd1e0292445, []int{3}
 }
 
 func (m *AttributeKeyValue) XXX_Unmarshal(b []byte) error {
@@ -272,9 +441,16 @@ func (m *AttributeKeyValue) GetStringValue() string {
 	return ""
 }
 
-func (m *AttributeKeyValue) GetInt64Value() int64 {
+func (m *AttributeKeyValue) GetIntValue() int64 {
 	if m != nil {
-		return m.Int64Value
+		return m.IntValue
+	}
+	return 0
+}
+
+func (m *AttributeKeyValue) GetDoubleValue() float64 {
+	if m != nil {
+		return m.DoubleValue
 	}
 	return 0
 }
@@ -286,13 +462,6 @@ func (m *AttributeKeyValue) GetBoolValue() bool {
 	return false
 }
 
-func (m *AttributeKeyValue) GetDoubleValue() float64 {
-	if m != nil {
-		return m.DoubleValue
-	}
-	return 0
-}
-
 // Span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans
 // from the same or different trace and form graphs. Often, a trace
@@ -301,39 +470,34 @@ func (m *AttributeKeyValue) GetDoubleValue() float64 {
 // multiple root spans, or none at all. Spans do not need to be
 // contiguous - there may be gaps or overlaps between spans in a trace.
 //
-// The next field id is 18.
+// The next available field id is 17.
 type Span struct {
-	// trace_id is the unique identifier of a trace. All spans from the same trace share
+	// A unique identifier for a trace. All spans from the same trace share
 	// the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes
 	// is considered invalid.
 	//
-	// This field is semantically required. If empty or invalid trace_id was received:
-	// - The receiver MAY reject the invalid data and respond with the appropriate error
-	//   code to the sender.
-	// - The receiver MAY accept the invalid data and attempt to correct it.
+	// This field is semantically required. Receiver should generate new
+	// random trace_id if empty or invalid trace_id was received.
+	//
+	// This field is required.
 	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	// span_id is a unique identifier for a span within a trace, assigned when the span
+	// A unique identifier for a span within a trace, assigned when the span
 	// is created. The ID is an 8-byte array. An ID with all zeroes is considered
 	// invalid.
 	//
-	// This field is semantically required. If empty or invalid span_id was received:
-	// - The receiver MAY reject the invalid data and respond with the appropriate error
-	//   code to the sender.
-	// - The receiver MAY accept the invalid data and attempt to correct it.
+	// This field is semantically required. Receiver should generate new
+	// random span_id if empty or invalid span_id was received.
+	//
+	// This field is required.
 	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
 	// tracestate conveys information about request position in multiple distributed tracing graphs.
-	// It is a collection of TracestateEntry with a maximum of 32 members in the collection.
-	//
-	// See the https://github.com/w3c/distributed-tracing for more details about this field.
-	Tracestate []*Span_TraceStateEntry `protobuf:"bytes,3,rep,name=tracestate,proto3" json:"tracestate,omitempty"`
-	// parent_span_id is the `span_id` of this span's parent span. If this is a root span, then this
-	// field must be omitted. The ID is an 8-byte array.
+	// It is a tracestate in w3c-trace-context format: https://www.w3.org/TR/trace-context/#tracestate-header
+	// See also https://github.com/w3c/distributed-tracing for more details about this field.
+	Tracestate string `protobuf:"bytes,3,opt,name=tracestate,proto3" json:"tracestate,omitempty"`
+	// The `span_id` of this span's parent span. If this is a root span, then this
+	// field must be empty. The ID is an 8-byte array.
 	ParentSpanId []byte `protobuf:"bytes,4,opt,name=parent_span_id,json=parentSpanId,proto3" json:"parent_span_id,omitempty"`
-	// resource that is associated with this span. Optional. If not set, this span
-	// should be part of a ResourceSpans message that does include the resource information,
-	// unless resource information is unknown.
-	Resource *Resource `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource,omitempty"`
-	// name describes the span's operation.
+	// A description of the span's operation.
 	//
 	// For example, the name can be a qualified method name or a file name
 	// and a line number where the operation is called. A best practice is to use
@@ -341,64 +505,62 @@ type Span struct {
 	// This makes it easier to correlate spans in different traces.
 	//
 	// This field is semantically required to be set to non-empty string.
+	// When null or empty string received - receiver may use string "name"
+	// as a replacement. There might be smarted algorithms implemented by
+	// receiver to fix the empty span name.
 	//
 	// This field is required.
-	Name string `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
-	// kind field distinguishes between spans generated in a particular context. For example,
+	Name string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	// Distinguishes between spans generated in a particular context. For example,
 	// two spans with the same name may be distinguished using `CLIENT` (caller)
-	// and `SERVER` (callee) to identify network latency associated with the span.
-	Kind Span_SpanKind `protobuf:"varint,7,opt,name=kind,proto3,enum=baseline.Span_SpanKind" json:"kind,omitempty"`
+	// and `SERVER` (callee) to identify queueing latency associated with the span.
+	Kind Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=baseline.Span_SpanKind" json:"kind,omitempty"`
 	// start_time_unixnano is the start time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution starts. On the server side, this
 	// is the time when the server's application handler starts running.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	//
-	// This field is semantically required. When not set on receive -
-	// receiver should set it to the value of end_time field if it was
-	// set. Or to the current time if neither was set. It is important to
-	// keep end_time > start_time for consistency.
-	//
-	// This field is required.
-	StartTimeUnixnano uint64 `protobuf:"fixed64,8,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// This field is semantically required and it is expected that end_time >= start_time.
+	StartTimeUnixnano uint64 `protobuf:"fixed64,7,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
 	// end_time_unixnano is the end time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution ends. On the server side, this
 	// is the time when the server application handler stops running.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
 	//
-	// This field is semantically required. When not set on receive -
-	// receiver should set it to start_time value. It is important to
-	// keep end_time > start_time for consistency.
-	//
-	// This field is required.
-	EndTimeUnixnano uint64 `protobuf:"fixed64,9,opt,name=end_time_unixnano,json=endTimeUnixnano,proto3" json:"end_time_unixnano,omitempty"`
-	// attributes is a collection of attribute key/value pairs. The value can be a string,
+	// This field is semantically required and it is expected that end_time >= start_time.
+	EndTimeUnixnano uint64 `protobuf:"fixed64,8,opt,name=end_time_unixnano,json=endTimeUnixnano,proto3" json:"end_time_unixnano,omitempty"`
+	// attributes is a collection of key/value pairs. The value can be a string,
 	// an integer, a double or the Boolean values `true` or `false`. Note, global attributes
-	// like server name can be set as tags using resource API. Examples of attributes:
+	// like server name can be set using the resource API. Examples of attributes:
 	//
 	//     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
 	//     "/http/server_latency": 300
 	//     "abc.com/myattribute": true
 	//     "abc.com/score": 10.239
-	Attributes []*AttributeKeyValue `protobuf:"bytes,10,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	Attributes []*AttributeKeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
-	DroppedAttributesCount int32 `protobuf:"varint,11,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
-	// timed_events is a collection of TimedEvent items.
-	TimedEvents []*Span_TimedEvent `protobuf:"bytes,12,rep,name=timed_events,json=timedEvents,proto3" json:"timed_events,omitempty"`
-	// dropped_timed_events_count is the number of dropped timed events. If the value is 0,
-	// then no events were dropped.
-	DroppedTimedEventsCount int32 `protobuf:"varint,13,opt,name=dropped_timed_events_count,json=droppedTimedEventsCount,proto3" json:"dropped_timed_events_count,omitempty"`
+	DroppedAttributesCount uint32 `protobuf:"varint,10,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
+	// events is a collection of Event items.
+	Events []*Span_Event `protobuf:"bytes,11,rep,name=events,proto3" json:"events,omitempty"`
+	// dropped_events_count is the number of dropped events. If the value is 0, then no
+	// events were dropped.
+	DroppedEventsCount uint32 `protobuf:"varint,12,opt,name=dropped_events_count,json=droppedEventsCount,proto3" json:"dropped_events_count,omitempty"`
 	// links is a collection of Links, which are references from this span to a span
 	// in the same or different trace.
-	Links []*Span_Link `protobuf:"bytes,14,rep,name=links,proto3" json:"links,omitempty"`
+	Links []*Span_Link `protobuf:"bytes,13,rep,name=links,proto3" json:"links,omitempty"`
 	// dropped_links_count is the number of dropped links after the maximum size was
 	// enforced. If this value is 0, then no links were dropped.
-	DroppedLinksCount int32 `protobuf:"varint,15,opt,name=dropped_links_count,json=droppedLinksCount,proto3" json:"dropped_links_count,omitempty"`
-	// status is an optional final status for this span. Semantically when status
-	// wasn't set it is means span ended without errors and assume Status.Ok (code = 0).
-	Status *Status `protobuf:"bytes,16,opt,name=status,proto3" json:"status,omitempty"`
-	// child_span_count is an optional number of child spans that were generated while this
-	// span was active. If set, allows an implementation to detect missing child spans.
-	ChildSpanCount       int32    `protobuf:"varint,17,opt,name=child_span_count,json=childSpanCount,proto3" json:"child_span_count,omitempty"`
+	DroppedLinksCount uint32 `protobuf:"varint,14,opt,name=dropped_links_count,json=droppedLinksCount,proto3" json:"dropped_links_count,omitempty"`
+	// An optional final status for this span. Semantically when Status
+	// wasn't set it is means span ended without errors and assume
+	// Status.Ok (code = 0).
+	Status *Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
+	// An optional number of local child spans that were generated while this span
+	// was active. Value of -1 indicates that the number of local child spans is unknown.
+	// If local_child_span_count>=0, allows an implementation to detect missing child spans.
+	LocalChildSpanCount  int32    `protobuf:"fixed32,16,opt,name=local_child_span_count,json=localChildSpanCount,proto3" json:"local_child_span_count,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -408,7 +570,7 @@ func (m *Span) Reset()         { *m = Span{} }
 func (m *Span) String() string { return proto.CompactTextString(m) }
 func (*Span) ProtoMessage()    {}
 func (*Span) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{3}
+	return fileDescriptor_9161fdd1e0292445, []int{4}
 }
 
 func (m *Span) XXX_Unmarshal(b []byte) error {
@@ -443,23 +605,16 @@ func (m *Span) GetSpanId() []byte {
 	return nil
 }
 
-func (m *Span) GetTracestate() []*Span_TraceStateEntry {
+func (m *Span) GetTracestate() string {
 	if m != nil {
 		return m.Tracestate
 	}
-	return nil
+	return ""
 }
 
 func (m *Span) GetParentSpanId() []byte {
 	if m != nil {
 		return m.ParentSpanId
-	}
-	return nil
-}
-
-func (m *Span) GetResource() *Resource {
-	if m != nil {
-		return m.Resource
 	}
 	return nil
 }
@@ -499,23 +654,23 @@ func (m *Span) GetAttributes() []*AttributeKeyValue {
 	return nil
 }
 
-func (m *Span) GetDroppedAttributesCount() int32 {
+func (m *Span) GetDroppedAttributesCount() uint32 {
 	if m != nil {
 		return m.DroppedAttributesCount
 	}
 	return 0
 }
 
-func (m *Span) GetTimedEvents() []*Span_TimedEvent {
+func (m *Span) GetEvents() []*Span_Event {
 	if m != nil {
-		return m.TimedEvents
+		return m.Events
 	}
 	return nil
 }
 
-func (m *Span) GetDroppedTimedEventsCount() int32 {
+func (m *Span) GetDroppedEventsCount() uint32 {
 	if m != nil {
-		return m.DroppedTimedEventsCount
+		return m.DroppedEventsCount
 	}
 	return 0
 }
@@ -527,7 +682,7 @@ func (m *Span) GetLinks() []*Span_Link {
 	return nil
 }
 
-func (m *Span) GetDroppedLinksCount() int32 {
+func (m *Span) GetDroppedLinksCount() uint32 {
 	if m != nil {
 		return m.DroppedLinksCount
 	}
@@ -541,154 +696,100 @@ func (m *Span) GetStatus() *Status {
 	return nil
 }
 
-func (m *Span) GetChildSpanCount() int32 {
+func (m *Span) GetLocalChildSpanCount() int32 {
 	if m != nil {
-		return m.ChildSpanCount
+		return m.LocalChildSpanCount
 	}
 	return 0
 }
 
-// TraceStateEntry is the entry that is repeated in tracestate field (see below).
-type Span_TraceStateEntry struct {
-	// key must begin with a lowercase letter, and can only contain
-	// lowercase letters 'a'-'z', digits '0'-'9', underscores '_', dashes
-	// '-', asterisks '*', and forward slashes '/'.
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	// value is opaque string up to 256 characters printable ASCII
-	// RFC0020 characters (i.e., the range 0x20 to 0x7E) except ',' and '='.
-	// Note that this also excludes tabs, newlines, carriage returns, etc.
-	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Span_TraceStateEntry) Reset()         { *m = Span_TraceStateEntry{} }
-func (m *Span_TraceStateEntry) String() string { return proto.CompactTextString(m) }
-func (*Span_TraceStateEntry) ProtoMessage()    {}
-func (*Span_TraceStateEntry) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{3, 0}
-}
-
-func (m *Span_TraceStateEntry) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Span_TraceStateEntry.Unmarshal(m, b)
-}
-func (m *Span_TraceStateEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Span_TraceStateEntry.Marshal(b, m, deterministic)
-}
-func (m *Span_TraceStateEntry) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Span_TraceStateEntry.Merge(m, src)
-}
-func (m *Span_TraceStateEntry) XXX_Size() int {
-	return xxx_messageInfo_Span_TraceStateEntry.Size(m)
-}
-func (m *Span_TraceStateEntry) XXX_DiscardUnknown() {
-	xxx_messageInfo_Span_TraceStateEntry.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Span_TraceStateEntry proto.InternalMessageInfo
-
-func (m *Span_TraceStateEntry) GetKey() string {
-	if m != nil {
-		return m.Key
-	}
-	return ""
-}
-
-func (m *Span_TraceStateEntry) GetValue() string {
-	if m != nil {
-		return m.Value
-	}
-	return ""
-}
-
-// TimedEvent is a time-stamped annotation of the span, consisting of either
-// user-supplied key-value pairs, or details of a message sent/received between Spans.
-type Span_TimedEvent struct {
+// Event is a time-stamped annotation of the span, consisting of user-supplied
+// text description and key-value pairs.
+type Span_Event struct {
 	// time_unixnano is the time the event occurred.
 	TimeUnixnano uint64 `protobuf:"fixed64,1,opt,name=time_unixnano,json=timeUnixnano,proto3" json:"time_unixnano,omitempty"`
-	// name is a user-supplied description of the event.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// description is a user-supplied text.
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the event.
 	Attributes []*AttributeKeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
-	DroppedAttributesCount int32    `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
+	DroppedAttributesCount uint32   `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
 	XXX_sizecache          int32    `json:"-"`
 }
 
-func (m *Span_TimedEvent) Reset()         { *m = Span_TimedEvent{} }
-func (m *Span_TimedEvent) String() string { return proto.CompactTextString(m) }
-func (*Span_TimedEvent) ProtoMessage()    {}
-func (*Span_TimedEvent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{3, 1}
+func (m *Span_Event) Reset()         { *m = Span_Event{} }
+func (m *Span_Event) String() string { return proto.CompactTextString(m) }
+func (*Span_Event) ProtoMessage()    {}
+func (*Span_Event) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9161fdd1e0292445, []int{4, 0}
 }
 
-func (m *Span_TimedEvent) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Span_TimedEvent.Unmarshal(m, b)
+func (m *Span_Event) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Span_Event.Unmarshal(m, b)
 }
-func (m *Span_TimedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Span_TimedEvent.Marshal(b, m, deterministic)
+func (m *Span_Event) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Span_Event.Marshal(b, m, deterministic)
 }
-func (m *Span_TimedEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Span_TimedEvent.Merge(m, src)
+func (m *Span_Event) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Span_Event.Merge(m, src)
 }
-func (m *Span_TimedEvent) XXX_Size() int {
-	return xxx_messageInfo_Span_TimedEvent.Size(m)
+func (m *Span_Event) XXX_Size() int {
+	return xxx_messageInfo_Span_Event.Size(m)
 }
-func (m *Span_TimedEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_Span_TimedEvent.DiscardUnknown(m)
+func (m *Span_Event) XXX_DiscardUnknown() {
+	xxx_messageInfo_Span_Event.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Span_TimedEvent proto.InternalMessageInfo
+var xxx_messageInfo_Span_Event proto.InternalMessageInfo
 
-func (m *Span_TimedEvent) GetTimeUnixnano() uint64 {
+func (m *Span_Event) GetTimeUnixnano() uint64 {
 	if m != nil {
 		return m.TimeUnixnano
 	}
 	return 0
 }
 
-func (m *Span_TimedEvent) GetName() string {
+func (m *Span_Event) GetDescription() string {
 	if m != nil {
-		return m.Name
+		return m.Description
 	}
 	return ""
 }
 
-func (m *Span_TimedEvent) GetAttributes() []*AttributeKeyValue {
+func (m *Span_Event) GetAttributes() []*AttributeKeyValue {
 	if m != nil {
 		return m.Attributes
 	}
 	return nil
 }
 
-func (m *Span_TimedEvent) GetDroppedAttributesCount() int32 {
+func (m *Span_Event) GetDroppedAttributesCount() uint32 {
 	if m != nil {
 		return m.DroppedAttributesCount
 	}
 	return 0
 }
 
-// Link is a pointer from the current span to another span in the same trace or in a
+// A pointer from the current span to another span in the same trace or in a
 // different trace. For example, this can be used in batching operations,
 // where a single batch handler processes multiple requests from different
 // traces or when the handler receives a request from a different project.
 type Span_Link struct {
-	// trace_id is a unique identifier of a trace that this linked span is part of.
-	// The ID is a 16-byte array.
+	// A unique identifier of a trace that this linked span is part of. The ID is a
+	// 16-byte array.
 	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	// span_id is a unique identifier for the linked span. The ID is an 8-byte array.
+	// A unique identifier for the linked span. The ID is an 8-byte array.
 	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
-	// tracestate is the trace state associated with the link.
-	Tracestate []*Span_TraceStateEntry `protobuf:"bytes,3,rep,name=tracestate,proto3" json:"tracestate,omitempty"`
+	// The tracestate associated with the link.
+	Tracestate string `protobuf:"bytes,3,opt,name=tracestate,proto3" json:"tracestate,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the link.
 	Attributes []*AttributeKeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
-	DroppedAttributesCount int32    `protobuf:"varint,5,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
+	DroppedAttributesCount uint32   `protobuf:"varint,5,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
 	XXX_unrecognized       []byte   `json:"-"`
 	XXX_sizecache          int32    `json:"-"`
@@ -698,7 +799,7 @@ func (m *Span_Link) Reset()         { *m = Span_Link{} }
 func (m *Span_Link) String() string { return proto.CompactTextString(m) }
 func (*Span_Link) ProtoMessage()    {}
 func (*Span_Link) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{3, 2}
+	return fileDescriptor_9161fdd1e0292445, []int{4, 1}
 }
 
 func (m *Span_Link) XXX_Unmarshal(b []byte) error {
@@ -733,11 +834,11 @@ func (m *Span_Link) GetSpanId() []byte {
 	return nil
 }
 
-func (m *Span_Link) GetTracestate() []*Span_TraceStateEntry {
+func (m *Span_Link) GetTracestate() string {
 	if m != nil {
 		return m.Tracestate
 	}
-	return nil
+	return ""
 }
 
 func (m *Span_Link) GetAttributes() []*AttributeKeyValue {
@@ -747,7 +848,7 @@ func (m *Span_Link) GetAttributes() []*AttributeKeyValue {
 	return nil
 }
 
-func (m *Span_Link) GetDroppedAttributesCount() int32 {
+func (m *Span_Link) GetDroppedAttributesCount() uint32 {
 	if m != nil {
 		return m.DroppedAttributesCount
 	}
@@ -759,8 +860,8 @@ func (m *Span_Link) GetDroppedAttributesCount() int32 {
 type Status struct {
 	// The status code. This is optional field. It is safe to assume 0 (OK)
 	// when not set.
-	Code int32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	// A developer-facing error message, which should be in English.
+	Code Status_StatusCode `protobuf:"varint,1,opt,name=code,proto3,enum=baseline.Status_StatusCode" json:"code,omitempty"`
+	// A developer-facing human readable error message.
 	Message              string   `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -771,7 +872,7 @@ func (m *Status) Reset()         { *m = Status{} }
 func (m *Status) String() string { return proto.CompactTextString(m) }
 func (*Status) ProtoMessage()    {}
 func (*Status) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9161fdd1e0292445, []int{4}
+	return fileDescriptor_9161fdd1e0292445, []int{5}
 }
 
 func (m *Status) XXX_Unmarshal(b []byte) error {
@@ -792,11 +893,11 @@ func (m *Status) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Status proto.InternalMessageInfo
 
-func (m *Status) GetCode() int32 {
+func (m *Status) GetCode() Status_StatusCode {
 	if m != nil {
 		return m.Code
 	}
-	return 0
+	return Status_Ok
 }
 
 func (m *Status) GetMessage() string {
@@ -806,78 +907,330 @@ func (m *Status) GetMessage() string {
 	return ""
 }
 
+type SpanPrepared struct {
+	// A unique identifier for a trace. All spans from the same trace share
+	// the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes
+	// is considered invalid.
+	//
+	// This field is semantically required. Receiver should generate new
+	// random trace_id if empty or invalid trace_id was received.
+	//
+	// This field is required.
+	TraceId []byte `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
+	// A unique identifier for a span within a trace, assigned when the span
+	// is created. The ID is an 8-byte array. An ID with all zeroes is considered
+	// invalid.
+	//
+	// This field is semantically required. Receiver should generate new
+	// random span_id if empty or invalid span_id was received.
+	//
+	// This field is required.
+	SpanId []byte `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
+	// tracestate conveys information about request position in multiple distributed tracing graphs.
+	// It is a tracestate in w3c-trace-context format: https://www.w3.org/TR/trace-context/#tracestate-header
+	// See also https://github.com/w3c/distributed-tracing for more details about this field.
+	Tracestate string `protobuf:"bytes,3,opt,name=tracestate,proto3" json:"tracestate,omitempty"`
+	// The `span_id` of this span's parent span. If this is a root span, then this
+	// field must be empty. The ID is an 8-byte array.
+	ParentSpanId []byte `protobuf:"bytes,4,opt,name=parent_span_id,json=parentSpanId,proto3" json:"parent_span_id,omitempty"`
+	// A description of the span's operation.
+	//
+	// For example, the name can be a qualified method name or a file name
+	// and a line number where the operation is called. A best practice is to use
+	// the same display name at the same call point in an application.
+	// This makes it easier to correlate spans in different traces.
+	//
+	// This field is semantically required to be set to non-empty string.
+	// When null or empty string received - receiver may use string "name"
+	// as a replacement. There might be smarted algorithms implemented by
+	// receiver to fix the empty span name.
+	//
+	// This field is required.
+	Name string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	// Distinguishes between spans generated in a particular context. For example,
+	// two spans with the same name may be distinguished using `CLIENT` (caller)
+	// and `SERVER` (callee) to identify queueing latency associated with the span.
+	Kind SpanPrepared_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=baseline.SpanPrepared_SpanKind" json:"kind,omitempty"`
+	// start_time_unixnano is the start time of the span. On the client side, this is the time
+	// kept by the local machine where the span execution starts. On the server side, this
+	// is the time when the server's application handler starts running.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	//
+	// This field is semantically required and it is expected that end_time >= start_time.
+	StartTimeUnixnano uint64 `protobuf:"fixed64,7,opt,name=start_time_unixnano,json=startTimeUnixnano,proto3" json:"start_time_unixnano,omitempty"`
+	// end_time_unixnano is the end time of the span. On the client side, this is the time
+	// kept by the local machine where the span execution ends. On the server side, this
+	// is the time when the server application handler stops running.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	//
+	// This field is semantically required and it is expected that end_time >= start_time.
+	EndTimeUnixnano uint64 `protobuf:"fixed64,8,opt,name=end_time_unixnano,json=endTimeUnixnano,proto3" json:"end_time_unixnano,omitempty"`
+	// attributes is a collection of key/value pairs. The value can be a string,
+	// an integer, a double or the Boolean values `true` or `false`. Note, global attributes
+	// like server name can be set using the resource API. Examples of attributes:
+	//
+	//     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
+	//     "/http/server_latency": 300
+	//     "abc.com/myattribute": true
+	//     "abc.com/score": 10.239
+	Attributes [][]byte `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	// dropped_attributes_count is the number of attributes that were discarded. Attributes
+	// can be discarded because their keys are too long or because there are too many
+	// attributes. If this value is 0, then no attributes were dropped.
+	DroppedAttributesCount uint32 `protobuf:"varint,10,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
+	// events is a collection of Event items.
+	Events [][]byte `protobuf:"bytes,11,rep,name=events,proto3" json:"events,omitempty"`
+	// dropped_events_count is the number of dropped events. If the value is 0, then no
+	// events were dropped.
+	DroppedEventsCount uint32 `protobuf:"varint,12,opt,name=dropped_events_count,json=droppedEventsCount,proto3" json:"dropped_events_count,omitempty"`
+	// links is a collection of Links, which are references from this span to a span
+	// in the same or different trace.
+	Links [][]byte `protobuf:"bytes,13,rep,name=links,proto3" json:"links,omitempty"`
+	// dropped_links_count is the number of dropped links after the maximum size was
+	// enforced. If this value is 0, then no links were dropped.
+	DroppedLinksCount uint32 `protobuf:"varint,14,opt,name=dropped_links_count,json=droppedLinksCount,proto3" json:"dropped_links_count,omitempty"`
+	// An optional final status for this span. Semantically when Status
+	// wasn't set it is means span ended without errors and assume
+	// Status.Ok (code = 0).
+	Status *Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
+	// An optional number of local child spans that were generated while this span
+	// was active. Value of -1 indicates that the number of local child spans is unknown.
+	// If local_child_span_count>=0, allows an implementation to detect missing child spans.
+	LocalChildSpanCount  int32    `protobuf:"fixed32,16,opt,name=local_child_span_count,json=localChildSpanCount,proto3" json:"local_child_span_count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SpanPrepared) Reset()         { *m = SpanPrepared{} }
+func (m *SpanPrepared) String() string { return proto.CompactTextString(m) }
+func (*SpanPrepared) ProtoMessage()    {}
+func (*SpanPrepared) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9161fdd1e0292445, []int{6}
+}
+
+func (m *SpanPrepared) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SpanPrepared.Unmarshal(m, b)
+}
+func (m *SpanPrepared) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SpanPrepared.Marshal(b, m, deterministic)
+}
+func (m *SpanPrepared) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SpanPrepared.Merge(m, src)
+}
+func (m *SpanPrepared) XXX_Size() int {
+	return xxx_messageInfo_SpanPrepared.Size(m)
+}
+func (m *SpanPrepared) XXX_DiscardUnknown() {
+	xxx_messageInfo_SpanPrepared.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SpanPrepared proto.InternalMessageInfo
+
+func (m *SpanPrepared) GetTraceId() []byte {
+	if m != nil {
+		return m.TraceId
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetSpanId() []byte {
+	if m != nil {
+		return m.SpanId
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetTracestate() string {
+	if m != nil {
+		return m.Tracestate
+	}
+	return ""
+}
+
+func (m *SpanPrepared) GetParentSpanId() []byte {
+	if m != nil {
+		return m.ParentSpanId
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *SpanPrepared) GetKind() SpanPrepared_SpanKind {
+	if m != nil {
+		return m.Kind
+	}
+	return SpanPrepared_SPAN_KIND_UNSPECIFIED
+}
+
+func (m *SpanPrepared) GetStartTimeUnixnano() uint64 {
+	if m != nil {
+		return m.StartTimeUnixnano
+	}
+	return 0
+}
+
+func (m *SpanPrepared) GetEndTimeUnixnano() uint64 {
+	if m != nil {
+		return m.EndTimeUnixnano
+	}
+	return 0
+}
+
+func (m *SpanPrepared) GetAttributes() [][]byte {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
+func (m *SpanPrepared) GetEvents() [][]byte {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetDroppedEventsCount() uint32 {
+	if m != nil {
+		return m.DroppedEventsCount
+	}
+	return 0
+}
+
+func (m *SpanPrepared) GetLinks() [][]byte {
+	if m != nil {
+		return m.Links
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetDroppedLinksCount() uint32 {
+	if m != nil {
+		return m.DroppedLinksCount
+	}
+	return 0
+}
+
+func (m *SpanPrepared) GetStatus() *Status {
+	if m != nil {
+		return m.Status
+	}
+	return nil
+}
+
+func (m *SpanPrepared) GetLocalChildSpanCount() int32 {
+	if m != nil {
+		return m.LocalChildSpanCount
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("baseline.AttributeKeyValue_ValueType", AttributeKeyValue_ValueType_name, AttributeKeyValue_ValueType_value)
 	proto.RegisterEnum("baseline.Span_SpanKind", Span_SpanKind_name, Span_SpanKind_value)
+	proto.RegisterEnum("baseline.Status_StatusCode", Status_StatusCode_name, Status_StatusCode_value)
+	proto.RegisterEnum("baseline.SpanPrepared_SpanKind", SpanPrepared_SpanKind_name, SpanPrepared_SpanKind_value)
 	proto.RegisterType((*ResourceSpans)(nil), "baseline.ResourceSpans")
+	proto.RegisterType((*ResourceSpansPrepared)(nil), "baseline.ResourceSpansPrepared")
 	proto.RegisterType((*Resource)(nil), "baseline.Resource")
 	proto.RegisterType((*AttributeKeyValue)(nil), "baseline.AttributeKeyValue")
 	proto.RegisterType((*Span)(nil), "baseline.Span")
-	proto.RegisterType((*Span_TraceStateEntry)(nil), "baseline.Span.TraceStateEntry")
-	proto.RegisterType((*Span_TimedEvent)(nil), "baseline.Span.TimedEvent")
+	proto.RegisterType((*Span_Event)(nil), "baseline.Span.Event")
 	proto.RegisterType((*Span_Link)(nil), "baseline.Span.Link")
 	proto.RegisterType((*Status)(nil), "baseline.Status")
+	proto.RegisterType((*SpanPrepared)(nil), "baseline.SpanPrepared")
 }
 
 func init() { proto.RegisterFile("telemetry_data.proto", fileDescriptor_9161fdd1e0292445) }
 
 var fileDescriptor_9161fdd1e0292445 = []byte{
-	// 905 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x55, 0xdd, 0x6e, 0xe3, 0x44,
-	0x14, 0x5e, 0x27, 0x76, 0x9a, 0x9c, 0xa4, 0xa9, 0x33, 0x5b, 0xa8, 0x5b, 0xfe, 0xb2, 0x61, 0x91,
-	0x02, 0x48, 0x16, 0xdb, 0x5d, 0x55, 0xbb, 0x5a, 0x84, 0xd4, 0xa6, 0x06, 0xa2, 0x06, 0x27, 0x9a,
-	0x24, 0xbd, 0xb5, 0x9c, 0x78, 0x54, 0xac, 0x3a, 0x63, 0x63, 0x4f, 0x2a, 0xf2, 0x36, 0x3c, 0x08,
-	0xaf, 0xc3, 0x0d, 0x77, 0xbc, 0x01, 0x9a, 0x33, 0x76, 0xfe, 0x40, 0x85, 0x8b, 0x95, 0xf6, 0xc6,
-	0x9a, 0x39, 0xdf, 0x37, 0xdf, 0x99, 0x99, 0xf3, 0x9d, 0x31, 0x1c, 0x0b, 0x16, 0xb1, 0x05, 0x13,
-	0xe9, 0xca, 0x0b, 0x7c, 0xe1, 0xdb, 0x49, 0x1a, 0x8b, 0x98, 0x54, 0x67, 0x7e, 0xc6, 0xa2, 0x90,
-	0xb3, 0x0e, 0x83, 0x43, 0xca, 0xb2, 0x78, 0x99, 0xce, 0xd9, 0x38, 0xf1, 0x79, 0x46, 0x6c, 0xa8,
-	0xa6, 0x79, 0xc0, 0xd2, 0xda, 0x5a, 0xb7, 0x7e, 0x4e, 0xec, 0x82, 0x6d, 0x17, 0x54, 0xba, 0xe6,
-	0x90, 0xe7, 0x60, 0x64, 0x72, 0xa1, 0x55, 0x6a, 0x97, 0xbb, 0xf5, 0xf3, 0xe6, 0x86, 0x2c, 0xf5,
-	0xa8, 0x02, 0x3b, 0xbf, 0x40, 0xb5, 0x58, 0x4b, 0x5e, 0x42, 0x25, 0xf2, 0x67, 0x2c, 0xca, 0x2c,
-	0x0d, 0x97, 0x7c, 0xb4, 0x59, 0x72, 0x29, 0x44, 0x1a, 0xce, 0x96, 0x82, 0xdd, 0xb0, 0xd5, 0xad,
-	0x1f, 0x2d, 0x19, 0xcd, 0xa9, 0xe4, 0x1b, 0x38, 0x0e, 0xd2, 0x38, 0x49, 0x58, 0xe0, 0xa9, 0x88,
-	0x37, 0x8f, 0x97, 0x5c, 0x58, 0xa5, 0xb6, 0xd6, 0x35, 0x28, 0xc9, 0xb1, 0x01, 0x42, 0x3d, 0x89,
-	0x74, 0x7e, 0x2b, 0x41, 0xeb, 0x1f, 0x7a, 0xc4, 0x84, 0xf2, 0x3d, 0x5b, 0xe1, 0xc9, 0x6a, 0x54,
-	0x0e, 0xc9, 0x1b, 0xd0, 0xc5, 0x2a, 0x61, 0xa8, 0xd4, 0x3c, 0xff, 0xe2, 0x91, 0xcd, 0xd8, 0xf8,
-	0x9d, 0xac, 0x12, 0x46, 0x71, 0x09, 0x79, 0x06, 0x8d, 0x4c, 0xa4, 0x21, 0xbf, 0xf3, 0x1e, 0x24,
-	0x62, 0x95, 0x51, 0xb5, 0xae, 0x62, 0x2a, 0xdf, 0x67, 0x50, 0x0f, 0xb9, 0xb8, 0x78, 0x95, 0x33,
-	0xf4, 0xb6, 0xd6, 0x2d, 0x53, 0xc0, 0x90, 0x22, 0x7c, 0x02, 0x30, 0x8b, 0xe3, 0x28, 0xc7, 0x8d,
-	0xb6, 0xd6, 0xad, 0xd2, 0x9a, 0x8c, 0x28, 0xf8, 0x19, 0x34, 0x82, 0x78, 0x39, 0x8b, 0x58, 0x4e,
-	0xa8, 0xb4, 0xb5, 0xae, 0x46, 0xeb, 0x2a, 0x86, 0x94, 0xce, 0x6b, 0xa8, 0xad, 0x37, 0x46, 0x00,
-	0x2a, 0xe3, 0x09, 0xed, 0xbb, 0x3f, 0x98, 0x4f, 0x48, 0x15, 0xf4, 0xab, 0xe1, 0x70, 0x60, 0x6a,
-	0xa4, 0x06, 0x46, 0xdf, 0x9d, 0x5c, 0xbc, 0x32, 0x4b, 0x92, 0x70, 0x3d, 0x9c, 0x5e, 0x0d, 0x1c,
-	0xb3, 0xdc, 0xf9, 0x03, 0x40, 0x97, 0x55, 0x22, 0xa7, 0x50, 0x15, 0xa9, 0x3f, 0x67, 0x5e, 0x18,
-	0xe0, 0xd5, 0x34, 0xe8, 0x01, 0xce, 0xfb, 0x01, 0x39, 0x81, 0x03, 0x59, 0x42, 0x89, 0x94, 0x10,
-	0xa9, 0xc8, 0x69, 0x3f, 0x20, 0xdf, 0x01, 0x20, 0x27, 0x13, 0xbe, 0x90, 0x47, 0x97, 0xa5, 0xfc,
-	0x74, 0xb7, 0xfa, 0xf6, 0x44, 0x12, 0xc6, 0x92, 0xe0, 0x70, 0x91, 0xae, 0xe8, 0xd6, 0x0a, 0xf2,
-	0x1c, 0x9a, 0x89, 0x9f, 0x32, 0x2e, 0xbc, 0x42, 0x5f, 0x47, 0xfd, 0x86, 0x8a, 0x8e, 0x55, 0x96,
-	0x6d, 0x3b, 0x1a, 0xff, 0xc3, 0x8e, 0x04, 0x74, 0xee, 0x2f, 0xd4, 0x3d, 0xd5, 0x28, 0x8e, 0xc9,
-	0xd7, 0xa0, 0xdf, 0x87, 0x3c, 0xb0, 0x0e, 0xb0, 0xc2, 0x27, 0x7b, 0x7b, 0x94, 0x9f, 0x9b, 0x90,
-	0x07, 0x14, 0x49, 0xc4, 0x86, 0xa7, 0x99, 0xf0, 0x53, 0xe1, 0x89, 0x70, 0xc1, 0xbc, 0x25, 0x0f,
-	0x7f, 0xe5, 0x3e, 0x8f, 0xad, 0x6a, 0x5b, 0xeb, 0x56, 0x68, 0x0b, 0xa1, 0x49, 0xb8, 0x60, 0xd3,
-	0x1c, 0x20, 0x5f, 0x41, 0x8b, 0xf1, 0x60, 0x8f, 0x5d, 0x43, 0xf6, 0x11, 0xe3, 0xc1, 0x0e, 0xf7,
-	0x2d, 0x80, 0x5f, 0x98, 0x2a, 0xb3, 0xe0, 0xbf, 0xdd, 0xbf, 0x45, 0x27, 0xaf, 0xc1, 0x2a, 0x3a,
-	0x60, 0x13, 0xcd, 0xbb, 0xa0, 0x8e, 0x5d, 0xf0, 0x61, 0x8e, 0xaf, 0x75, 0x54, 0x27, 0x90, 0x6f,
-	0xa1, 0x21, 0xb7, 0x17, 0x78, 0xec, 0x81, 0x71, 0x91, 0x59, 0x0d, 0x4c, 0x7c, 0xba, 0x5f, 0x2b,
-	0x49, 0x71, 0x24, 0x83, 0xd6, 0xc5, 0x7a, 0x9c, 0x91, 0xb7, 0x70, 0x56, 0xe4, 0xdd, 0x56, 0xc9,
-	0x33, 0x1f, 0x62, 0xe6, 0x93, 0x9c, 0xb1, 0xd1, 0xc8, 0x53, 0x7f, 0x09, 0x46, 0x14, 0xf2, 0xfb,
-	0xcc, 0x6a, 0x62, 0xce, 0xa7, 0x7b, 0x39, 0x07, 0x21, 0xbf, 0xa7, 0x8a, 0x21, 0x2f, 0x7e, 0xdd,
-	0xe1, 0x32, 0x90, 0x27, 0x38, 0xc2, 0x04, 0xad, 0xa2, 0xc1, 0x25, 0xa2, 0xa4, 0xbb, 0x50, 0x91,
-	0x46, 0x5a, 0x66, 0x96, 0x89, 0xbe, 0x30, 0xb7, 0xb4, 0x31, 0x4e, 0x73, 0x9c, 0x74, 0xc1, 0x9c,
-	0xff, 0x1c, 0x46, 0x81, 0x32, 0x9a, 0x92, 0x6d, 0xa1, 0x6c, 0x13, 0xe3, 0x72, 0x2b, 0xa8, 0x79,
-	0xf6, 0x06, 0x8e, 0xf6, 0x2c, 0xfb, 0x2f, 0x0f, 0xc6, 0x31, 0x18, 0xaa, 0x17, 0x4b, 0x18, 0x53,
-	0x93, 0xb3, 0xdf, 0x35, 0x80, 0xcd, 0xf1, 0xc9, 0xe7, 0x70, 0xb8, 0x6b, 0x09, 0x0d, 0x2d, 0x81,
-	0x85, 0x58, 0xfb, 0xa1, 0x30, 0x6b, 0x69, 0xcb, 0xac, 0xbb, 0x1e, 0x29, 0xbf, 0x3b, 0x8f, 0xe8,
-	0x8f, 0x79, 0xe4, 0xec, 0x2f, 0x0d, 0x74, 0x79, 0xb9, 0xef, 0xe5, 0x29, 0xd8, 0x3d, 0xb3, 0xfe,
-	0xee, 0xce, 0x6c, 0x3c, 0x76, 0xe6, 0xce, 0x1d, 0x54, 0x8b, 0xe6, 0x27, 0xa7, 0xf0, 0xc1, 0x78,
-	0x74, 0xe9, 0x7a, 0x37, 0x7d, 0xf7, 0xda, 0x9b, 0xba, 0xe3, 0x91, 0xd3, 0xeb, 0x7f, 0xdf, 0x77,
-	0xae, 0xcd, 0x27, 0xa4, 0x01, 0xd5, 0xbe, 0x3b, 0x71, 0xa8, 0x7b, 0x29, 0x9f, 0x52, 0xf9, 0xc0,
-	0x3a, 0xf4, 0xd6, 0xa1, 0xea, 0x2d, 0xed, 0x0d, 0xfa, 0x8e, 0x3b, 0x31, 0xcb, 0x92, 0x35, 0xa2,
-	0xc3, 0xeb, 0x69, 0xcf, 0xa1, 0xa6, 0x2e, 0x67, 0xbd, 0xa1, 0x3b, 0x9e, 0xfe, 0xe4, 0x50, 0xd3,
-	0xe8, 0x5c, 0x40, 0x45, 0x59, 0x52, 0x56, 0x7c, 0x1e, 0x07, 0xea, 0xcf, 0x6a, 0x50, 0x1c, 0x13,
-	0x0b, 0x0e, 0x16, 0x2c, 0xcb, 0xfc, 0xbb, 0xc2, 0x08, 0xc5, 0xf4, 0xea, 0x47, 0xf8, 0x38, 0x8c,
-	0xed, 0x38, 0x61, 0x7c, 0xce, 0x78, 0xb6, 0xcc, 0xd4, 0xdf, 0xdb, 0xc6, 0x9b, 0xb3, 0x1f, 0x5e,
-	0x5c, 0x01, 0x5e, 0xea, 0x48, 0x06, 0x47, 0xda, 0x9f, 0xa5, 0xd3, 0x61, 0xc2, 0x78, 0x4f, 0x31,
-	0x31, 0xa8, 0x2e, 0xdd, 0xbe, 0x7d, 0x31, 0xab, 0xe0, 0xca, 0x97, 0x7f, 0x07, 0x00, 0x00, 0xff,
-	0xff, 0xad, 0x92, 0xb0, 0xad, 0x0f, 0x08, 0x00, 0x00,
+	// 1178 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x56, 0xcf, 0x72, 0x1b, 0xc5,
+	0x13, 0xce, 0xea, 0x9f, 0xa5, 0xd6, 0x4a, 0x1e, 0x8f, 0x1d, 0x47, 0x49, 0x7e, 0xbf, 0xa0, 0x88,
+	0x50, 0x25, 0x20, 0x25, 0x88, 0x5d, 0x45, 0x41, 0x71, 0xb2, 0xa5, 0x0d, 0xa8, 0x22, 0x24, 0xd5,
+	0x48, 0xca, 0x55, 0x35, 0xd2, 0x34, 0xce, 0x94, 0x57, 0xb3, 0x62, 0x77, 0xd6, 0xd8, 0xcf, 0xc1,
+	0x8d, 0xd7, 0xe0, 0xcc, 0x91, 0x07, 0xe0, 0x09, 0xb8, 0xf3, 0x14, 0xd4, 0xcc, 0xee, 0xda, 0x92,
+	0x43, 0x85, 0x03, 0x21, 0x95, 0x8b, 0x34, 0xd3, 0xdf, 0xd7, 0x5f, 0x4f, 0x6f, 0xf7, 0x6c, 0x2f,
+	0x1c, 0x68, 0xf4, 0x71, 0x85, 0x3a, 0xbc, 0x9a, 0x0b, 0xae, 0x79, 0x67, 0x1d, 0x06, 0x3a, 0xa0,
+	0xe5, 0x05, 0x8f, 0xd0, 0x97, 0x0a, 0x5b, 0x08, 0x35, 0x86, 0x51, 0x10, 0x87, 0x4b, 0x9c, 0xac,
+	0xb9, 0x8a, 0x68, 0x07, 0xca, 0x61, 0x6a, 0x68, 0x38, 0x4d, 0xa7, 0x5d, 0x3d, 0xa2, 0x9d, 0x8c,
+	0xdd, 0xc9, 0xa8, 0xec, 0x9a, 0x43, 0x9f, 0x40, 0x31, 0x32, 0x8e, 0x8d, 0x5c, 0x33, 0xdf, 0xae,
+	0x1e, 0xd5, 0x6f, 0xc8, 0x46, 0x8f, 0x25, 0x60, 0x8b, 0xc3, 0xdd, 0xad, 0x30, 0xe3, 0x10, 0xd7,
+	0x3c, 0x44, 0x41, 0x1f, 0xdc, 0x0a, 0xe7, 0x6e, 0x48, 0x3f, 0xdd, 0x96, 0x3e, 0xdc, 0x96, 0xce,
+	0x24, 0xb2, 0x10, 0x3f, 0x40, 0x39, 0x0b, 0x41, 0x8f, 0xa1, 0xe4, 0xf3, 0x05, 0xfa, 0x51, 0xc3,
+	0xb1, 0xae, 0x0f, 0x6f, 0x5c, 0x4f, 0xb4, 0x0e, 0xe5, 0x22, 0xd6, 0xf8, 0x02, 0xaf, 0x5e, 0x72,
+	0x3f, 0x46, 0x96, 0x52, 0xe9, 0xe7, 0x70, 0x20, 0xc2, 0x60, 0xbd, 0x46, 0x31, 0x4f, 0x2c, 0xf3,
+	0x65, 0x10, 0x2b, 0xdd, 0xc8, 0x35, 0x9d, 0x76, 0x91, 0xd1, 0x14, 0x1b, 0x58, 0xa8, 0x6b, 0x90,
+	0xd6, 0xcf, 0x39, 0xd8, 0x7b, 0x4d, 0x8f, 0x12, 0xc8, 0x9f, 0xe3, 0x95, 0xcd, 0xa6, 0xc2, 0xcc,
+	0x92, 0x7e, 0x05, 0x05, 0x7d, 0xb5, 0x46, 0xab, 0x54, 0x3f, 0xfa, 0xe8, 0x0d, 0x87, 0xe9, 0xd8,
+	0xdf, 0xe9, 0xd5, 0x1a, 0x99, 0x75, 0xa1, 0x8f, 0xc1, 0x8d, 0x74, 0x28, 0xd5, 0xd9, 0xfc, 0xc2,
+	0x20, 0x8d, 0xbc, 0x55, 0xad, 0x26, 0xb6, 0x24, 0xde, 0x43, 0xa8, 0x48, 0xa5, 0x53, 0xbc, 0xd0,
+	0x74, 0xda, 0x79, 0x56, 0x96, 0x4a, 0x27, 0xe0, 0x63, 0x70, 0x45, 0x10, 0x2f, 0x7c, 0x4c, 0xf1,
+	0x62, 0xd3, 0x69, 0x3b, 0xac, 0x9a, 0xd8, 0x12, 0xca, 0xff, 0x01, 0x16, 0x41, 0xe0, 0xa7, 0x84,
+	0x52, 0xd3, 0x69, 0x97, 0x59, 0xc5, 0x58, 0x2c, 0xdc, 0xfa, 0x02, 0x2a, 0xd7, 0x87, 0xa2, 0x00,
+	0xa5, 0xc9, 0x94, 0xf5, 0x87, 0xdf, 0x90, 0x3b, 0x74, 0x07, 0xf2, 0xfd, 0xe1, 0x94, 0x38, 0xc6,
+	0xd8, 0x1b, 0xcd, 0x4e, 0x07, 0x1e, 0xc9, 0xd1, 0x32, 0x14, 0x4e, 0x47, 0xa3, 0x01, 0xc9, 0xb7,
+	0x7e, 0xa9, 0x40, 0xc1, 0xd4, 0x89, 0xde, 0x87, 0xb2, 0x0e, 0xf9, 0x12, 0xe7, 0x52, 0xa4, 0x25,
+	0xde, 0xb1, 0xfb, 0xbe, 0xa0, 0xf7, 0x60, 0xc7, 0x14, 0xcf, 0x20, 0x39, 0x8b, 0x94, 0xcc, 0xb6,
+	0x2f, 0xe8, 0x23, 0x00, 0xcb, 0x89, 0x34, 0xd7, 0x59, 0xd2, 0x1b, 0x16, 0xfa, 0x04, 0xea, 0xa6,
+	0xf8, 0x4a, 0xcf, 0x33, 0xff, 0x82, 0xf5, 0x77, 0x13, 0xeb, 0x24, 0x51, 0xa1, 0x50, 0x50, 0x7c,
+	0x95, 0x24, 0x5d, 0x61, 0x76, 0x4d, 0x3f, 0x85, 0xc2, 0xb9, 0x54, 0xc2, 0xe6, 0x59, 0x3f, 0xba,
+	0xb7, 0xdd, 0x53, 0xf6, 0xe7, 0x85, 0x54, 0x82, 0x59, 0x12, 0xed, 0xc0, 0x7e, 0xa4, 0x79, 0xa8,
+	0xe7, 0x5a, 0xae, 0x70, 0x1e, 0x2b, 0x79, 0xa9, 0xb8, 0x0a, 0x1a, 0x3b, 0x4d, 0xa7, 0x5d, 0x62,
+	0x7b, 0x16, 0x9a, 0xca, 0x15, 0xce, 0x52, 0x80, 0x7e, 0x02, 0x7b, 0xa8, 0xc4, 0x2d, 0x76, 0xd9,
+	0xb2, 0x77, 0x51, 0x89, 0x2d, 0xee, 0xd7, 0x00, 0x3c, 0x2b, 0x7f, 0xd4, 0xa8, 0xfc, 0x73, 0x9f,
+	0x6e, 0xd0, 0xe9, 0x97, 0xd0, 0xc8, 0x7a, 0xf5, 0xc6, 0x9a, 0xf6, 0x2b, 0x34, 0x9d, 0x76, 0x8d,
+	0x1d, 0xa6, 0xf8, 0xb5, 0x4e, 0xd2, 0xb3, 0xf4, 0x29, 0x94, 0xf0, 0x02, 0x95, 0x8e, 0x1a, 0x55,
+	0x1b, 0xf2, 0xe0, 0xd6, 0x13, 0xf0, 0x0c, 0xc8, 0x52, 0xce, 0xe6, 0x9d, 0x48, 0x2c, 0x69, 0x0c,
+	0xd7, 0xc6, 0xc8, 0xee, 0x84, 0xf5, 0x49, 0xf5, 0x3f, 0x86, 0xa2, 0x2f, 0xd5, 0x79, 0xd4, 0xa8,
+	0x59, 0xf9, 0xfd, 0x5b, 0xf2, 0x03, 0xa9, 0xce, 0x59, 0xc2, 0x30, 0x4f, 0xf7, 0xfa, 0xc2, 0x19,
+	0x43, 0xaa, 0x5d, 0xb7, 0xda, 0x7b, 0xd9, 0x7d, 0x33, 0x48, 0x22, 0xdd, 0x86, 0x92, 0xa9, 0x7e,
+	0x1c, 0x35, 0x76, 0xed, 0x8b, 0x89, 0x6c, 0x68, 0x5b, 0x3b, 0x4b, 0x71, 0x7a, 0x0c, 0x87, 0x7e,
+	0xb0, 0xe4, 0xfe, 0x7c, 0xf9, 0x4a, 0xfa, 0x22, 0xe9, 0x91, 0x44, 0x9c, 0x34, 0x9d, 0xf6, 0x2e,
+	0xdb, 0xb7, 0x68, 0xd7, 0x80, 0xe6, 0x54, 0x56, 0xfe, 0xc1, 0x6f, 0x0e, 0x14, 0x6d, 0x26, 0xf4,
+	0x43, 0xa8, 0x6d, 0x97, 0xd0, 0xb1, 0x25, 0x74, 0xf5, 0x66, 0xfd, 0x9a, 0x50, 0x15, 0x18, 0x2d,
+	0x43, 0xb9, 0xd6, 0x32, 0x50, 0xb6, 0x7f, 0x2b, 0x6c, 0xd3, 0x74, 0xab, 0xc2, 0xf9, 0xb7, 0x57,
+	0xe1, 0xc2, 0x9b, 0x2a, 0xfc, 0xe0, 0x77, 0x07, 0x0a, 0xe6, 0xa9, 0xfd, 0x27, 0x17, 0x6f, 0x3b,
+	0xa7, 0xc2, 0xdb, 0xcb, 0xa9, 0xf8, 0xa6, 0x9c, 0x5a, 0x67, 0x50, 0xce, 0xae, 0x26, 0xbd, 0x0f,
+	0x77, 0x27, 0xe3, 0x93, 0xe1, 0xfc, 0x45, 0x7f, 0xd8, 0x9b, 0xcf, 0x86, 0x93, 0xb1, 0xd7, 0xed,
+	0x3f, 0xef, 0x7b, 0x3d, 0x72, 0x87, 0xba, 0x50, 0xee, 0x0f, 0xa7, 0x1e, 0x1b, 0x9e, 0x0c, 0x92,
+	0xf7, 0xd2, 0xc4, 0x63, 0x2f, 0x3d, 0x46, 0x72, 0x66, 0xdd, 0x1d, 0xf4, 0xbd, 0xe1, 0x94, 0xe4,
+	0x0d, 0x6b, 0xcc, 0x46, 0xbd, 0x59, 0xd7, 0x63, 0xa4, 0x60, 0x76, 0xdd, 0xd1, 0x70, 0x32, 0xfb,
+	0xce, 0x63, 0xa4, 0xd8, 0xfa, 0x29, 0x0f, 0xa5, 0xa4, 0x99, 0xe8, 0x67, 0x50, 0x58, 0x06, 0x22,
+	0x19, 0x4b, 0xf5, 0xcd, 0x24, 0x13, 0x3c, 0xfd, 0xeb, 0x06, 0x02, 0x99, 0x25, 0xd2, 0x06, 0xec,
+	0xac, 0x30, 0x8a, 0xf8, 0x19, 0xa6, 0xdd, 0x90, 0x6d, 0x5b, 0xbf, 0xe6, 0x00, 0x6e, 0xe8, 0xb4,
+	0x04, 0xb9, 0xd1, 0x39, 0xb9, 0x43, 0x6b, 0x50, 0xe9, 0x72, 0xb5, 0x44, 0xdf, 0x47, 0x41, 0x1c,
+	0x4a, 0xc0, 0x9d, 0xa9, 0x73, 0x15, 0xfc, 0xa8, 0xbc, 0x30, 0x0c, 0x42, 0x92, 0xa3, 0xfb, 0xb0,
+	0xdb, 0x57, 0x17, 0xdc, 0x97, 0xe2, 0x24, 0x3c, 0x8b, 0x57, 0xa8, 0x34, 0xc9, 0xd3, 0x03, 0x20,
+	0x3d, 0xe4, 0xc2, 0x1c, 0xc5, 0xbb, 0x5c, 0x22, 0x0a, 0x14, 0x49, 0x1a, 0xc3, 0x40, 0x3f, 0x0f,
+	0x62, 0x25, 0x48, 0x91, 0xee, 0x41, 0xed, 0xc4, 0x0f, 0x91, 0x8b, 0x2b, 0xef, 0x52, 0x46, 0x3a,
+	0x22, 0x25, 0xe3, 0x36, 0xc6, 0x70, 0x25, 0xa3, 0x48, 0x06, 0xaa, 0x87, 0x4a, 0xa2, 0x20, 0x3b,
+	0xf4, 0x2e, 0xec, 0x65, 0x53, 0xd3, 0xbb, 0x7c, 0xc5, 0xe3, 0x48, 0xa3, 0x20, 0x65, 0x7a, 0x08,
+	0xf4, 0x39, 0x97, 0x3e, 0x8a, 0x71, 0x88, 0xcb, 0x40, 0x09, 0x69, 0x1a, 0x9a, 0x54, 0x68, 0x15,
+	0x76, 0x4e, 0x16, 0x41, 0x68, 0x48, 0x40, 0xeb, 0x00, 0xa3, 0x58, 0x8f, 0xbe, 0x67, 0x5c, 0x9d,
+	0x21, 0xa9, 0x9a, 0xa0, 0x33, 0x25, 0x57, 0x6b, 0xf3, 0xc1, 0xa1, 0x0c, 0xc5, 0x35, 0xa6, 0xbe,
+	0xd2, 0x18, 0x2a, 0xee, 0x27, 0x39, 0xd5, 0xe8, 0x2e, 0x54, 0x67, 0x8a, 0x5f, 0x70, 0xe9, 0xf3,
+	0x85, 0x8f, 0xa4, 0x6e, 0x4e, 0xde, 0xe3, 0x9a, 0x0f, 0x82, 0x28, 0x22, 0xbb, 0x26, 0xe5, 0x99,
+	0xe2, 0xb1, 0x7e, 0x85, 0x4a, 0xcb, 0x25, 0x37, 0x32, 0xa4, 0xf5, 0x47, 0x11, 0xdc, 0xcd, 0x99,
+	0xff, 0x9e, 0xcd, 0x94, 0xe3, 0xad, 0x99, 0xf2, 0xc1, 0xdf, 0x7f, 0xa7, 0xbc, 0xcb, 0xd9, 0xf2,
+	0xe8, 0xb5, 0xd9, 0xe2, 0xbe, 0xa5, 0xf1, 0x71, 0xb8, 0x35, 0x3e, 0xdc, 0x7f, 0x31, 0x28, 0x0e,
+	0x36, 0x07, 0x85, 0xfb, 0x7e, 0xce, 0x84, 0x77, 0xf6, 0xde, 0x39, 0xfd, 0x16, 0xfe, 0x27, 0x83,
+	0x4e, 0xb0, 0x46, 0xb5, 0x44, 0x15, 0xc5, 0x51, 0xf2, 0xa1, 0xde, 0xb1, 0xed, 0xd9, 0xb9, 0x78,
+	0x76, 0x0a, 0x53, 0xb3, 0x1a, 0x1b, 0xe3, 0xd8, 0xf9, 0x33, 0x77, 0x7f, 0xb4, 0x46, 0xd5, 0x4d,
+	0x98, 0xd6, 0xd8, 0xb1, 0x78, 0xe7, 0xe5, 0xb3, 0x45, 0xc9, 0x7a, 0x1e, 0xff, 0x15, 0x00, 0x00,
+	0xff, 0xff, 0x1a, 0xa0, 0x69, 0x84, 0xfa, 0x0b, 0x00, 0x00,
 }

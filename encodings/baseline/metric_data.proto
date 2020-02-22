@@ -16,6 +16,12 @@ message ResourceMetrics {
   repeated Metric metrics = 2;
 }
 
+// A list of prepared metrics from a Resource.
+message ResourceMetricsPrepared {
+  Resource resource = 1;
+  repeated MetricPrepared metrics = 2;
+}
+
 // Defines a Metric which has one or more timeseries.
 //
 // The data model and relation between entities is shown in the diagram below.
@@ -69,13 +75,13 @@ message ResourceMetrics {
 // a specific Protobuf message depending on the value type of the metric and thus
 // there are currently 4 TimeSeriesList and 4 TimeSeries messages, which
 // correspond to the types of metric values.
-// Defines a Metric which has one or more timeseries.
 message Metric {
-  // The descriptor of the Metric.
+  // metric_descriptor describes the Metric.
   MetricDescriptor metric_descriptor = 1;
 
-  // The resource for the metric. If unset, it may be set to a default value
-  // provided for a sequence of messages in an RPC stream.
+  // resource that is associated with this metric. Optional. If not set, this metric
+  // should be part of a ResourceMetrics message that does include the resource
+  // information, unless resource information is unknown.
   Resource resource = 2;
 
   // data is a list of one or more TimeSeries for a single metric, where each timeseries has
@@ -87,66 +93,100 @@ message Metric {
   repeated SummaryTimeSeries summary_timeseries = 6;
 }
 
+// MetricPrepared is the prepared version of Metric.
+//
+// MetricPrepared is byte-level compatible with Metric. A byte-array encoding of
+// MetricPrepared can be decoded as Metric and vice-versa. This allows senders that
+// need to continuously create and encode instances of Metric with unchanging
+// MetricDescriptor and Resource values to prepare and encode metric_descriptor and
+// resource fields once and then create instances MetricPrepared messages where only
+// timeseries data changes.
+message MetricPrepared {
+    // metric_descriptor is byte array representation of MetricDescriptor encoded
+    // in ProtoBuf format using proto.Marshal().
+    bytes metric_descriptor = 1;
+
+    // resource is byte array representation of Resource encoded
+    // in ProtoBuf format using proto.Marshal().
+    bytes resource = 2;
+
+    // data is a list of one or more TimeSeries for a single metric, where each timeseries has
+    // one or more points. Only one of the following fields is used for the data, depending on
+    // the type of the metric defined by MetricDescriptor.type field.
+    repeated Int64TimeSeries int64_timeseries = 3;
+    repeated DoubleTimeSeries double_timeseries = 4;
+    repeated HistogramTimeSeries histogram_timeseries = 5;
+    repeated SummaryTimeSeries summary_timeseries = 6;
+}
+
 // Defines a metric type and its schema.
 message MetricDescriptor {
-  // The metric type, including its DNS name prefix. It must be unique.
+  // name of the metric, including its DNS name prefix. It must be unique.
   string name = 1;
 
-  // A detailed description of the metric, which can be used in documentation.
+  // description of the metric, which can be used in documentation.
   string description = 2;
 
-  // The unit in which the metric value is reported. Follows the format
+  // unit in which the metric value is reported. Follows the format
   // described by http://unitsofmeasure.org/ucum.html.
   string unit = 3;
 
-  // The kind of metric. It describes how the data is reported.
+  // Type of the metric. It describes how the data is reported.
   //
   // A gauge is an instantaneous measurement of a value.
   //
   // A counter/cumulative measurement is a value accumulated over a time
   // interval. In a time series, cumulative measurements should have the same
-  // start time, increasing values and increasing end times, until an event
-  // resets the cumulative value to zero and sets a new start time for the
-  // following points.
+  // start time, increasing values, until an event resets the cumulative value
+  // to zero and sets a new start time for the subsequent points.
   enum Type {
     // Do not use this default value.
     UNSPECIFIED = 0;
 
-    // Integer gauge. The value can go both up and down.
+    // Integer gauge. The value can go both up and down over time.
+    // Corresponding values are stored in Int64TimeSeriesList.
     GAUGE_INT64 = 1;
 
-    // Floating point gauge. The value can go both up and down.
+    // Floating point gauge. The value can go both up and down over time.
+    // Corresponding values are stored in DoubleTimeSeriesList.
     GAUGE_DOUBLE = 2;
 
-    // Histogram gauge measurement. The count and sum can go both up and
-    // down. Recorded values are always >= 0.
-    // Used in scenarios like a snapshot of time the current items in a queue
+    // Histogram gauge measurement.
+    // Used in scenarios like a snapshot of time that current items in a queue
     // have spent there.
+    // Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
+    // histogram can go both up and down over time. Recorded values are always >= 0.
     GAUGE_HISTOGRAM = 3;
 
-    // Integer counter measurement. The value cannot decrease, if resets
-    // then the start_time should also be reset.
+    // Integer counter measurement. The value cannot decrease; if value is reset then
+    // CounterInt64Value.start_time_unixnano should also be reset.
+    // Corresponding values are stored in Int64TimeSeriesList.
     COUNTER_INT64 = 4;
 
     // Floating point counter measurement. The value cannot decrease, if
-    // resets then the start_time should also be reset. Recorded values are
-    // always >= 0.
+    // resets then the CounterDoubleValue.start_time_unixnano should also be reset.
+    // Recorded values are always >= 0.
+    // Corresponding values are stored in DoubleTimeSeriesList.
     COUNTER_DOUBLE = 5;
 
-    // Histogram cumulative measurement. The count and sum cannot decrease,
-    // if resets then the start_time should also be reset.
+    // Histogram cumulative measurement.
+    // Corresponding values are stored in HistogramTimeSeriesList. The count and sum of the
+    // histogram cannot decrease; if values are reset then HistogramValue.start_time_unixnano
+    // should also be reset to the new start timestamp.
     CUMULATIVE_HISTOGRAM = 6;
 
-    // Some frameworks implemented Histograms as a summary of observations
+    // Summary value. Some frameworks implemented Histograms as a summary of observations
     // (usually things like request durations and response sizes). While it
     // also provides a total count of observations and a sum of all observed
     // values, it calculates configurable percentiles over a sliding time
-    // window. This is not recommended, since it cannot be aggregated.
+    // window.
+    // Corresponding values are stored in SummaryTimeSeriesList.
     SUMMARY = 7;
   }
   Type type = 4;
 
-  // The label keys associated with the metric descriptor.
+  // The label keys associated with the metric descriptor. Keys in this list must
+  // be unique.
   repeated string label_keys = 5;
 }
 
@@ -237,13 +277,23 @@ message SummaryTimeSeries {
   repeated SummaryValue points = 2;
 }
 
+// LabelValue is a value of a label.
+message LabelValue {
+  // The value for the label.
+  string value = 1;
+
+  // If true the value field is ignored and considered not set.
+  // This is used to differentiate a missing label from an empty string.
+  bool value_unspecified = 2;
+}
+
 // Int64Value is a timestamped measurement of int64 value.
 message Int64Value {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
   // This is used for Counter type only. For Gauge the value is not specified and
   // defaults to 0.
   //
-  // The cumulative value is over the time interval (start_time_unixnano, timestamp_unixnano].
+  // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
@@ -259,7 +309,7 @@ message Int64Value {
   fixed64 timestamp_unixnano = 2;
 
   // value itself.
-  int64 value = 3;
+  sfixed64 value = 3;
 }
 
 // DoubleValue is a timestamped measurement of double value.
@@ -268,7 +318,7 @@ message DoubleValue {
   // This is used for Counter type only. For Gauge the value is not specified and
   // defaults to 0.
   //
-  // The cumulative value is over the time interval (start_time_unixnano, timestamp_unixnano].
+  // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
@@ -287,7 +337,7 @@ message DoubleValue {
   double value = 3;
 }
 
-// HistogramValue contains summary statistics for a population of values. It may
+// Histogram contains summary statistics for a population of values. It may
 // optionally contain the distribution of those values across a set of buckets.
 message HistogramValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
@@ -330,15 +380,15 @@ message HistogramValue {
       // Value of the exemplar point. It determines which bucket the exemplar belongs to.
       // If bucket_options define bounds for this bucket then this value must be within
       // the defined bounds.
-      double value = 1;
+      double value = 2;
 
       // timestamp_unixnano is the moment when this exemplar was recorded.
       // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
-      fixed64 timestamp_unixnano = 2;
+      fixed64 timestamp_unixnano = 3;
 
       // exemplar_attachments are contextual information about the example value.
       // Keys in this list must be unique.
-      repeated StringKeyValuePair attachments = 3;
+      repeated StringKeyValuePair attachments = 5;
     }
 
     // exemplar is an optional representative value of the bucket.
@@ -360,7 +410,6 @@ message HistogramValue {
 }
 
 // StringKeyValuePair is a pair of key/value strings.
-// TODO: consider unifying this with Resource and Span Attribute key/value pairs.
 message StringKeyValuePair {
   string key = 1;
   string value = 2;
@@ -369,10 +418,7 @@ message StringKeyValuePair {
 // The start_timestamp only applies to the count and sum in the SummaryValue.
 message SummaryValue {
   // start_time_unixnano is the time when the cumulative value was reset to zero.
-  // This is used for Counter type only. For Gauge the value is not specified and
-  // defaults to 0.
-  //
-  // The cumulative value is over the time interval (start_time_unixnano, timestamp_unixnano].
+  // The cumulative value is over the time interval [start_time_unixnano, timestamp_unixnano].
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
   //
   // Value of 0 indicates that the start_time is the same as that of the previous
@@ -395,10 +441,6 @@ message SummaryValue {
   // systems don't expose this. If count is zero then this field must be zero.
   double sum = 4;
 
-  // count_and_sum_unspecified must be set to true if count and sum values are unknown or
-  // unspecified.
-  bool count_and_sum_unspecified = 5;
-
   // Represents the value at a given percentile of a distribution.
   message ValueAtPercentile {
     // The percentile of a distribution. Must be in the interval
@@ -411,5 +453,5 @@ message SummaryValue {
 
   // A list of values at different percentiles of the distribution calculated
   // from the current snapshot. The percentiles must be strictly increasing.
-  repeated ValueAtPercentile percentile_values = 6;
+  repeated ValueAtPercentile percentile_values = 5;
 }
