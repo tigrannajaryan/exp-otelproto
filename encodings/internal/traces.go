@@ -486,31 +486,31 @@ func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) (m map[string]*otlp.Attribut
 
 func SpansFromOtlp(spans []*otlp.Span) (r []*Span) {
 	r = make([]*Span, len(spans))
+	sp := make([]Span, len(spans))
 	for i, s := range spans {
-		r[i] = SpanFromOtlp(s)
+		SpanFromOtlp(s, &sp[i])
+		r[i] = &sp[i]
 	}
 	return
 }
 
-func SpanFromOtlp(s *otlp.Span) *Span {
-	return &Span{
-		TraceId:                s.TraceId,
-		SpanId:                 s.SpanId,
-		Tracestate:             s.Tracestate,
-		ParentSpanId:           s.ParentSpanId,
-		Name:                   s.Name,
-		Kind:                   s.Kind,
-		StartTimeUnixnano:      s.StartTimeUnixnano,
-		EndTimeUnixnano:        s.EndTimeUnixnano,
-		Attributes:             AttrsFromOtlp(s.Attributes),
-		DroppedAttributesCount: s.DroppedAttributesCount,
-		Events:                 EventsFromOtlp(s.Events),
-		DroppedEventsCount:     s.DroppedEventsCount,
-		Links:                  LinksFromOtlp(s.Links),
-		DroppedLinksCount:      s.DroppedLinksCount,
-		Status:                 s.Status,
-		LocalChildSpanCount:    s.LocalChildSpanCount,
-	}
+func SpanFromOtlp(src *otlp.Span, dest *Span) {
+	dest.TraceId = src.TraceId
+	dest.SpanId = src.SpanId
+	dest.Tracestate = src.Tracestate
+	dest.ParentSpanId = src.ParentSpanId
+	dest.Name = src.Name
+	dest.Kind = src.Kind
+	dest.StartTimeUnixnano = src.StartTimeUnixnano
+	dest.EndTimeUnixnano = src.EndTimeUnixnano
+	dest.Attributes = AttrsFromOtlp(src.Attributes)
+	dest.DroppedAttributesCount = src.DroppedAttributesCount
+	dest.Events = EventsFromOtlp(src.Events)
+	dest.DroppedEventsCount = src.DroppedEventsCount
+	dest.Links = LinksFromOtlp(src.Links)
+	dest.DroppedLinksCount = src.DroppedLinksCount
+	dest.Status = src.Status
+	dest.LocalChildSpanCount = src.LocalChildSpanCount
 }
 
 func EventsFromOtlp(events []*otlp.Span_Event) (r []*Span_Event) {
