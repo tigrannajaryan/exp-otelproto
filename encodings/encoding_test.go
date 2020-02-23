@@ -35,7 +35,7 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
 	{
-		name: "Proposed",
+		name: "OTLP-WithMaps",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
 	{
@@ -126,7 +126,7 @@ func BenchmarkDecode(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeFromInternal2StepToOtlp(b *testing.B) {
+func BenchmarkEncodeInternalToOtlp2Step(b *testing.B) {
 
 	b.StopTimer()
 	g := otlp.NewGenerator()
@@ -153,7 +153,7 @@ func BenchmarkEncodeFromInternal2StepToOtlp(b *testing.B) {
 
 }
 
-func BenchmarkEncodeFromInternalDirectToOtlp(b *testing.B) {
+func BenchmarkEncodeInternalDirectToOtlp(b *testing.B) {
 
 	b.StopTimer()
 	g := otlp.NewGenerator()
@@ -180,7 +180,7 @@ func BenchmarkEncodeFromInternalDirectToOtlp(b *testing.B) {
 
 }
 
-func BenchmarkDecodeFromOtlpToInternal(b *testing.B) {
+func BenchmarkDecodeOtlpToInternal2Step(b *testing.B) {
 	b.StopTimer()
 	g := otlp.NewGenerator()
 	batches := generateAttrBatches(g)

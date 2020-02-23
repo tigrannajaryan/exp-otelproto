@@ -3,6 +3,7 @@ package internal
 import (
 	"io"
 	"math"
+	"unsafe"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
@@ -161,13 +162,13 @@ type Span_Link struct {
 }
 
 func Marshal(tes *TraceExportRequest) ([]byte, error) {
-	buf := proto.NewBuffer([]byte{})
+	buf := proto.NewBuffer(make([]byte, 0, 30000))
 	encodeVarint(buf, 1, tes.Id)
 	for _, rs := range tes.ResourceSpans {
 		if rs == nil {
 			continue
 		}
-		err := encodeSubmessage(buf, 2, func() error { return MarshalResourceSpans(buf, rs) })
+		err := encodeSubmessage(buf, 2, MarshalResourceSpans, unsafe.Pointer(rs))
 		if err != nil {
 			return nil, err
 		}
@@ -175,11 +176,13 @@ func Marshal(tes *TraceExportRequest) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func encodeSubmessage(buf *proto.Buffer, fieldNum uint64, encoder func() error) error {
-	encodeFieldKey(buf, fieldNum, proto.WireBytes)
+func encodeSubmessage(buf *proto.Buffer, fieldNum uint64,
+	encoder func(buf *proto.Buffer, p unsafe.Pointer) error, subMsg unsafe.Pointer) error {
+	//encodeFieldKey(buf, fieldNum, proto.WireBytes)
+	buf.EncodeVarint((fieldNum << 3) | proto.WireBytes)
 	buf.EncodeVarint(0)
 	start := len(buf.Bytes())
-	if err := encoder(); err != nil {
+	if err := encoder(buf, subMsg); err != nil {
 		return err
 	}
 	insertLen(buf, start)
@@ -197,6 +200,7 @@ func insertLen(buf *proto.Buffer, start int) {
 			b = append(b, make([]byte, lnSz-1)...)
 		}
 		b = b[:len(b)+lnSz-1]
+
 		copy(b[start+lnSz-1:], b[start:])
 
 		var n int
@@ -212,9 +216,11 @@ func insertLen(buf *proto.Buffer, start int) {
 	}
 }
 
-func MarshalResourceSpans(buf *proto.Buffer, rs *ResourceSpans) error {
+func MarshalResourceSpans(buf *proto.Buffer, p unsafe.Pointer) error {
+	rs := (*ResourceSpans)(p)
+
 	if rs.Resource != nil {
-		err := encodeSubmessage(buf, 1, func() error { return MarshalResource(buf, rs.Resource) })
+		err := encodeSubmessage(buf, 1, MarshalResource, unsafe.Pointer(rs.Resource))
 		if err != nil {
 			return err
 		}
@@ -223,7 +229,7 @@ func MarshalResourceSpans(buf *proto.Buffer, rs *ResourceSpans) error {
 		if s == nil {
 			continue
 		}
-		err := encodeSubmessage(buf, 2, func() error { return MarshalSpan(buf, s) })
+		err := encodeSubmessage(buf, 2, MarshalSpan, unsafe.Pointer(s))
 		if err != nil {
 			return err
 		}
@@ -231,7 +237,9 @@ func MarshalResourceSpans(buf *proto.Buffer, rs *ResourceSpans) error {
 	return nil
 }
 
-func MarshalResource(buf *proto.Buffer, r *Resource) error {
+func MarshalResource(buf *proto.Buffer, p unsafe.Pointer) error {
+	r := (*Resource)(p)
+
 	MarshalAttributesMap(buf, 1, r.Labels)
 	if r.DroppedLabelsCount != 0 {
 		encodeVarint(buf, 2, uint64(r.DroppedLabelsCount))
@@ -241,7 +249,7 @@ func MarshalResource(buf *proto.Buffer, r *Resource) error {
 
 func MarshalAttributesMap(buf *proto.Buffer, fieldNum uint64, m map[string]*otlp.AttributeKeyValue) {
 	for k, l := range m {
-		encodeFieldKey(buf, fieldNum, proto.WireBytes)
+		buf.EncodeVarint((fieldNum << 3) | proto.WireBytes)
 		MarshalAttribute(buf, k, l)
 	}
 }
@@ -250,38 +258,33 @@ func MarshalAttribute(buf *proto.Buffer, k string, v *otlp.AttributeKeyValue) {
 	buf.EncodeVarint(0)
 	start := len(buf.Bytes())
 	encodeString(buf, 1, k)
-	encodeSubmessage(buf, 2, func() error { return MarshalAttributeKeyValue(buf, v) })
+	encodeSubmessage(buf, 2, MarshalAttributeKeyValue, unsafe.Pointer(v))
 	insertLen(buf, start)
 }
 
-func MarshalAttributeKeyValue(buf *proto.Buffer, v *otlp.AttributeKeyValue) error {
-	if v.Key != "" {
-		encodeString(buf, 1, v.Key)
-	}
+func MarshalAttributeKeyValue(buf *proto.Buffer, p unsafe.Pointer) error {
+	v := (*otlp.AttributeKeyValue)(p)
 
-	if v.Type != otlp.AttributeKeyValue_STRING {
-		encodeVarint(buf, 2, uint64(v.Type))
-	}
+	encodeString(buf, 1, v.Key)
+	encodeVarint(buf, 2, uint64(v.Type))
 
-	if v.StringValue != "" {
+	switch v.Type {
+	case otlp.AttributeKeyValue_STRING:
 		encodeString(buf, 3, v.StringValue)
-	}
-
-	if v.IntValue != 0 {
+	case otlp.AttributeKeyValue_INT:
 		encodeVarint(buf, 4, uint64(v.IntValue))
-	}
-
-	if v.DoubleValue != 0 {
+	case otlp.AttributeKeyValue_DOUBLE:
 		encodeFixed64(buf, 5, math.Float64bits(v.DoubleValue))
+	case otlp.AttributeKeyValue_BOOL:
+		encodeVarint(buf, 6, 1)
 	}
 
-	if v.BoolValue {
-		encodeVarint(buf, 7, 1)
-	}
 	return nil
 }
 
-func MarshalSpan(buf *proto.Buffer, s *Span) error {
+func MarshalSpan(buf *proto.Buffer, p unsafe.Pointer) error {
+	s := (*Span)(p)
+
 	encodeBytes(buf, 1, s.TraceId)
 	encodeBytes(buf, 2, s.SpanId)
 	encodeBytes(buf, 3, s.ParentSpanId)
@@ -293,7 +296,7 @@ func MarshalSpan(buf *proto.Buffer, s *Span) error {
 	MarshalAttributesMap(buf, 9, s.Attributes)
 	encodeVarint(buf, 10, uint64(s.DroppedAttributesCount))
 	for _, e := range s.Events {
-		encodeSubmessage(buf, 11, func() error { return MarshalEvent(buf, e) })
+		encodeSubmessage(buf, 11, MarshalEvent, unsafe.Pointer(e))
 	}
 	encodeVarint(buf, 12, uint64(s.DroppedEventsCount))
 	//for _, l := range s.Links {
@@ -305,24 +308,26 @@ func MarshalSpan(buf *proto.Buffer, s *Span) error {
 	return nil
 }
 
-func MarshalEvent(buf *proto.Buffer, e *Span_Event) error {
+func MarshalEvent(buf *proto.Buffer, p unsafe.Pointer) error {
+	e := (*Span_Event)(p)
+
 	encodeFixed64(buf, 1, e.TimeUnixnano)
 	encodeString(buf, 2, e.Description)
 	MarshalAttributesMap(buf, 3, e.Attributes)
-	encodeVarint(buf, 3, uint64(e.DroppedAttributesCount))
+	encodeVarint(buf, 4, uint64(e.DroppedAttributesCount))
 	return nil
 }
 
 func encodeString(buf *proto.Buffer, fieldNum uint64, str string) {
-	if str != "" {
-		encodeFieldKey(buf, fieldNum, proto.WireBytes)
-		buf.EncodeRawBytes([]byte(str))
+	if len(str) != 0 {
+		buf.EncodeVarint((fieldNum << 3) | proto.WireBytes)
+		buf.EncodeStringBytes(str)
 	}
 }
 
 func encodeBytes(buf *proto.Buffer, fieldNum uint64, b []byte) {
 	if len(b) != 0 {
-		encodeFieldKey(buf, fieldNum, proto.WireBytes)
+		buf.EncodeVarint((fieldNum << 3) | proto.WireBytes)
 		buf.EncodeRawBytes(b)
 	}
 }
@@ -443,13 +448,13 @@ func decodeFieldTag(b *proto.Buffer) (field_num uint64, wire_type uint64, err er
 	return
 }
 
-func FromOtlp(tes *otlp.TraceExportRequest) (r *TraceExportRequest) {
-	r = &TraceExportRequest{}
+func FromOtlp(tes *otlp.TraceExportRequest) *TraceExportRequest {
+	r := &TraceExportRequest{}
 	r.ResourceSpans = make([]*ResourceSpans, len(tes.ResourceSpans))
 	for i, s := range tes.ResourceSpans {
 		r.ResourceSpans[i] = ResourceSpansFromOtlp(s)
 	}
-	return
+	return r
 }
 
 func ResourceSpansFromOtlp(spans *otlp.ResourceSpans) *ResourceSpans {
@@ -466,12 +471,12 @@ func ResourceFromOtlp(resource *otlp.Resource) *Resource {
 	}
 }
 
-func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) (m map[string]*otlp.AttributeKeyValue) {
-	m = make(map[string]*otlp.AttributeKeyValue, len(attrs))
+func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*otlp.AttributeKeyValue {
+	m := make(map[string]*otlp.AttributeKeyValue, len(attrs))
 	for _, a := range attrs {
 		m[a.Key] = a
 	}
-	return
+	return m
 }
 
 /*func AttrFromOtlp(a *otlp.AttributeKeyValue) *AttributeKeyValue {
@@ -484,14 +489,14 @@ func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) (m map[string]*otlp.Attribut
 	}
 }*/
 
-func SpansFromOtlp(spans []*otlp.Span) (r []*Span) {
-	r = make([]*Span, len(spans))
-	sp := make([]Span, len(spans))
+func SpansFromOtlp(spans []*otlp.Span) []*Span {
+	ptrs := make([]*Span, len(spans))
+	content := make([]Span, len(spans))
 	for i, s := range spans {
-		SpanFromOtlp(s, &sp[i])
-		r[i] = &sp[i]
+		SpanFromOtlp(s, &content[i])
+		ptrs[i] = &content[i]
 	}
-	return
+	return ptrs
 }
 
 func SpanFromOtlp(src *otlp.Span, dest *Span) {
@@ -513,12 +518,12 @@ func SpanFromOtlp(src *otlp.Span, dest *Span) {
 	dest.LocalChildSpanCount = src.LocalChildSpanCount
 }
 
-func EventsFromOtlp(events []*otlp.Span_Event) (r []*Span_Event) {
-	r = make([]*Span_Event, len(events))
+func EventsFromOtlp(events []*otlp.Span_Event) []*Span_Event {
+	r := make([]*Span_Event, len(events))
 	for i, e := range events {
 		r[i] = EventFromOtlp(e)
 	}
-	return
+	return r
 }
 
 func EventFromOtlp(e *otlp.Span_Event) *Span_Event {
@@ -530,12 +535,12 @@ func EventFromOtlp(e *otlp.Span_Event) *Span_Event {
 	}
 }
 
-func LinksFromOtlp(links []*otlp.Span_Link) (r []*Span_Link) {
-	r = make([]*Span_Link, len(links))
+func LinksFromOtlp(links []*otlp.Span_Link) []*Span_Link {
+	r := make([]*Span_Link, len(links))
 	for i, e := range links {
 		r[i] = LinkFromOtlp(e)
 	}
-	return
+	return r
 }
 
 func LinkFromOtlp(l *otlp.Span_Link) *Span_Link {
@@ -572,10 +577,11 @@ func ResourceToOtlp(resource *Resource) *otlp.Resource {
 }
 
 func AttrsToOtlp(attrs map[string]*otlp.AttributeKeyValue) (m []*otlp.AttributeKeyValue) {
-	m = make([]*otlp.AttributeKeyValue, 0, len(attrs))
+	m = make([]*otlp.AttributeKeyValue, len(attrs))
+	i := 0
 	for _, a := range attrs {
-		m = append(m, a)
-		// a.Key = k
+		m[i] = a
+		i++
 	}
 	return
 }
@@ -590,33 +596,33 @@ func AttrsToOtlp(attrs map[string]*otlp.AttributeKeyValue) (m []*otlp.AttributeK
 	}
 }*/
 
-func SpansToOtlp(spans []*Span) (r []*otlp.Span) {
-	r = make([]*otlp.Span, len(spans))
+func SpansToOtlp(spans []*Span) []*otlp.Span {
+	ptrs := make([]*otlp.Span, len(spans))
+	content := make([]otlp.Span, len(spans))
 	for i, s := range spans {
-		r[i] = SpanToOtlp(s)
+		ptrs[i] = &content[i]
+		SpanToOtlp(s, ptrs[i])
 	}
-	return
+	return ptrs
 }
 
-func SpanToOtlp(s *Span) *otlp.Span {
-	return &otlp.Span{
-		TraceId:                s.TraceId,
-		SpanId:                 s.SpanId,
-		Tracestate:             s.Tracestate,
-		ParentSpanId:           s.ParentSpanId,
-		Name:                   s.Name,
-		Kind:                   s.Kind,
-		StartTimeUnixnano:      s.StartTimeUnixnano,
-		EndTimeUnixnano:        s.EndTimeUnixnano,
-		Attributes:             AttrsToOtlp(s.Attributes),
-		DroppedAttributesCount: s.DroppedAttributesCount,
-		Events:                 EventsToOtlp(s.Events),
-		DroppedEventsCount:     s.DroppedEventsCount,
-		Links:                  LinksToOtlp(s.Links),
-		DroppedLinksCount:      s.DroppedLinksCount,
-		Status:                 s.Status,
-		LocalChildSpanCount:    s.LocalChildSpanCount,
-	}
+func SpanToOtlp(src *Span, dest *otlp.Span) {
+	dest.TraceId = src.TraceId
+	dest.SpanId = src.SpanId
+	dest.Tracestate = src.Tracestate
+	dest.ParentSpanId = src.ParentSpanId
+	dest.Name = src.Name
+	dest.Kind = src.Kind
+	dest.StartTimeUnixnano = src.StartTimeUnixnano
+	dest.EndTimeUnixnano = src.EndTimeUnixnano
+	dest.Attributes = AttrsToOtlp(src.Attributes)
+	dest.DroppedAttributesCount = src.DroppedAttributesCount
+	dest.Events = EventsToOtlp(src.Events)
+	dest.DroppedEventsCount = src.DroppedEventsCount
+	dest.Links = LinksToOtlp(src.Links)
+	dest.DroppedLinksCount = src.DroppedLinksCount
+	dest.Status = src.Status
+	dest.LocalChildSpanCount = src.LocalChildSpanCount
 }
 
 func EventsToOtlp(events []*Span_Event) (r []*otlp.Span_Event) {

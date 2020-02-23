@@ -2,6 +2,7 @@ package internal
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
@@ -44,7 +45,7 @@ func TestMarshalMap(t *testing.T) {
 		"label1": &otlp.AttributeKeyValue{StringValue: "val1"},
 	}}
 	buf := proto.NewBuffer([]byte{})
-	err = MarshalResource(buf, r2)
+	err = MarshalResource(buf, unsafe.Pointer(r2))
 	require.NoError(t, err)
 	//log.Printf("%x", buf.Bytes())
 }
