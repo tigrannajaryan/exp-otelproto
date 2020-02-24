@@ -27,20 +27,20 @@ type Resource struct {
 	// labels is a collection of attributes that describe the resource. See OpenTelemetry
 	// specification semantic conventions for standardized label names:
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
-	Labels map[string]*otlp.AttributeKeyValue `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Labels map[string]*AttributeKeyValue `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// dropped_labels_count is the number of dropped labels. If the value is 0, then
 	// no labels were dropped.
 	DroppedLabelsCount int32 `protobuf:"varint,2,opt,name=dropped_labels_count,json=droppedLabelsCount,proto3" json:"dropped_labels_count,omitempty"`
 }
 
-/*type AttributeKeyValue struct {
+type AttributeKeyValue struct {
 	// type of the value.
 	Type        otlp.AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.AttributeKeyValue_ValueType" json:"type,omitempty"`
 	StringValue string                           `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
 	IntValue    int64                            `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
 	DoubleValue float64                          `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
 	BoolValue   bool                             `protobuf:"varint,6,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
-}*/
+}
 
 type Span struct {
 	// A unique identifier for a trace. All spans from the same trace share
@@ -108,7 +108,7 @@ type Span struct {
 	//     "/http/server_latency": 300
 	//     "abc.com/myattribute": true
 	//     "abc.com/score": 10.239
-	Attributes map[string]*otlp.AttributeKeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Attributes map[string]*AttributeKeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// dropped_attributes_count is the number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
@@ -140,7 +140,7 @@ type Span_Event struct {
 	// description is a user-supplied text.
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the event.
-	Attributes map[string]*otlp.AttributeKeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Attributes map[string]*AttributeKeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
@@ -155,7 +155,7 @@ type Span_Link struct {
 	// The tracestate associated with the link.
 	Tracestate string `protobuf:"bytes,3,opt,name=tracestate,proto3" json:"tracestate,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the link.
-	Attributes map[string]*otlp.AttributeKeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	Attributes map[string]*AttributeKeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,5,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
@@ -247,25 +247,33 @@ func MarshalResource(buf *proto.Buffer, p unsafe.Pointer) error {
 	return nil
 }
 
-func MarshalAttributesMap(buf *proto.Buffer, fieldNum uint64, m map[string]*otlp.AttributeKeyValue) {
+func MarshalAttributesMap(buf *proto.Buffer, fieldNum uint64, m map[string]*AttributeKeyValue) {
 	for k, l := range m {
 		buf.EncodeVarint((fieldNum << 3) | proto.WireBytes)
 		MarshalAttribute(buf, k, l)
 	}
 }
 
-func MarshalAttribute(buf *proto.Buffer, k string, v *otlp.AttributeKeyValue) {
+type AttributeKeyValueForMarshaling struct {
+	v   *AttributeKeyValue
+	key string
+}
+
+func MarshalAttribute(buf *proto.Buffer, k string, v *AttributeKeyValue) {
 	buf.EncodeVarint(0)
 	start := len(buf.Bytes())
 	encodeString(buf, 1, k)
-	encodeSubmessage(buf, 2, MarshalAttributeKeyValue, unsafe.Pointer(v))
+	kv := &AttributeKeyValueForMarshaling{v: v, key: k}
+	encodeSubmessage(buf, 2, MarshalAttributeKeyValue, unsafe.Pointer(kv))
 	insertLen(buf, start)
 }
 
 func MarshalAttributeKeyValue(buf *proto.Buffer, p unsafe.Pointer) error {
-	v := (*otlp.AttributeKeyValue)(p)
+	kv := (*AttributeKeyValueForMarshaling)(p)
 
-	encodeString(buf, 1, v.Key)
+	encodeString(buf, 1, kv.key)
+
+	v := kv.v
 	encodeVarint(buf, 2, uint64(v.Type))
 
 	switch v.Type {
@@ -471,15 +479,15 @@ func ResourceFromOtlp(resource *otlp.Resource) *Resource {
 	}
 }
 
-func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*otlp.AttributeKeyValue {
-	m := make(map[string]*otlp.AttributeKeyValue, len(attrs))
+func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*AttributeKeyValue {
+	m := make(map[string]*AttributeKeyValue, len(attrs))
 	for _, a := range attrs {
-		m[a.Key] = a
+		m[a.Key] = AttrFromOtlp(a)
 	}
 	return m
 }
 
-/*func AttrFromOtlp(a *otlp.AttributeKeyValue) *AttributeKeyValue {
+func AttrFromOtlp(a *otlp.AttributeKeyValue) *AttributeKeyValue {
 	return &AttributeKeyValue{
 		Type:        a.Type,
 		StringValue: a.StringValue,
@@ -487,7 +495,7 @@ func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*otlp.AttributeKe
 		DoubleValue: a.DoubleValue,
 		BoolValue:   a.BoolValue,
 	}
-}*/
+}
 
 func SpansFromOtlp(spans []*otlp.Span) []*Span {
 	ptrs := make([]*Span, len(spans))
@@ -576,25 +584,25 @@ func ResourceToOtlp(resource *Resource) *otlp.Resource {
 	}
 }
 
-func AttrsToOtlp(attrs map[string]*otlp.AttributeKeyValue) (m []*otlp.AttributeKeyValue) {
+func AttrsToOtlp(attrs map[string]*AttributeKeyValue) (m []*otlp.AttributeKeyValue) {
 	m = make([]*otlp.AttributeKeyValue, len(attrs))
 	i := 0
 	for _, a := range attrs {
-		m[i] = a
+		m[i] = AttrToOtlp(a)
 		i++
 	}
 	return
 }
 
-/*func AttrToOtlp(a *otlp.AttributeKeyValue) *AttributeKeyValue {
-	return &AttributeKeyValue{
+func AttrToOtlp(a *AttributeKeyValue) *otlp.AttributeKeyValue {
+	return &otlp.AttributeKeyValue{
 		Type:        a.Type,
 		StringValue: a.StringValue,
 		IntValue:    a.IntValue,
 		DoubleValue: a.DoubleValue,
 		BoolValue:   a.BoolValue,
 	}
-}*/
+}
 
 func SpansToOtlp(spans []*Span) []*otlp.Span {
 	ptrs := make([]*otlp.Span, len(spans))
