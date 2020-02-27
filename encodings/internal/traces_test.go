@@ -41,8 +41,8 @@ func TestMarshalMap(t *testing.T) {
 	require.NoError(t, err)
 	//log.Printf("%x", b)
 
-	r2 := &Resource{Labels: map[string]*otlp.AttributeKeyValue{
-		"label1": &otlp.AttributeKeyValue{StringValue: "val1"},
+	r2 := &Resource{Labels: map[string]*AttributeValue{
+		"label1": &AttributeValue{stringValue: "val1"},
 	}}
 	buf := proto.NewBuffer([]byte{})
 	err = MarshalResource(buf, unsafe.Pointer(r2))
@@ -78,22 +78,22 @@ func TestEncodeFromProto(t *testing.T) {
 		ResourceSpans: []*ResourceSpans{
 			{
 				Resource: &Resource{
-					Labels: map[string]*otlp.AttributeKeyValue{
-						"label1": {StringValue: "val1"},
-						"label2": {StringValue: "val2"},
-						"label3": {StringValue: "val3"},
-						"label4": {StringValue: "val4"},
+					Labels: map[string]*AttributeValue{
+						"label1": {stringValue: "val1"},
+						"label2": {stringValue: "val2"},
+						"label3": {stringValue: "val3"},
+						"label4": {stringValue: "val4"},
 					},
 				},
 				Spans: []*Span{
 					{
 						Name: "spanA",
-						Attributes: map[string]*otlp.AttributeKeyValue{
-							"attribute1": {StringValue: "value1"},
-							"attribute2": {StringValue: "value2"},
-							"attribute3": {StringValue: "value3"},
-							"attribute4": {StringValue: "value4"},
-							"attribute5": {StringValue: "value5"},
+						Attributes: map[string]*AttributeValue{
+							"attribute1": {stringValue: "value1"},
+							"attribute2": {stringValue: "value2"},
+							"attribute3": {stringValue: "value3"},
+							"attribute4": {stringValue: "value4"},
+							"attribute5": {stringValue: "value5"},
 						},
 					},
 					{},

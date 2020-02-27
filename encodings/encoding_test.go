@@ -9,17 +9,15 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
-
-	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/intotlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 var tests = []struct {
@@ -153,6 +151,33 @@ func BenchmarkEncodeInternalToOtlp2Step(b *testing.B) {
 
 }
 
+func BenchmarkEncodeIntOtlpToOtlp(b *testing.B) {
+
+	b.StopTimer()
+	g := otlp.NewGenerator()
+	batches := generateAttrBatches(g)
+	if batches == nil {
+		// Unsupported test type and batch type combination.
+		b.SkipNow()
+		return
+	}
+
+	var intbatch []*intotlp.TraceExportRequest
+	for _, b := range batches {
+		intbatch = append(intbatch, intotlp.FromOtlp(b.(*otlp.TraceExportRequest)))
+	}
+
+	runtime.GC()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for _, ib := range intbatch {
+			ot := intotlp.ToOtlp(ib)
+			encode(ot)
+		}
+	}
+
+}
+
 func BenchmarkEncodeInternalDirectToOtlp(b *testing.B) {
 
 	b.StopTimer()
@@ -202,6 +227,32 @@ func BenchmarkDecodeOtlpToInternal2Step(b *testing.B) {
 			var tep otlp.TraceExportRequest
 			decode(bytes, &tep)
 			internal.FromOtlp(&tep)
+		}
+	}
+}
+
+func BenchmarkDecodeOtlpToIntOtlp(b *testing.B) {
+	b.StopTimer()
+	g := otlp.NewGenerator()
+	batches := generateAttrBatches(g)
+	if batches == nil {
+		// Unsupported test type and batch type combination.
+		b.SkipNow()
+		return
+	}
+
+	var encodedBytes [][]byte
+	for _, batch := range batches {
+		encodedBytes = append(encodedBytes, encode(batch))
+	}
+
+	runtime.GC()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for _, bytes := range encodedBytes {
+			var tep otlp.TraceExportRequest
+			decode(bytes, &tep)
+			intotlp.FromOtlp(&tep)
 		}
 	}
 }
