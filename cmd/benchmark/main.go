@@ -39,7 +39,7 @@ func main() {
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
 			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasyncconc,"+
-			"wsstreamasynczlib,http11,sapm)",
+			"wsstreamasynczlib,http11,http11conc,sapm)",
 	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
@@ -95,6 +95,8 @@ func main() {
 	case "wsstreamasynczlib":
 		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB, 1)
 	case "http11":
+		benchmarkHttp11(options, 1)
+	case "http11conc":
 		benchmarkHttp11(options, 10)
 	case "sapm":
 		benchmarkSAPM(options, 10)
