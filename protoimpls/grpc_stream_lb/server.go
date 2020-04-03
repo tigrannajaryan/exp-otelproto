@@ -31,7 +31,7 @@ func (s *GrpcServer) ExportTraces(stream otlp.StreamExporter_ExportTracesServer)
 		}
 
 		// Process received batch.
-		s.onReceive(batch, len(batch.ResourceSpans[0].Spans))
+		s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
 		// Send response to client.
 		stream.Send(&otlp.ExportResponse{Id: batch.Id})

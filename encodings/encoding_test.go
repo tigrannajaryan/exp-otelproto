@@ -9,15 +9,16 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/stretchr/testify/assert"
-
-	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/intotlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
+
+const metricsPerBatch = 1
 
 var tests = []struct {
 	name string
@@ -31,10 +32,10 @@ var tests = []struct {
 	//	name: "Baseline",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
-	//{
-	//	name: "OTLP-WithMaps",
-	//	gen:  func() core.Generator { return experimental.NewGenerator() },
-	//},
+	{
+		name: "Experimental",
+		gen:  func() core.Generator { return experimental.NewGenerator() },
+	},
 	{
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
@@ -54,7 +55,7 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	{name: "Logs", batchGen: generateLogBatches},
+	//{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
@@ -124,6 +125,7 @@ func BenchmarkDecode(b *testing.B) {
 	}
 }
 
+/*
 func BenchmarkEncodeInternalToOtlp2Step(b *testing.B) {
 
 	b.StopTimer()
@@ -256,6 +258,7 @@ func BenchmarkDecodeOtlpToIntOtlp(b *testing.B) {
 		}
 	}
 }
+*/
 
 func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
@@ -280,7 +283,7 @@ func generateLogBatches(gen core.Generator) []core.ExportRequest {
 func generateMetricOneBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 1, true, true, true)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 1, true, true, true)
 		if batch == nil {
 			return nil
 		}
@@ -292,7 +295,7 @@ func generateMetricOneBatches(gen core.Generator) []core.ExportRequest {
 func generateMetricSeriesBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 5, true, true, true)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 5, true, true, true)
 		if batch == nil {
 			return nil
 		}
@@ -304,7 +307,7 @@ func generateMetricSeriesBatches(gen core.Generator) []core.ExportRequest {
 func generateMetricInt64Batches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 1, true, false, false)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 1, true, false, false)
 		if batch == nil {
 			return nil
 		}
@@ -316,7 +319,7 @@ func generateMetricInt64Batches(gen core.Generator) []core.ExportRequest {
 func generateMetricHistogramBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 1, false, true, false)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 1, false, true, false)
 		if batch == nil {
 			return nil
 		}
@@ -328,7 +331,7 @@ func generateMetricHistogramBatches(gen core.Generator) []core.ExportRequest {
 func generateMetricHistogramSeriesBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 5, false, true, false)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 5, false, true, false)
 		if batch == nil {
 			return nil
 		}
@@ -340,7 +343,7 @@ func generateMetricHistogramSeriesBatches(gen core.Generator) []core.ExportReque
 func generateMetricSummaryBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateMetricBatch(100, 1, false, false, true)
+		batch := gen.GenerateMetricBatch(metricsPerBatch, 1, false, false, true)
 		if batch == nil {
 			return nil
 		}

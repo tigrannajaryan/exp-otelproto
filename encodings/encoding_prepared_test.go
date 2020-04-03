@@ -91,6 +91,7 @@ func TestPreparedMetric(t *testing.T) {
 	}
 }
 
+/*
 func TestPreparedTrace(t *testing.T) {
 
 	g := otlp.NewGenerator()
@@ -140,6 +141,7 @@ func TestPreparedTrace(t *testing.T) {
 		t.Fatal()
 	}
 }
+*/
 
 func genInt64DataPoints(offset int) []*otlp.Int64Value {
 	var points []*otlp.Int64Value
@@ -165,7 +167,8 @@ func genInt64DataPoints(offset int) []*otlp.Int64Value {
 }
 
 func encodeUnpreparedMetrics(metricCount int) proto.Message {
-	batch := &otlp.ResourceMetrics{}
+	il := &otlp.InstrumentationLibraryMetrics{}
+	batch := &otlp.ResourceMetrics{InstrumentationLibraryMetrics: []*otlp.InstrumentationLibraryMetrics{il}}
 	for i := 0; i < metricCount; i++ {
 		metric := &otlp.Metric{
 			MetricDescriptor: otlp.GenMetricDescriptor(1),
@@ -176,7 +179,7 @@ func encodeUnpreparedMetrics(metricCount int) proto.Message {
 				},
 			},
 		}
-		batch.Metrics = append(batch.Metrics, metric)
+		il.Metrics = append(il.Metrics, metric)
 	}
 	return batch
 }

@@ -14,9 +14,9 @@
 
 syntax = "proto3";
 
-package otlp;
+package experimental;
 
-import "common.proto";
+import "telemetry_data.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.logs.v1";

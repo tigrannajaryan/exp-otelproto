@@ -24,7 +24,7 @@ func (s *GrpcServer) ExportTraces(ctx context.Context, batch *otlp.TraceExportRe
 		log.Fatal("Received 0 Id")
 	}
 
-	s.onReceive(batch, len(batch.ResourceSpans[0].Spans))
+	s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 	return &otlp.ExportResponse{Id: batch.Id}, nil
 }
 

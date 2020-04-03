@@ -87,21 +87,21 @@ type Span_Link struct {
 	attributes AttributesMap
 }
 
-func FromOtlp(tes *otlp.TraceExportRequest) *TraceExportRequest {
-	r := &TraceExportRequest{}
-	r.ResourceSpans = make([]*ResourceSpans, len(tes.ResourceSpans))
-	for i, s := range tes.ResourceSpans {
-		r.ResourceSpans[i] = ResourceSpansFromOtlp(s)
-	}
-	return r
-}
+//func FromOtlp(tes *otlp.TraceExportRequest) *TraceExportRequest {
+//	r := &TraceExportRequest{}
+//	r.ResourceSpans = make([]*ResourceSpans, len(tes.ResourceSpans))
+//	for i, s := range tes.ResourceSpans {
+//		r.ResourceSpans[i] = ResourceSpansFromOtlp(s)
+//	}
+//	return r
+//}
 
-func ResourceSpansFromOtlp(spans *otlp.ResourceSpans) *ResourceSpans {
-	return &ResourceSpans{
-		Resource: ResourceFromOtlp(spans.Resource),
-		Spans:    SpansFromOtlp(spans.Spans),
-	}
-}
+//func ResourceSpansFromOtlp(spans *otlp.ResourceSpans) *ResourceSpans {
+//	return &ResourceSpans{
+//		Resource: ResourceFromOtlp(spans.Resource),
+//		Spans:    SpansFromOtlp(spans.Spans),
+//	}
+//}
 
 func ResourceFromOtlp(resource *otlp.Resource) *Resource {
 	return &Resource{
@@ -165,22 +165,22 @@ func LinkFromOtlp(l *otlp.Span_Link) *Span_Link {
 	}
 }
 
-func ToOtlp(tes *TraceExportRequest) *otlp.TraceExportRequest {
-	r := make([]*otlp.ResourceSpans, len(tes.ResourceSpans))
-	for i, s := range tes.ResourceSpans {
-		r[i] = ResourceSpansToOtlp(s)
-	}
-	return &otlp.TraceExportRequest{
-		ResourceSpans: r,
-	}
-}
+//func ToOtlp(tes *TraceExportRequest) *otlp.TraceExportRequest {
+//	r := make([]*otlp.ResourceSpans, len(tes.ResourceSpans))
+//	for i, s := range tes.ResourceSpans {
+//		r[i] = ResourceSpansToOtlp(s)
+//	}
+//	return &otlp.TraceExportRequest{
+//		ResourceSpans: r,
+//	}
+//}
 
-func ResourceSpansToOtlp(spans *ResourceSpans) *otlp.ResourceSpans {
-	return &otlp.ResourceSpans{
-		Resource: ResourceToOtlp(spans.Resource),
-		Spans:    SpansToOtlp(spans.Spans),
-	}
-}
+//func ResourceSpansToOtlp(spans *ResourceSpans) *otlp.ResourceSpans {
+//	return &otlp.ResourceSpans{
+//		Resource: ResourceToOtlp(spans.Resource),
+//		Spans:    SpansToOtlp(spans.Spans),
+//	}
+//}
 
 func ResourceToOtlp(resource *Resource) *otlp.Resource {
 	AttrsToOtlp(&resource.orig.Labels, resource.Labels)

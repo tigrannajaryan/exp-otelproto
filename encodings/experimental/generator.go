@@ -1,6 +1,7 @@
 package experimental
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -34,17 +35,13 @@ func (g *Generator) genRandByteString(len int) string {
 
 func GenResource() *Resource {
 	return &Resource{
-		Labels: map[string]*AttributeKeyValue{
-			"StartTimeUnixnano": {IntValue: 12345678},
-			"Pid":               {IntValue: 1234},
-			"HostName":          {StringValue: "fakehost"},
-			"ServiceName":       {StringValue: "generator"},
+		Labels: []*AttributeKeyValue{
+			{Key: "StartTimeUnixnano", IntValue: 12345678},
+			{Key: "Pid", IntValue: 1234},
+			{Key: "HostName", StringValue: "fakehost"},
+			{Key: "ServiceName", StringValue: "generator"},
 		},
 	}
-}
-
-func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
-	return nil
 }
 
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
@@ -68,19 +65,19 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 		if attrsPerSpan >= 0 {
 			// Append attributes.
-			span.Attributes = map[string]*AttributeKeyValue{}
+			span.Attributes = []*AttributeKeyValue{}
 
 			if attrsPerSpan >= 2 {
-				span.Attributes["load_generator.span_seq_num"] =
-					&AttributeKeyValue{Type: AttributeKeyValue_INT, IntValue: int64(spanID)}
-				span.Attributes["load_generator.trace_seq_num"] =
-					&AttributeKeyValue{Type: AttributeKeyValue_INT, IntValue: int64(traceID)}
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(50) + 1)
-				span.Attributes[attrName] =
-					&AttributeKeyValue{Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)}
+				span.Attributes = append(span.Attributes,
+					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 			}
 		}
 
@@ -89,14 +86,58 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 				span.Events = append(span.Events, &Span_Event{
 					TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
-					Attributes: map[string]*AttributeKeyValue{
-						"te": {Type: AttributeKeyValue_INT, IntValue: int64(spanID)},
+					Attributes: []*AttributeKeyValue{
+						{Key: "te", Type: AttributeKeyValue_INT, IntValue: int64(spanID)},
 					},
 				})
 			}
 		}
 
 		batch.ResourceSpans[0].Spans = append(batch.ResourceSpans[0].Spans, span)
+	}
+	return batch
+}
+
+func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
+	traceID := atomic.AddUint64(&g.tracesSent, 1)
+
+	batch := &ExportLogsServiceRequest{ResourceLogs: []*ResourceLogs{{Resource: GenResource()}}}
+	for i := 0; i < logsPerBatch; i++ {
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+
+		spanID := atomic.AddUint64(&g.spansSent, 1)
+
+		// Create a log.
+		log := &Log{
+			TraceId:      core.GenerateTraceID(traceID),
+			SpanId:       core.GenerateSpanID(spanID),
+			TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			Type:         "auto_generated_event",
+			Body: &AttributeValue{
+				Type:        AttributeValueType_STRING,
+				StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+			},
+		}
+
+		if attrsPerLog >= 0 {
+			// Append attributes.
+			log.Attributes = []*AttributeKeyValue{}
+
+			if attrsPerLog >= 2 {
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
+			}
+
+			for j := len(log.Attributes); j < attrsPerLog; j++ {
+				attrName := g.genRandByteString(g.random.Intn(50) + 1)
+				log.Attributes = append(log.Attributes,
+					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+			}
+		}
+
+		batch.ResourceLogs[0].Logs = append(batch.ResourceLogs[0].Logs, log)
 	}
 	return batch
 }

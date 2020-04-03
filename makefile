@@ -25,6 +25,7 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
+	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/common.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/metric_data.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/telemetry_data.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/exchange.proto --go_out=plugins=grpc:encodings/otlp
@@ -35,6 +36,8 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=plugins=grpc:encodings/experimental
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs.proto --go_out=plugins=grpc:encodings/experimental
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
 
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/metric_data.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/telemetry_data.proto --go_out=plugins=grpc:encodings/baseline
@@ -61,7 +64,7 @@ benchmark:
 
 benchmark-encoding:
 	#sudo ./beforebenchmarks.sh
-	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 1s -benchmem
+	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 5s -benchmem
 	#sudo ./afterbenchmarks.sh
 
 run:

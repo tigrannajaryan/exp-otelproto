@@ -1,21 +1,8 @@
 package internal
 
-import (
-	"testing"
-	"unsafe"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-
-	"github.com/golang/protobuf/proto"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-)
-
 const BatchCount = 1000
 
+/*
 func BenchmarkFromOtlpToInternal(b *testing.B) {
 	b.StopTimer()
 	g := otlp.NewGenerator()
@@ -31,23 +18,6 @@ func BenchmarkFromOtlpToInternal(b *testing.B) {
 			FromOtlp(batch[i])
 		}
 	}
-}
-
-func TestMarshalMap(t *testing.T) {
-	r := &experimental.Resource{Labels: map[string]*experimental.AttributeKeyValue{
-		"label1": &experimental.AttributeKeyValue{StringValue: "val1"},
-	}}
-	_, err := proto.Marshal(r)
-	require.NoError(t, err)
-	//log.Printf("%x", b)
-
-	r2 := &Resource{Labels: map[string]*AttributeValue{
-		"label1": &AttributeValue{stringValue: "val1"},
-	}}
-	buf := proto.NewBuffer([]byte{})
-	err = MarshalResource(buf, unsafe.Pointer(r2))
-	require.NoError(t, err)
-	//log.Printf("%x", buf.Bytes())
 }
 
 func TestDecodeFromProto(t *testing.T) {
@@ -117,3 +87,4 @@ func TestEncodeFromProto(t *testing.T) {
 	err = proto.Unmarshal(b2, &tes2)
 	assert.NoError(t, err)
 }
+*/

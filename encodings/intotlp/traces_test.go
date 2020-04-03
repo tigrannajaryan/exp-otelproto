@@ -2,14 +2,13 @@ package intotlp
 
 import (
 	"testing"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 const BatchCount = 1000
 
 func TestDummy(t *testing.T) {}
 
+/*
 func BenchmarkFromOtlpToIntOtlp(b *testing.B) {
 	b.StopTimer()
 	g := otlp.NewGenerator()
@@ -26,3 +25,4 @@ func BenchmarkFromOtlpToIntOtlp(b *testing.B) {
 		}
 	}
 }
+*/
