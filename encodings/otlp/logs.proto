@@ -32,13 +32,14 @@ message ResourceLogs {
     repeated Log logs = 2;
 }
 
+
 message Log {
     fixed64 time_unixnano = 1;
     bytes trace_id = 2;
     bytes span_id = 3;
     string type = 4;
-    string message = 5;
-    bool error = 6;
+    AttributeValue body = 5;
+    uint64 flags = 6;
     repeated AttributeKeyValue attributes = 7;
     uint32 dropped_attributes_count = 8;
 }

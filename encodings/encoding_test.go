@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/internal"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/intotlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
@@ -32,10 +31,10 @@ var tests = []struct {
 	//	name: "Baseline",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
-	{
-		name: "OTLP-WithMaps",
-		gen:  func() core.Generator { return experimental.NewGenerator() },
-	},
+	//{
+	//	name: "OTLP-WithMaps",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
 	{
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
@@ -58,12 +57,12 @@ var batchTypes = []struct {
 	{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
-	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
-	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
-	//{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
-	//{name: "Metric/Mix", batchGen: generateMetricOneBatches},
-	//{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
+	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
+	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
+	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
+	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
+	{name: "Metric/Mix", batchGen: generateMetricOneBatches},
+	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1000

@@ -113,7 +113,10 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			SpanId:       core.GenerateSpanID(spanID),
 			TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 			Type:         "auto_generated_event",
-			Message:      fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+			Body: &AttributeValue{
+				Type:        AttributeValueType_STRING,
+				StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+			},
 		}
 
 		if attrsPerLog >= 0 {
