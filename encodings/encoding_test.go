@@ -18,7 +18,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
-const metricsPerBatch = 1
+const metricsPerBatch = 100
 
 var tests = []struct {
 	name string
