@@ -13,9 +13,10 @@ import (
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 const metricsPerBatch = 100
@@ -28,10 +29,6 @@ var tests = []struct {
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	},
-	//{
-	//	name: "Baseline",
-	//	gen:  func() core.Generator { return baseline.NewGenerator() },
-	//},
 	{
 		name: "Experimental",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
@@ -40,6 +37,10 @@ var tests = []struct {
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
+	//{
+	//	name: "Baseline",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
+	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -55,7 +56,7 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	//{name: "Logs", batchGen: generateLogBatches},
+	{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
@@ -263,7 +264,7 @@ func BenchmarkDecodeOtlpToIntOtlp(b *testing.B) {
 func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateSpanBatch(100, 3, 0))
+		batches = append(batches, gen.GenerateSpanBatch(100, 4, 0))
 	}
 	return batches
 }

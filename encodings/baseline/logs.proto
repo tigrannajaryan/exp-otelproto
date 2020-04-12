@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package otlp;
+package baseline;
 
 import "common.proto";
 

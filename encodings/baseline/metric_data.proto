@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package baseline;
 
-import "telemetry_data.proto";
+//import "telemetry_data.proto";
+import "common.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";
@@ -13,6 +14,18 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 // A list of metrics from a Resource.
 message ResourceMetrics {
   Resource resource = 1;
+
+  // A list of metrics that originate from a resource.
+  repeated InstrumentationLibraryMetrics instrumentation_library_metrics = 2;
+}
+
+// A collection of Metrics produced by an InstrumentationLibrary.
+message InstrumentationLibraryMetrics {
+  // The instrumentation library information for the metrics in this message.
+  // If this field is not set then no library info is known.
+  InstrumentationLibrary instrumentation_library = 1;
+
+  // A list of metrics that originate from an instrumentation library.
   repeated Metric metrics = 2;
 }
 

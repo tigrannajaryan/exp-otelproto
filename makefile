@@ -33,13 +33,17 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs_service.proto --go_out=plugins=grpc:encodings/otlp
 	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
 
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/common.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
 
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/common.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/metric_data.proto --go_out=plugins=grpc:encodings/baseline
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/logs.proto --go_out=plugins=grpc:encodings/baseline
+	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/logs_service.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/telemetry_data.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/exchange.proto --go_out=plugins=grpc:encodings/baseline
 
@@ -63,9 +67,9 @@ benchmark:
 	./runbenchmarks.sh
 
 benchmark-encoding:
-	#sudo ./beforebenchmarks.sh
+	sudo ./beforebenchmarks.sh
 	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 5s -benchmem
-	#sudo ./afterbenchmarks.sh
+	sudo ./afterbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go

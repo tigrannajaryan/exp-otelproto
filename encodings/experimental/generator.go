@@ -1,7 +1,7 @@
 package experimental
 
 import (
-	"fmt"
+	fmt "fmt"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -47,7 +47,16 @@ func GenResource() *Resource {
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	batch := &TraceExportRequest{ResourceSpans: []*ResourceSpans{{Resource: GenResource()}}}
+	il := &InstrumentationLibrarySpans{}
+	batch := &TraceExportRequest{
+		ResourceSpans: []*ResourceSpans{
+			{
+				Resource:                    GenResource(),
+				InstrumentationLibrarySpans: []*InstrumentationLibrarySpans{il},
+			},
+		},
+	}
+
 	for i := 0; i < spansPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
@@ -93,7 +102,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 		}
 
-		batch.ResourceSpans[0].Spans = append(batch.ResourceSpans[0].Spans, span)
+		il.Spans = append(il.Spans, span)
 	}
 	return batch
 }
@@ -112,7 +121,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			TraceId:      core.GenerateTraceID(traceID),
 			SpanId:       core.GenerateSpanID(spanID),
 			TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
-			Type:         "auto_generated_event",
+
 			Body: &AttributeValue{
 				Type:        AttributeValueType_STRING,
 				StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
@@ -135,6 +144,10 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 				log.Attributes = append(log.Attributes,
 					&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 			}
+
+			log.Attributes = append(log.Attributes,
+				&AttributeKeyValue{Key: "event_type", Type: AttributeKeyValue_STRING, StringValue: "auto_generated_event"})
+
 		}
 
 		batch.ResourceLogs[0].Logs = append(batch.ResourceLogs[0].Logs, log)
@@ -322,7 +335,16 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
-	batch := &MetricExportRequest{ResourceMetrics: []*ResourceMetrics{{Resource: GenResource()}}}
+	il := &InstrumentationLibraryMetrics{}
+	batch := &MetricExportRequest{
+		ResourceMetrics: []*ResourceMetrics{
+			{
+				Resource:                      GenResource(),
+				InstrumentationLibraryMetrics: []*InstrumentationLibraryMetrics{il},
+			},
+		},
+	}
+
 	for i := 0; i < metricsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
@@ -332,13 +354,13 @@ func (g *Generator) GenerateMetricBatch(
 		}
 
 		if int64 {
-			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
 		}
 		if histogram {
-			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
 		}
 		if summary {
-			batch.ResourceMetrics[0].Metrics = append(batch.ResourceMetrics[0].Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
 		}
 	}
 	return batch
