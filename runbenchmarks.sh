@@ -28,7 +28,7 @@ benchmark() {
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
     #benchmark sapm
-    #benchmark http11
+    benchmark http11
     #benchmark http11conc
     benchmark wsstreamsync
     benchmark wsstreamasync
@@ -40,9 +40,9 @@ benchmark_all() {
     benchmark streamlbconc
     benchmark opencensus
     #benchmark ocack
-    benchmark streamsync
+    #benchmark streamsync
     #benchmark streamlbalwayssync
-    benchmark streamlbtimedsync
+    #benchmark streamlbtimedsync
     #benchmark streamlbsrv
     echo
 }
@@ -60,7 +60,7 @@ benchmark_some_latency() {
     echo ${BATCHES} large batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
 
     tc qdisc add dev lo root netem delay 100ms
-    benchmark http11
+    #benchmark http11
     benchmark unaryasync
     benchmark opencensus
     benchmark streamlbasync
@@ -81,52 +81,55 @@ cd bin
 
 let BATCHES=6400*MULTIPLIER
 SPANSPERBATCH=1
-ATTRPERSPAN=4
+ATTRPERSPAN=5
 benchmark_all nano
 
 let BATCHES=1600*MULTIPLIER
 SPANSPERBATCH=10
-ATTRPERSPAN=4
+ATTRPERSPAN=5
 benchmark_all tiny
 
 
 let BATCHES=800*MULTIPLIER
 SPANSPERBATCH=100
-ATTRPERSPAN=4
+ATTRPERSPAN=5
 benchmark_all small
 
 
 let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=10
+ATTRPERSPAN=5
 benchmark_all large
 
-let BATCHES=40*MULTIPLIER
-SPANSPERBATCH=1000
+let BATCHES=10*MULTIPLIER
+SPANSPERBATCH=5000
 ATTRPERSPAN=5
-benchmark_all verylarge
+benchmark_all "very large"
+
 
 
 let BATCHES=80*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=10
+ATTRPERSPAN=5
 benchmark_all_latency 1
 
 let BATCHES=40*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=10
+ATTRPERSPAN=5
 benchmark_all_latency 10
 
 let BATCHES=4*MULTIPLIER
 SPANSPERBATCH=500
-ATTRPERSPAN=10
+ATTRPERSPAN=5
 benchmark_all_latency 100
 
 let BATCHES=4*MULTIPLIER*10
 SPANSPERBATCH=500
-ATTRPERSPAN=10
+ATTRPERSPAN=5
 benchmark_some_latency
 
 echo ====================================================================================
+
+cd ..
 
 ./afterbenchmarks.sh
