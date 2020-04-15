@@ -103,7 +103,7 @@ func (c *worker) processSendRequests() {
 func (c *worker) sendRequest(batch core.ExportRequest) {
 	request := batch.(*otlp.TraceExportRequest)
 	if request.Id != 0 {
-		log.Fatal("Request already assigned ID")
+		log.Fatal("Request is still processing but got overwritten")
 	}
 
 	Id := atomic.AddUint64(&c.nextId, 1)
@@ -111,6 +111,7 @@ func (c *worker) sendRequest(batch core.ExportRequest) {
 
 	body := &otlp.RequestBody{Body: &otlp.RequestBody_Export{request}}
 	b := encodings.Encode(body, c.Compression)
+	request.Id = 0
 
 	buf := bytes.NewBuffer(b)
 	resp, err := http.Post(c.url, "application/x-prtobuf", buf)

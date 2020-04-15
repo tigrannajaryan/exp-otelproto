@@ -41,7 +41,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 			log.Fatal("Received 0 Id")
 		}
 		if Id != lastId+1 {
-			log.Fatalf("Received out of order request ID=%d", Id)
+			log.Fatalf("Received out of order request ID=%d instead of expected ID=%d", Id, lastId+1)
 		}
 		lastId = Id
 

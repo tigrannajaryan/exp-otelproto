@@ -70,11 +70,28 @@ func BenchmarkLocalDelivery(
 		log.Fatal(err)
 	}
 
-	//var batches []ExportRequest
-	//for i := 0; i < options.Batches; i++ {
-	//	batch := gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan)
-	//	batches = append(batches, batch)
-	//}
+	batchCount := options.Batches
+	const maxBatchesToRotate = 3000
+	if batchCount > maxBatchesToRotate {
+		// We will use at most 100 batches and will rotate through them when sending.
+		// This is a hacky solution to limit the amount of memory we use for long running
+		// tests that send many thousands of batches.
+		// Note that protocols may modify the batch that is being sent (primarily the
+		// request ID field) so we cannot use the same batch for sending while it is
+		// still being sent by previously issued "Export" call.
+		// Limiting the number of batches in memory only works because concurrency of
+		// protocols is limited. This means that a batch will be reused after its
+		// sending was completed.
+		// Note that this is not a guarantee of correctness and may still fail
+		// (and protocols may detect and fail when this happens). This approach should
+		// never be used in a production code, but is acceptable for a benchmark.
+		batchCount = maxBatchesToRotate
+	}
+
+	var batches []ExportRequest
+	for i := 0; i < batchCount; i++ {
+		batches = append(batches, gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan, 0))
+	}
 
 	startCPUTimes, err := proc.Times()
 	if err != nil {
@@ -88,7 +105,10 @@ func BenchmarkLocalDelivery(
 	for i := 0; i < options.Batches; i++ {
 		// Count sent batch.
 		wg.Add(1)
-		batch := gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan, 0)
+
+		batch := batches[i%batchCount]
+		//batch := gen.GenerateSpanBatch(options.SpansPerBatch, options.AttrPerSpan, 0)
+
 		clnt.Export(batch)
 	}
 

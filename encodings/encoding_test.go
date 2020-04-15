@@ -19,7 +19,13 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-const metricsPerBatch = 100
+const spansPerBatch = 1000
+const metricsPerBatch = spansPerBatch
+const logsPerBatch = spansPerBatch
+
+const attrsPerSpans = 5
+const eventsPerSpan = 3
+const attrsPerLog = attrsPerSpans
 
 var tests = []struct {
 	name string
@@ -67,7 +73,7 @@ var batchTypes = []struct {
 	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
-const BatchCount = 1000
+const BatchCount = 1
 
 func BenchmarkEncode(b *testing.B) {
 
@@ -264,7 +270,15 @@ func BenchmarkDecodeOtlpToIntOtlp(b *testing.B) {
 func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateSpanBatch(100, 4, 0))
+		batches = append(batches, gen.GenerateSpanBatch(spansPerBatch, attrsPerSpans, 0))
+	}
+	return batches
+}
+
+func generateTimedEventBatches(gen core.Generator) []core.ExportRequest {
+	var batches []core.ExportRequest
+	for i := 0; i < BatchCount; i++ {
+		batches = append(batches, gen.GenerateSpanBatch(spansPerBatch, 0, eventsPerSpan))
 	}
 	return batches
 }
@@ -272,7 +286,7 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 func generateLogBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batch := gen.GenerateLogBatch(100, 4)
+		batch := gen.GenerateLogBatch(logsPerBatch, attrsPerLog)
 		if batch == nil {
 			return nil
 		}
@@ -353,14 +367,6 @@ func generateMetricSummaryBatches(gen core.Generator) []core.ExportRequest {
 	return batches
 }
 
-func generateTimedEventBatches(gen core.Generator) []core.ExportRequest {
-	var batches []core.ExportRequest
-	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateSpanBatch(100, 0, 3))
-	}
-	return batches
-}
-
 func encode(request core.ExportRequest) []byte {
 	bytes, err := proto.Marshal(request.(proto.Message))
 	if err != nil {
@@ -378,7 +384,7 @@ func decode(bytes []byte, pb proto.Message) {
 
 func TestEncodeSize(t *testing.T) {
 
-	const batchSize = 100
+	const batchSize = spansPerBatch
 
 	variation := []struct {
 		name                 string
@@ -395,13 +401,13 @@ func TestEncodeSize(t *testing.T) {
 		{
 			name: "Trace/Attribs",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateSpanBatch(batchSize, 3, 0)
+				return gen.GenerateSpanBatch(batchSize, attrsPerSpans, 0)
 			},
 		},
 		{
 			name: "Trace/Events",
 			genFunc: func(gen core.Generator) core.ExportRequest {
-				return gen.GenerateSpanBatch(batchSize, 0, 3)
+				return gen.GenerateSpanBatch(batchSize, 0, eventsPerSpan)
 			},
 		},
 		{

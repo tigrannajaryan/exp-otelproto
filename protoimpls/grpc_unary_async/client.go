@@ -36,14 +36,20 @@ func (c *Client) Export(batch core.ExportRequest) {
 	go func() {
 		defer func() { <-c.sem }()
 		request := batch.(*otlp.TraceExportRequest)
-		request.Id = atomic.AddUint64(&c.nextId, 1)
+		id := atomic.AddUint64(&c.nextId, 1)
+		request.Id = id
+
 		response, err := c.client.ExportTraces(context.Background(), request)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if response.Id != request.Id {
-			log.Fatal("ack id mismatch")
+		if response.Id != id {
+			log.Printf("ack id mismatch, expected ID=%d, received ID=%d", id, response.Id)
 		}
+		if request.Id != id {
+			log.Fatalf("Request is still processing but got overwritten (request.id=%d, orginal id=%d)", request.Id, id)
+		}
+		request.Id = 0
 	}()
 }
 

@@ -146,7 +146,7 @@ func (c *clientStream) readStream() {
 func (c *clientStream) sendRequest(batch core.ExportRequest) {
 	request := batch.(*otlp.TraceExportRequest)
 	if request.Id != 0 {
-		log.Fatal("Request already assigned ID")
+		log.Fatal("Request is still processing but got overwritten")
 	}
 
 	Id := atomic.AddUint64(&c.nextId, 1)
@@ -154,6 +154,7 @@ func (c *clientStream) sendRequest(batch core.ExportRequest) {
 
 	body := &otlp.RequestBody{Body: &otlp.RequestBody_Export{request}}
 	bytes := encodings.Encode(body, c.Compression)
+	request.Id = 0
 
 	//// Add the ID to pendingAck map
 	//c.pendingAckMutex.Lock()

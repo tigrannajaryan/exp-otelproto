@@ -277,7 +277,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-28s %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %4.1f batches/cpusec, %4.1f batches/wallsec\n",
+	fmt.Printf("%-28s %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %7.1f batches/cpusec, %7.1f batches/wallsec\n",
 		name,
 		options.Batches*options.SpansPerBatch,
 		cpuSecs,
