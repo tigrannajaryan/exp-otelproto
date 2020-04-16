@@ -75,7 +75,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 
 			for j := 2; j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(50) + 1)
+				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Tags = append(span.Tags,
 					jaegerpb.KeyValue{Key: attrName, VType: jaegerpb.ValueType_STRING,
 						VStr: g.genRandByteString(g.random.Intn(20) + 1)})

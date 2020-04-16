@@ -23,7 +23,7 @@ const spansPerBatch = 1000
 const metricsPerBatch = spansPerBatch
 const logsPerBatch = spansPerBatch
 
-const attrsPerSpans = 5
+const attrsPerSpans = 10
 const eventsPerSpan = 3
 const attrsPerLog = attrsPerSpans
 

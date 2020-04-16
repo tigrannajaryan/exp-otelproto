@@ -77,7 +77,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 
 			for j := len(span.Attributes.AttributeMap); j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(50) + 1)
+				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes.AttributeMap[attrName] = &AttributeValue{
 					Value: &AttributeValue_StringValue{
 						StringValue: &TruncatableString{Value: g.genRandByteString(g.random.Intn(20) + 1)},

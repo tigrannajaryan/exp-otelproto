@@ -97,7 +97,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(50) + 1)
+				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
 					&otlpcommon.AttributeKeyValue{
 						Key:         attrName,
@@ -158,7 +158,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 				}
 
 				for j := len(log.Attributes); j < attrsPerLog; j++ {
-					attrName := g.genRandByteString(g.random.Intn(50) + 1)
+					attrName := g.genRandByteString(g.random.Intn(20) + 1)
 					log.Attributes = append(log.Attributes,
 						&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 				}
