@@ -5,15 +5,14 @@ import (
 	"log"
 	"sync/atomic"
 
-	"google.golang.org/grpc"
-
+	otlp "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"google.golang.org/grpc"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client otlp.UnaryExporterClient
+	client otlp.TraceServiceClient
 	nextId uint64
 }
 
@@ -23,14 +22,14 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = otlp.NewUnaryExporterClient(conn)
+	c.client = otlp.NewTraceServiceClient(conn)
 	return nil
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	request := batch.(*otlp.TraceExportRequest)
-	request.Id = atomic.AddUint64(&c.nextId, 1)
-	c.client.ExportTraces(context.Background(), request)
+	request := batch.(*otlp.ExportTraceServiceRequest)
+	atomic.AddUint64(&c.nextId, 1)
+	c.client.Export(context.Background(), request)
 }
 
 func (c *Client) Shutdown() {

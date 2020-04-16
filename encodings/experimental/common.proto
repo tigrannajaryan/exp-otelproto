@@ -8,24 +8,16 @@ option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
 
-// InstrumentationLibrary is a message representing the instrumentation library information
-// such as the fully qualified name and version.
-message InstrumentationLibrary {
-    string name = 1;
-    string version = 2;
-}
-
-// Resource information. This describes the source of telemetry data.
+// Resource information.
 message Resource {
-    // labels is a collection of attributes that describe the resource. See OpenTelemetry
-    // specification semantic conventions for standardized label names:
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
-    repeated AttributeKeyValue labels = 1;
+    // Set of labels that describe the resource.
+    repeated AttributeKeyValue attributes = 1;
 
-    // dropped_labels_count is the number of dropped labels. If the value is 0, then
-    // no labels were dropped.
-    int32 dropped_labels_count = 2;
+    // dropped_attributes_count is the number of dropped attributes. If the value is 0, then
+    // no attributes were dropped.
+    uint32 dropped_attributes_count = 2;
 }
+
 
 // AttributeValueType is the enumeration of possible types that value can have.
 enum AttributeValueType {
@@ -57,8 +49,8 @@ message AttributeValueListOrMap {
     repeated AttributeKeyValue map = 2;
 }
 
-// AttributeKeyValue is a key-value pair that is used to store Span attributes, Resource
-// labels, etc.
+// AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
+// attributes, etc.
 message AttributeKeyValue {
     // ValueType is the enumeration of possible types that value can have.
     enum ValueType {
@@ -83,3 +75,16 @@ message AttributeKeyValue {
     bool bool_value = 6;
 }
 
+// StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
+// of AttributeKeyValue that only supports string values.
+message StringKeyValue {
+    string key = 1;
+    string value = 2;
+}
+
+// InstrumentationLibrary is a message representing the instrumentation library information
+// such as the fully qualified name and version.
+message InstrumentationLibrary {
+    string name = 1;
+    string version = 2;
+}

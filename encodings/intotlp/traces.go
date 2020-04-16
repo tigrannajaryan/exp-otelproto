@@ -1,7 +1,7 @@
 package intotlp
 
 import (
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type TraceExportRequest struct {
@@ -21,7 +21,7 @@ type AttributesMap map[string]AttributeValue
 
 // Resource information. This describes the source of telemetry data.
 type Resource struct {
-	orig *otlp.Resource
+	orig *experimental.Resource
 	// labels is a collection of attributes that describe the resource. See OpenTelemetry
 	// specification semantic conventions for standardized label names:
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
@@ -29,10 +29,10 @@ type Resource struct {
 }
 
 type AttributeValue struct {
-	orig *otlp.AttributeKeyValue
+	orig *experimental.AttributeKeyValue
 }
 
-func (a AttributeValue) Type() otlp.AttributeKeyValue_ValueType {
+func (a AttributeValue) Type() experimental.AttributeKeyValue_ValueType {
 	return a.orig.Type
 }
 
@@ -53,7 +53,7 @@ func (a AttributeValue) Bool() bool {
 }
 
 type Span struct {
-	orig *otlp.Span
+	orig *experimental.Span
 
 	// attributes is a collection of key/value pairs. The value can be a string,
 	// an integer, a double or the Boolean values `true` or `false`. Note, global attributes
@@ -74,20 +74,20 @@ type Span struct {
 }
 
 type Span_Event struct {
-	orig *otlp.Span_Event
+	orig *experimental.Span_Event
 
 	// attributes is a collection of attribute key/value pairs on the event.
 	attributes AttributesMap
 }
 
 type Span_Link struct {
-	orig *otlp.Span_Link
+	orig *experimental.Span_Link
 
 	// attributes is a collection of attribute key/value pairs on the link.
 	attributes AttributesMap
 }
 
-//func FromOtlp(tes *otlp.TraceExportRequest) *TraceExportRequest {
+//func FromOtlp(tes *experimental.TraceExportRequest) *TraceExportRequest {
 //	r := &TraceExportRequest{}
 //	r.ResourceSpans = make([]*ResourceSpans, len(tes.ResourceSpans))
 //	for i, s := range tes.ResourceSpans {
@@ -96,21 +96,21 @@ type Span_Link struct {
 //	return r
 //}
 
-//func ResourceSpansFromOtlp(spans *otlp.ResourceSpans) *ResourceSpans {
+//func ResourceSpansFromOtlp(spans *experimental.ResourceSpans) *ResourceSpans {
 //	return &ResourceSpans{
 //		Resource: ResourceFromOtlp(spans.Resource),
 //		Spans:    SpansFromOtlp(spans.Spans),
 //	}
 //}
 
-func ResourceFromOtlp(resource *otlp.Resource) *Resource {
+func ResourceFromOtlp(resource *experimental.Resource) *Resource {
 	return &Resource{
 		orig:   resource,
-		Labels: AttrsFromOtlp(resource.Labels),
+		Labels: AttrsFromOtlp(resource.Attributes),
 	}
 }
 
-func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) AttributesMap {
+func AttrsFromOtlp(attrs []*experimental.AttributeKeyValue) AttributesMap {
 	m := make(AttributesMap, len(attrs))
 	for _, attr := range attrs {
 		m[attr.Key] = AttributeValue{attr}
@@ -118,7 +118,7 @@ func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) AttributesMap {
 	return m
 }
 
-func SpansFromOtlp(spans []*otlp.Span) []*Span {
+func SpansFromOtlp(spans []*experimental.Span) []*Span {
 	ptrs := make([]*Span, len(spans))
 	content := make([]Span, len(spans))
 	for i, s := range spans {
@@ -128,14 +128,14 @@ func SpansFromOtlp(spans []*otlp.Span) []*Span {
 	return ptrs
 }
 
-func SpanFromOtlp(src *otlp.Span, dest *Span) {
+func SpanFromOtlp(src *experimental.Span, dest *Span) {
 	dest.orig = src
 	dest.attributes = AttrsFromOtlp(src.Attributes)
 	dest.events = EventsFromOtlp(src.Events)
 	dest.links = LinksFromOtlp(src.Links)
 }
 
-func EventsFromOtlp(events []*otlp.Span_Event) []*Span_Event {
+func EventsFromOtlp(events []*experimental.Span_Event) []*Span_Event {
 	r := make([]*Span_Event, len(events))
 	for i, e := range events {
 		r[i] = EventFromOtlp(e)
@@ -143,14 +143,14 @@ func EventsFromOtlp(events []*otlp.Span_Event) []*Span_Event {
 	return r
 }
 
-func EventFromOtlp(e *otlp.Span_Event) *Span_Event {
+func EventFromOtlp(e *experimental.Span_Event) *Span_Event {
 	return &Span_Event{
 		orig:       e,
 		attributes: AttrsFromOtlp(e.Attributes),
 	}
 }
 
-func LinksFromOtlp(links []*otlp.Span_Link) []*Span_Link {
+func LinksFromOtlp(links []*experimental.Span_Link) []*Span_Link {
 	r := make([]*Span_Link, len(links))
 	for i, e := range links {
 		r[i] = LinkFromOtlp(e)
@@ -158,38 +158,38 @@ func LinksFromOtlp(links []*otlp.Span_Link) []*Span_Link {
 	return r
 }
 
-func LinkFromOtlp(l *otlp.Span_Link) *Span_Link {
+func LinkFromOtlp(l *experimental.Span_Link) *Span_Link {
 	return &Span_Link{
 		orig:       l,
 		attributes: AttrsFromOtlp(l.Attributes),
 	}
 }
 
-//func ToOtlp(tes *TraceExportRequest) *otlp.TraceExportRequest {
-//	r := make([]*otlp.ResourceSpans, len(tes.ResourceSpans))
+//func ToOtlp(tes *TraceExportRequest) *experimental.TraceExportRequest {
+//	r := make([]*experimental.ResourceSpans, len(tes.ResourceSpans))
 //	for i, s := range tes.ResourceSpans {
 //		r[i] = ResourceSpansToOtlp(s)
 //	}
-//	return &otlp.TraceExportRequest{
+//	return &experimental.TraceExportRequest{
 //		ResourceSpans: r,
 //	}
 //}
 
-//func ResourceSpansToOtlp(spans *ResourceSpans) *otlp.ResourceSpans {
-//	return &otlp.ResourceSpans{
+//func ResourceSpansToOtlp(spans *ResourceSpans) *experimental.ResourceSpans {
+//	return &experimental.ResourceSpans{
 //		Resource: ResourceToOtlp(spans.Resource),
 //		Spans:    SpansToOtlp(spans.Spans),
 //	}
 //}
 
-func ResourceToOtlp(resource *Resource) *otlp.Resource {
-	AttrsToOtlp(&resource.orig.Labels, resource.Labels)
+func ResourceToOtlp(resource *Resource) *experimental.Resource {
+	AttrsToOtlp(&resource.orig.Attributes, resource.Labels)
 	return resource.orig
 }
 
-func AttrsToOtlp(dest *[]*otlp.AttributeKeyValue, src AttributesMap) {
+func AttrsToOtlp(dest *[]*experimental.AttributeKeyValue, src AttributesMap) {
 	if len(*dest) < len(src) {
-		*dest = append(*dest, make([]*otlp.AttributeKeyValue, len(src)-len(*dest))...)
+		*dest = append(*dest, make([]*experimental.AttributeKeyValue, len(src)-len(*dest))...)
 	}
 	i := 0
 	for key, attr := range src {
@@ -200,24 +200,24 @@ func AttrsToOtlp(dest *[]*otlp.AttributeKeyValue, src AttributesMap) {
 	}
 }
 
-func SpansToOtlp(spans []*Span) []*otlp.Span {
-	ptrs := make([]*otlp.Span, len(spans))
+func SpansToOtlp(spans []*Span) []*experimental.Span {
+	ptrs := make([]*experimental.Span, len(spans))
 	for i, s := range spans {
 		ptrs[i] = SpanToOtlp(s)
 	}
 	return ptrs
 }
 
-func SpanToOtlp(src *Span) *otlp.Span {
+func SpanToOtlp(src *Span) *experimental.Span {
 	AttrsToOtlp(&src.orig.Attributes, src.attributes)
 	EventsToOtlp(&src.orig.Events, src.events)
 	LinksToOtlp(&src.orig.Links, src.links)
 	return src.orig
 }
 
-func EventsToOtlp(dest *[]*otlp.Span_Event, src []*Span_Event) {
+func EventsToOtlp(dest *[]*experimental.Span_Event, src []*Span_Event) {
 	if len(*dest) < len(src) {
-		*dest = append(*dest, make([]*otlp.Span_Event, len(src)-len(*dest))...)
+		*dest = append(*dest, make([]*experimental.Span_Event, len(src)-len(*dest))...)
 	}
 	for i, event := range src {
 		AttrsToOtlp(&event.orig.Attributes, event.attributes)
@@ -225,9 +225,9 @@ func EventsToOtlp(dest *[]*otlp.Span_Event, src []*Span_Event) {
 	}
 }
 
-func LinksToOtlp(dest *[]*otlp.Span_Link, src []*Span_Link) {
+func LinksToOtlp(dest *[]*experimental.Span_Link, src []*Span_Link) {
 	if len(*dest) < len(src) {
-		*dest = append(*dest, make([]*otlp.Span_Link, len(src)-len(*dest))...)
+		*dest = append(*dest, make([]*experimental.Span_Link, len(src)-len(*dest))...)
 	}
 	for i, link := range src {
 		AttrsToOtlp(&link.orig.Attributes, link.attributes)

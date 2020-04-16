@@ -15,27 +15,27 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client          otlp.StreamExporterClient
-	stream          otlp.StreamExporter_ExportTracesClient
-	pendingAck      map[uint64]*otlp.TraceExportRequest
+	client          experimental.StreamExporterClient
+	stream          experimental.StreamExporter_ExportTracesClient
+	pendingAck      map[uint64]*experimental.TraceExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 }
 
 func (c *Client) Connect(server string) error {
-	c.pendingAck = make(map[uint64]*otlp.TraceExportRequest)
+	c.pendingAck = make(map[uint64]*experimental.TraceExportRequest)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = otlp.NewStreamExporterClient(conn)
+	c.client = experimental.NewStreamExporterClient(conn)
 
 	// Establish stream to server.
 	return c.openStream()
@@ -53,7 +53,7 @@ func (c *Client) openStream() error {
 	return nil
 }
 
-func (c *Client) readStream(stream otlp.StreamExporter_ExportTracesClient) {
+func (c *Client) readStream(stream experimental.StreamExporter_ExportTracesClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {
@@ -88,7 +88,7 @@ func (c *Client) readStream(stream otlp.StreamExporter_ExportTracesClient) {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	request := batch.(*otlp.TraceExportRequest)
+	request := batch.(*experimental.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
 	// Add the ID to pendingAck map
@@ -111,7 +111,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 }
 
 func (c *Client) resendPending() {
-	var requests []*otlp.TraceExportRequest
+	var requests []*experimental.TraceExportRequest
 	c.pendingAckMutex.Lock()
 	for _, request := range c.pendingAck {
 		requests = append(requests, request)

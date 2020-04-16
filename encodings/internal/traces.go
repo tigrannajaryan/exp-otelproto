@@ -6,7 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type TraceExportRequest struct {
@@ -30,19 +30,19 @@ type Resource struct {
 	Labels map[string]*AttributeValue `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// dropped_labels_count is the number of dropped labels. If the value is 0, then
 	// no labels were dropped.
-	DroppedLabelsCount int32 `protobuf:"varint,2,opt,name=dropped_labels_count,json=droppedLabelsCount,proto3" json:"dropped_labels_count,omitempty"`
+	DroppedLabelsCount uint32 `protobuf:"varint,2,opt,name=dropped_labels_count,json=droppedLabelsCount,proto3" json:"dropped_labels_count,omitempty"`
 }
 
 type AttributeValue struct {
 	// type of the value.
-	typ         otlp.AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.AttributeKeyValue_ValueType" json:"type,omitempty"`
-	stringValue string                           `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
-	intValue    int64                            `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
-	doubleValue float64                          `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
+	typ         experimental.AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.AttributeKeyValue_ValueType" json:"type,omitempty"`
+	stringValue string                                   `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
+	intValue    int64                                    `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
+	doubleValue float64                                  `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
 	boolValue   bool
 }
 
-func (a *AttributeValue) Type() otlp.AttributeKeyValue_ValueType {
+func (a *AttributeValue) Type() experimental.AttributeKeyValue_ValueType {
 	return a.typ
 }
 
@@ -50,7 +50,7 @@ func (a *AttributeValue) String() string {
 	return a.stringValue
 }
 
-func (a *AttributeValue) Set(t otlp.AttributeKeyValue_ValueType, s string, i int64, d float64, b bool) {
+func (a *AttributeValue) Set(t experimental.AttributeKeyValue_ValueType, s string, i int64, d float64, b bool) {
 	a.typ = t
 	a.stringValue = s
 	a.intValue = i
@@ -113,7 +113,7 @@ type Span struct {
 	// Distinguishes between spans generated in a particular context. For example,
 	// two spans with the same name may be distinguished using `CLIENT` (caller)
 	// and `SERVER` (callee) to identify queueing latency associated with the span.
-	Kind otlp.Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=experimental.Span_SpanKind" json:"kind,omitempty"`
+	Kind experimental.Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=experimental.Span_SpanKind" json:"kind,omitempty"`
 	// start_time_unixnano is the start time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution starts. On the server side, this
 	// is the time when the server's application handler starts running.
@@ -155,18 +155,14 @@ type Span struct {
 	// An optional final status for this span. Semantically when Status
 	// wasn't set it is means span ended without errors and assume
 	// Status.Ok (code = 0).
-	Status *otlp.Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
-	// An optional number of local child spans that were generated while this span
-	// was active. Value of -1 indicates that the number of local child spans is unknown.
-	// If local_child_span_count>=0, allows an implementation to detect missing child spans.
-	LocalChildSpanCount int32 `protobuf:"fixed32,16,opt,name=local_child_span_count,json=localChildSpanCount,proto3" json:"local_child_span_count,omitempty"`
+	Status *experimental.Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
 }
 
 type Span_Event struct {
 	// time_unixnano is the time the event occurred.
 	TimeUnixnano uint64 `protobuf:"fixed64,1,opt,name=time_unixnano,json=timeUnixnano,proto3" json:"time_unixnano,omitempty"`
 	// description is a user-supplied text.
-	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the event.
 	Attributes map[string]*AttributeValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
@@ -317,13 +313,13 @@ func MarshalAttributeKeyValue(buf *proto.Buffer, key string, val unsafe.Pointer)
 	encodeVarint(buf, 2, uint64(v.Type()))
 
 	switch v.Type() {
-	case otlp.AttributeKeyValue_STRING:
+	case experimental.AttributeKeyValue_STRING:
 		encodeString(buf, 3, v.String())
-	case otlp.AttributeKeyValue_INT:
+	case experimental.AttributeKeyValue_INT:
 		encodeVarint(buf, 4, uint64(v.Int()))
-	case otlp.AttributeKeyValue_DOUBLE:
+	case experimental.AttributeKeyValue_DOUBLE:
 		encodeFixed64(buf, 5, math.Float64bits(v.Double()))
-	case otlp.AttributeKeyValue_BOOL:
+	case experimental.AttributeKeyValue_BOOL:
 		if v.Bool() {
 			encodeVarint(buf, 6, 1)
 		}
@@ -354,7 +350,6 @@ func MarshalSpan(buf *proto.Buffer, p unsafe.Pointer) error {
 	//}
 	encodeVarint(buf, 14, uint64(s.DroppedLinksCount))
 	//encodeSubmessage(buf, 15, s.Status)
-	encodeFixed32(buf, 16, uint64(s.LocalChildSpanCount))
 	return nil
 }
 
@@ -362,7 +357,7 @@ func MarshalEvent(buf *proto.Buffer, p unsafe.Pointer) error {
 	e := (*Span_Event)(p)
 
 	encodeFixed64(buf, 1, e.TimeUnixnano)
-	encodeString(buf, 2, e.Description)
+	encodeString(buf, 2, e.Name)
 	MarshalAttributesMap(buf, 3, e.Attributes)
 	encodeVarint(buf, 4, uint64(e.DroppedAttributesCount))
 	return nil
@@ -498,7 +493,7 @@ func decodeFieldTag(b *proto.Buffer) (field_num uint64, wire_type uint64, err er
 	return
 }
 
-//func FromOtlp(tes *otlp.TraceExportRequest) *TraceExportRequest {
+//func FromOtlp(tes *experimental.TraceExportRequest) *TraceExportRequest {
 //	r := &TraceExportRequest{}
 //	r.ResourceSpans = make([]*ResourceSpans, len(tes.ResourceSpans))
 //	for i, s := range tes.ResourceSpans {
@@ -507,21 +502,21 @@ func decodeFieldTag(b *proto.Buffer) (field_num uint64, wire_type uint64, err er
 //	return r
 //}
 
-//func ResourceSpansFromOtlp(spans *otlp.ResourceSpans) *ResourceSpans {
+//func ResourceSpansFromOtlp(spans *experimental.ResourceSpans) *ResourceSpans {
 //	return &ResourceSpans{
 //		Resource: ResourceFromOtlp(spans.Resource),
 //		Spans:    SpansFromOtlp(spans.Spans),
 //	}
 //}
 
-func ResourceFromOtlp(resource *otlp.Resource) *Resource {
+func ResourceFromOtlp(resource *experimental.Resource) *Resource {
 	return &Resource{
-		Labels:             AttrsFromOtlp(resource.Labels),
-		DroppedLabelsCount: resource.DroppedLabelsCount,
+		Labels:             AttrsFromOtlp(resource.Attributes),
+		DroppedLabelsCount: resource.DroppedAttributesCount,
 	}
 }
 
-func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*AttributeValue {
+func AttrsFromOtlp(attrs []*experimental.AttributeKeyValue) map[string]*AttributeValue {
 	ptrs := make(map[string]*AttributeValue, len(attrs))
 	content := make([]AttributeValue, len(attrs))
 	for i, attr := range attrs {
@@ -531,7 +526,7 @@ func AttrsFromOtlp(attrs []*otlp.AttributeKeyValue) map[string]*AttributeValue {
 	return ptrs
 }
 
-func AttrFromOtlp(dest *AttributeValue, src *otlp.AttributeKeyValue) {
+func AttrFromOtlp(dest *AttributeValue, src *experimental.AttributeKeyValue) {
 	dest.Set(
 		src.Type,
 		src.StringValue,
@@ -541,7 +536,7 @@ func AttrFromOtlp(dest *AttributeValue, src *otlp.AttributeKeyValue) {
 	)
 }
 
-func SpansFromOtlp(spans []*otlp.Span) []*Span {
+func SpansFromOtlp(spans []*experimental.Span) []*Span {
 	ptrs := make([]*Span, len(spans))
 	content := make([]Span, len(spans))
 	for i, s := range spans {
@@ -551,15 +546,15 @@ func SpansFromOtlp(spans []*otlp.Span) []*Span {
 	return ptrs
 }
 
-func SpanFromOtlp(src *otlp.Span, dest *Span) {
+func SpanFromOtlp(src *experimental.Span, dest *Span) {
 	dest.TraceId = src.TraceId
 	dest.SpanId = src.SpanId
-	dest.Tracestate = src.Tracestate
+	dest.Tracestate = src.TraceState
 	dest.ParentSpanId = src.ParentSpanId
 	dest.Name = src.Name
 	dest.Kind = src.Kind
-	dest.StartTimeUnixnano = src.StartTimeUnixnano
-	dest.EndTimeUnixnano = src.EndTimeUnixnano
+	dest.StartTimeUnixnano = src.StartTimeUnixNano
+	dest.EndTimeUnixnano = src.EndTimeUnixNano
 	dest.Attributes = AttrsFromOtlp(src.Attributes)
 	dest.DroppedAttributesCount = src.DroppedAttributesCount
 	dest.Events = EventsFromOtlp(src.Events)
@@ -567,10 +562,9 @@ func SpanFromOtlp(src *otlp.Span, dest *Span) {
 	dest.Links = LinksFromOtlp(src.Links)
 	dest.DroppedLinksCount = src.DroppedLinksCount
 	dest.Status = src.Status
-	dest.LocalChildSpanCount = src.LocalChildSpanCount
 }
 
-func EventsFromOtlp(events []*otlp.Span_Event) []*Span_Event {
+func EventsFromOtlp(events []*experimental.Span_Event) []*Span_Event {
 	r := make([]*Span_Event, len(events))
 	for i, e := range events {
 		r[i] = EventFromOtlp(e)
@@ -578,16 +572,16 @@ func EventsFromOtlp(events []*otlp.Span_Event) []*Span_Event {
 	return r
 }
 
-func EventFromOtlp(e *otlp.Span_Event) *Span_Event {
+func EventFromOtlp(e *experimental.Span_Event) *Span_Event {
 	return &Span_Event{
-		TimeUnixnano:           e.TimeUnixnano,
-		Description:            e.Description,
+		TimeUnixnano:           e.TimeUnixNano,
+		Name:                   e.Name,
 		Attributes:             AttrsFromOtlp(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
 }
 
-func LinksFromOtlp(links []*otlp.Span_Link) []*Span_Link {
+func LinksFromOtlp(links []*experimental.Span_Link) []*Span_Link {
 	r := make([]*Span_Link, len(links))
 	for i, e := range links {
 		r[i] = LinkFromOtlp(e)
@@ -595,7 +589,7 @@ func LinksFromOtlp(links []*otlp.Span_Link) []*Span_Link {
 	return r
 }
 
-func LinkFromOtlp(l *otlp.Span_Link) *Span_Link {
+func LinkFromOtlp(l *experimental.Span_Link) *Span_Link {
 	return &Span_Link{
 		TraceId:                l.TraceId,
 		SpanId:                 l.SpanId,
@@ -604,33 +598,33 @@ func LinkFromOtlp(l *otlp.Span_Link) *Span_Link {
 	}
 }
 
-//func ToOtlp(tes *TraceExportRequest) *otlp.TraceExportRequest {
-//	r := make([]*otlp.ResourceSpans, len(tes.ResourceSpans))
+//func ToOtlp(tes *TraceExportRequest) *experimental.TraceExportRequest {
+//	r := make([]*experimental.ResourceSpans, len(tes.ResourceSpans))
 //	for i, s := range tes.ResourceSpans {
 //		r[i] = ResourceSpansToOtlp(s)
 //	}
-//	return &otlp.TraceExportRequest{
+//	return &experimental.TraceExportRequest{
 //		ResourceSpans: r,
 //	}
 //}
 
-//func ResourceSpansToOtlp(spans *ResourceSpans) *otlp.ResourceSpans {
-//	return &otlp.ResourceSpans{
+//func ResourceSpansToOtlp(spans *ResourceSpans) *experimental.ResourceSpans {
+//	return &experimental.ResourceSpans{
 //		Resource: ResourceToOtlp(spans.Resource),
 //		Spans:    SpansToOtlp(spans.Spans),
 //	}
 //}
 
-func ResourceToOtlp(resource *Resource) *otlp.Resource {
-	return &otlp.Resource{
-		Labels:             AttrsToOtlp(resource.Labels),
-		DroppedLabelsCount: resource.DroppedLabelsCount,
+func ResourceToOtlp(resource *Resource) *experimental.Resource {
+	return &experimental.Resource{
+		Attributes:             AttrsToOtlp(resource.Labels),
+		DroppedAttributesCount: resource.DroppedLabelsCount,
 	}
 }
 
-func AttrsToOtlp(attrs map[string]*AttributeValue) []*otlp.AttributeKeyValue {
-	ptrs := make([]*otlp.AttributeKeyValue, len(attrs))
-	content := make([]otlp.AttributeKeyValue, len(attrs))
+func AttrsToOtlp(attrs map[string]*AttributeValue) []*experimental.AttributeKeyValue {
+	ptrs := make([]*experimental.AttributeKeyValue, len(attrs))
+	content := make([]experimental.AttributeKeyValue, len(attrs))
 	i := 0
 	for _, attr := range attrs {
 		ptrs[i] = &content[i]
@@ -640,7 +634,7 @@ func AttrsToOtlp(attrs map[string]*AttributeValue) []*otlp.AttributeKeyValue {
 	return ptrs
 }
 
-func AttrToOtlp(dest *otlp.AttributeKeyValue, src *AttributeValue) {
+func AttrToOtlp(dest *experimental.AttributeKeyValue, src *AttributeValue) {
 	dest.Type = src.Type()
 	dest.StringValue = src.String()
 	dest.IntValue = src.Int()
@@ -648,9 +642,9 @@ func AttrToOtlp(dest *otlp.AttributeKeyValue, src *AttributeValue) {
 	dest.BoolValue = src.Bool()
 }
 
-func SpansToOtlp(spans []*Span) []*otlp.Span {
-	ptrs := make([]*otlp.Span, len(spans))
-	content := make([]otlp.Span, len(spans))
+func SpansToOtlp(spans []*Span) []*experimental.Span {
+	ptrs := make([]*experimental.Span, len(spans))
+	content := make([]experimental.Span, len(spans))
 	for i, s := range spans {
 		ptrs[i] = &content[i]
 		SpanToOtlp(s, ptrs[i])
@@ -658,15 +652,15 @@ func SpansToOtlp(spans []*Span) []*otlp.Span {
 	return ptrs
 }
 
-func SpanToOtlp(src *Span, dest *otlp.Span) {
+func SpanToOtlp(src *Span, dest *experimental.Span) {
 	dest.TraceId = src.TraceId
 	dest.SpanId = src.SpanId
-	dest.Tracestate = src.Tracestate
+	dest.TraceState = src.Tracestate
 	dest.ParentSpanId = src.ParentSpanId
 	dest.Name = src.Name
 	dest.Kind = src.Kind
-	dest.StartTimeUnixnano = src.StartTimeUnixnano
-	dest.EndTimeUnixnano = src.EndTimeUnixnano
+	dest.StartTimeUnixNano = src.StartTimeUnixnano
+	dest.EndTimeUnixNano = src.EndTimeUnixnano
 	dest.Attributes = AttrsToOtlp(src.Attributes)
 	dest.DroppedAttributesCount = src.DroppedAttributesCount
 	dest.Events = EventsToOtlp(src.Events)
@@ -674,36 +668,35 @@ func SpanToOtlp(src *Span, dest *otlp.Span) {
 	dest.Links = LinksToOtlp(src.Links)
 	dest.DroppedLinksCount = src.DroppedLinksCount
 	dest.Status = src.Status
-	dest.LocalChildSpanCount = src.LocalChildSpanCount
 }
 
-func EventsToOtlp(events []*Span_Event) (r []*otlp.Span_Event) {
-	r = make([]*otlp.Span_Event, len(events))
+func EventsToOtlp(events []*Span_Event) (r []*experimental.Span_Event) {
+	r = make([]*experimental.Span_Event, len(events))
 	for i, e := range events {
 		r[i] = EventToOtlp(e)
 	}
 	return
 }
 
-func EventToOtlp(e *Span_Event) *otlp.Span_Event {
-	return &otlp.Span_Event{
-		TimeUnixnano:           e.TimeUnixnano,
-		Description:            e.Description,
+func EventToOtlp(e *Span_Event) *experimental.Span_Event {
+	return &experimental.Span_Event{
+		TimeUnixNano:           e.TimeUnixnano,
+		Name:                   e.Name,
 		Attributes:             AttrsToOtlp(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
 }
 
-func LinksToOtlp(links []*Span_Link) (r []*otlp.Span_Link) {
-	r = make([]*otlp.Span_Link, len(links))
+func LinksToOtlp(links []*Span_Link) (r []*experimental.Span_Link) {
+	r = make([]*experimental.Span_Link, len(links))
 	for i, e := range links {
 		r[i] = LinkToOtlp(e)
 	}
 	return
 }
 
-func LinkToOtlp(l *Span_Link) *otlp.Span_Link {
-	return &otlp.Span_Link{
+func LinkToOtlp(l *Span_Link) *experimental.Span_Link {
+	return &experimental.Span_Link{
 		TraceId:                l.TraceId,
 		SpanId:                 l.SpanId,
 		Attributes:             AttrsToOtlp(l.Attributes),

@@ -25,13 +25,7 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/common.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/metric_data.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/telemetry_data.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/exchange.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/grpc.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs_service.proto --go_out=plugins=grpc:encodings/otlp
-	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
+#	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
 
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/common.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=plugins=grpc:encodings/experimental
@@ -39,6 +33,7 @@ genprotobuf:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=plugins=grpc:encodings/experimental
 
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/common.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/metric_data.proto --go_out=plugins=grpc:encodings/baseline

@@ -3,17 +3,16 @@ package grpc_unary_async
 import (
 	"context"
 	"log"
-	"sync/atomic"
 
 	"google.golang.org/grpc"
 
+	otlp "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client otlp.UnaryExporterClient
+	client otlp.TraceServiceClient
 	nextId uint64
 	sem    chan bool
 }
@@ -26,7 +25,7 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = otlp.NewUnaryExporterClient(conn)
+	c.client = otlp.NewTraceServiceClient(conn)
 	c.sem = make(chan bool, CONCURRENCY)
 	return nil
 }
@@ -35,21 +34,11 @@ func (c *Client) Export(batch core.ExportRequest) {
 	c.sem <- true
 	go func() {
 		defer func() { <-c.sem }()
-		request := batch.(*otlp.TraceExportRequest)
-		id := atomic.AddUint64(&c.nextId, 1)
-		request.Id = id
-
-		response, err := c.client.ExportTraces(context.Background(), request)
+		request := batch.(*otlp.ExportTraceServiceRequest)
+		_, err := c.client.Export(context.Background(), request)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if response.Id != id {
-			log.Printf("ack id mismatch, expected ID=%d, received ID=%d", id, response.Id)
-		}
-		if request.Id != id {
-			log.Fatalf("Request is still processing but got overwritten (request.id=%d, orginal id=%d)", request.Id, id)
-		}
-		request.Id = 0
 	}()
 }
 

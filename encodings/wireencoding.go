@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type RequestHeader byte
@@ -28,8 +28,8 @@ const (
 // + Header Length Byte | Variable length Header (Protobuf-encoded) | Variable length Body (Protobuf-encoded) |
 // +--------------------+-------------------------------------------+-----------------------------------------+
 func Encode(
-	requestBody *otlp.RequestBody,
-	compression otlp.CompressionMethod,
+	requestBody *experimental.RequestBody,
+	compression experimental.CompressionMethod,
 ) []byte {
 	bodyBytes, err := proto.Marshal(requestBody)
 	if err != nil {
@@ -38,10 +38,10 @@ func Encode(
 
 	var header RequestHeader
 	switch compression {
-	case otlp.CompressionMethod_NONE:
+	case experimental.CompressionMethod_NONE:
 		header |= RequestHeader(RequestHeader_CompressionMethod_NONE)
 		break
-	case otlp.CompressionMethod_ZLIB:
+	case experimental.CompressionMethod_ZLIB:
 		header |= RequestHeader(RequestHeader_CompressionMethod_NONE)
 		var b bytes.Buffer
 		w := zlib.NewWriter(&b)
@@ -59,7 +59,7 @@ func Encode(
 
 // Decode a continuous message of bytes into a RequestBody. This function perform the
 // reverse of Encode operation.
-func Decode(messageBytes []byte) *otlp.RequestBody {
+func Decode(messageBytes []byte) *experimental.RequestBody {
 	header := RequestHeader(messageBytes[0])
 	bodyBytes := messageBytes[RequestHeaderSize:]
 
@@ -80,7 +80,7 @@ func Decode(messageBytes []byte) *otlp.RequestBody {
 		}
 	}
 
-	var body otlp.RequestBody
+	var body experimental.RequestBody
 	err := proto.Unmarshal(bodyBytes, &body)
 	if err != nil {
 		log.Fatal("cannot decode:", err)

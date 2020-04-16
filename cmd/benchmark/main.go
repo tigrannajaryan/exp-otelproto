@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	sapmenc "github.com/tigrannajaryan/exp-otelproto/encodings/sapm"
 
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/sapm"
@@ -89,11 +90,11 @@ func main() {
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE, 1)
+		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 1)
 	case "wsstreamasyncconc":
-		benchmarkWSStreamAsync(options, otlp.CompressionMethod_NONE, 10)
+		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 10)
 	case "wsstreamasynczlib":
-		benchmarkWSStreamAsync(options, otlp.CompressionMethod_ZLIB, 1)
+		benchmarkWSStreamAsync(options, experimental.CompressionMethod_ZLIB, 1)
 	case "http11":
 		benchmarkHttp11(options, 1)
 	case "http11conc":
@@ -153,7 +154,7 @@ func benchmarkGRPCStreamLBTimedSync(options core.Options, streamReopenPeriod tim
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{StreamReopenPeriod: streamReopenPeriod} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -163,7 +164,7 @@ func benchmarkGRPCStreamLBAlwaysSync(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream_lb.Client{ReopenAfterEveryRequest: true} },
 		func() core.Server { return &grpc_stream_lb.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -184,7 +185,7 @@ func benchmarkGRPCStreamLBAsync(
 			}
 		},
 		func() core.Server { return &grpc_stream_lb_async.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -199,7 +200,7 @@ func benchmarkGRPCStreamLBSrv(options core.Options, streamReopenPeriod time.Dura
 				StreamReopenRequestCount: rebalanceRequestLimit,
 			}
 		},
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -209,7 +210,7 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 		options,
 		func() core.Client { return &grpc_stream.Client{} },
 		func() core.Server { return &grpc_stream.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -219,18 +220,18 @@ func benchmarkWSStreamSync(options core.Options) {
 		options,
 		func() core.Client { return &ws_stream_sync.Client{} },
 		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMethod, concurrency int) {
+func benchmarkWSStreamAsync(options core.Options, compression experimental.CompressionMethod, concurrency int) {
 	var suffix string
 	switch compression {
-	case otlp.CompressionMethod_NONE:
+	case experimental.CompressionMethod_NONE:
 		suffix = ""
-	case otlp.CompressionMethod_ZLIB:
+	case experimental.CompressionMethod_ZLIB:
 		suffix = "/zlib"
-	case otlp.CompressionMethod_LZ4:
+	case experimental.CompressionMethod_LZ4:
 		suffix = "/lz4"
 	}
 
@@ -239,7 +240,7 @@ func benchmarkWSStreamAsync(options core.Options, compression otlp.CompressionMe
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 
@@ -249,7 +250,7 @@ func benchmarkHttp11(options core.Options, concurrency int) {
 		options,
 		func() core.Client { return &http11.Client{Concurrency: concurrency} },
 		func() core.Server { return &http11.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
+		func() core.SpanGenerator { return experimental.NewGenerator() },
 	)
 }
 

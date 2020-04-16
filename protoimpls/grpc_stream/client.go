@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client otlp.StreamExporterClient
-	stream otlp.StreamExporter_ExportTracesClient
+	client experimental.StreamExporterClient
+	stream experimental.StreamExporter_ExportTracesClient
 	nextId uint64
 }
 
@@ -24,7 +24,7 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = otlp.NewStreamExporterClient(conn)
+	c.client = experimental.NewStreamExporterClient(conn)
 
 	// Establish stream to server.
 	c.stream, err = c.client.ExportTraces(context.Background())
@@ -37,7 +37,7 @@ func (c *Client) Connect(server string) error {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	// Send the batch via stream.
-	request := batch.(*otlp.TraceExportRequest)
+	request := batch.(*experimental.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 	c.stream.Send(request)
 

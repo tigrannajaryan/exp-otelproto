@@ -8,11 +8,9 @@ import (
 	sapmclient "github.com/signalfx/sapm-proto/client"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 type Client struct {
-	Compression otlp.CompressionMethod
 	Concurrency int
 	client      *sapmclient.Client
 }

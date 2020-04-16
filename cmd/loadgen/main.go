@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -127,7 +128,7 @@ func main() {
 
 	case "wsstreamasync":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_NONE} },
+			func() core.Client { return &ws_stream_async.Client{Compression: experimental.CompressionMethod_NONE} },
 			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
@@ -135,7 +136,7 @@ func main() {
 
 	case "wsstreamasynczlib":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: otlp.CompressionMethod_ZLIB} },
+			func() core.Client { return &ws_stream_async.Client{Compression: experimental.CompressionMethod_ZLIB} },
 			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,

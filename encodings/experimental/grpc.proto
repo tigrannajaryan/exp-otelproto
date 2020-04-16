@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package otlp;
+package experimental;
 
 import "exchange.proto";
 
@@ -12,13 +12,13 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 
 // Unary exporter service definition.
 service UnaryExporter {
-  rpc ExportTraces(TraceExportRequest) returns (ExportResponse) {}
-  //rpc ExportMetrics(MetricExportRequest) returns (ExportResponse) {}
+    rpc ExportTraces(TraceExportRequest) returns (ExportResponse) {}
+    //rpc ExportMetrics(MetricExportRequest) returns (ExportResponse) {}
 }
 
 // Streaming exporter service definition.
 service StreamExporter {
-  rpc ExportTraces(stream TraceExportRequest) returns (stream ExportResponse) {}
-  //rpc ExportMetrics(stream MetricExportRequest) returns (stream ExportResponse) {}
+    rpc ExportTraces(stream TraceExportRequest) returns (stream ExportResponse) {}
+    //rpc ExportMetrics(stream MetricExportRequest) returns (stream ExportResponse) {}
 }
 

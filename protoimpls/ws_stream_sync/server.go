@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 type Server struct {
@@ -40,9 +40,9 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
-		response := &otlp.Response{
-			Body: &otlp.Response_Export{
-				&otlp.ExportResponse{Id: request.GetExport().Id},
+		response := &experimental.Response{
+			Body: &experimental.Response_Export{
+				&experimental.ExportResponse{Id: request.GetExport().Id},
 			},
 		}
 		responseBytes, err := proto.Marshal(response)

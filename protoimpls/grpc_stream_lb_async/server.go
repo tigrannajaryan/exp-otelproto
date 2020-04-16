@@ -1,7 +1,6 @@
 package grpc_stream_lb_async
 
 import (
-	"context"
 	"io"
 	"log"
 	"net"
@@ -9,18 +8,14 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type GrpcServer struct {
 	onReceive func(batch core.ExportRequest, spanCount int)
 }
 
-func (s *GrpcServer) Hello(context.Context, *otlp.HelloRequest) (*otlp.HelloResponse, error) {
-	return &otlp.HelloResponse{}, nil
-}
-
-func (s *GrpcServer) ExportTraces(stream otlp.StreamExporter_ExportTracesServer) error {
+func (s *GrpcServer) ExportTraces(stream experimental.StreamExporter_ExportTracesServer) error {
 	for {
 		// Wait for batch from client.
 		batch, err := stream.Recv()
@@ -39,7 +34,7 @@ func (s *GrpcServer) ExportTraces(stream otlp.StreamExporter_ExportTracesServer)
 		s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
 		// Send response to client.
-		stream.Send(&otlp.ExportResponse{Id: batch.Id})
+		stream.Send(&experimental.ExportResponse{Id: batch.Id})
 	}
 }
 
@@ -53,7 +48,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportReque
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	otlp.RegisterStreamExporterServer(srv.s, &GrpcServer{onReceive})
+	experimental.RegisterStreamExporterServer(srv.s, &GrpcServer{onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

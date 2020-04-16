@@ -12,15 +12,15 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 // Client can connect to a server and send a batch of spans.
 type Client struct {
-	client                   otlp.StreamExporterClient
+	client                   experimental.StreamExporterClient
 	clientStreams            []*clientStream
 	Concurrency              int
-	requestsCh               chan *otlp.TraceExportRequest
+	requestsCh               chan *experimental.TraceExportRequest
 	sentCh                   chan bool
 	nextStream               int
 	nextStreamMux            sync.Mutex
@@ -30,14 +30,14 @@ type Client struct {
 
 type clientStream struct {
 	client                      *Client
-	stream                      otlp.StreamExporter_ExportTracesClient
+	stream                      experimental.StreamExporter_ExportTracesClient
 	lastStreamOpen              time.Time
 	pendingAckMap               map[uint64]*list.Element
 	pendingAckMutex             sync.Mutex
 	pendingAckList              *list.List
 	nextId                      uint64
 	requestsSentSinceStreamOpen uint32
-	requestsCh                  chan *otlp.TraceExportRequest
+	requestsCh                  chan *experimental.TraceExportRequest
 	sentCh                      chan bool
 }
 
@@ -57,7 +57,7 @@ func newClientStream(client *Client) *clientStream {
 }
 
 type pendingRequest struct {
-	request  *otlp.TraceExportRequest
+	request  *experimental.TraceExportRequest
 	deadline time.Time
 }
 
@@ -67,12 +67,12 @@ func (c *Client) Connect(server string) error {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	c.client = otlp.NewStreamExporterClient(conn)
+	c.client = experimental.NewStreamExporterClient(conn)
 
 	if c.Concurrency < 1 {
 		c.Concurrency = 1
 	}
-	c.requestsCh = make(chan *otlp.TraceExportRequest, c.Concurrency)
+	c.requestsCh = make(chan *experimental.TraceExportRequest, c.Concurrency)
 	c.sentCh = make(chan bool, c.Concurrency)
 
 	for i := 0; i < c.Concurrency; i++ {
@@ -95,7 +95,7 @@ func (c *clientStream) openStream() error {
 	return nil
 }
 
-func (c *clientStream) readStream(stream otlp.StreamExporter_ExportTracesClient) {
+func (c *clientStream) readStream(stream experimental.StreamExporter_ExportTracesClient) {
 	for {
 		response, err := stream.Recv()
 		if err == io.EOF {
@@ -151,7 +151,7 @@ func (c *clientStream) processSendRequests() {
 }
 
 func (c *clientStream) sendRequest(
-	request *otlp.TraceExportRequest,
+	request *experimental.TraceExportRequest,
 ) {
 	// Send the batch via stream.
 	request.Id = atomic.AddUint64(&c.nextId, 1)
@@ -197,14 +197,14 @@ func (c *clientStream) sendRequest(
 
 func (c *Client) Export(batch core.ExportRequest) {
 	if c.Concurrency == 1 {
-		c.clientStreams[0].sendRequest(batch.(*otlp.TraceExportRequest))
+		c.clientStreams[0].sendRequest(batch.(*experimental.TraceExportRequest))
 		return
 	}
 
 	// Make sure we have only up to c.Concurrency Export calls in progress
 	// concurrently. It means no single stream has concurrent sendRequests
 	// in progress, so sendRequest does not need to be safe for concurrent call.
-	c.requestsCh <- batch.(*otlp.TraceExportRequest)
+	c.requestsCh <- batch.(*experimental.TraceExportRequest)
 
 	// Wait until it is sent
 	// <-c.sentCh
@@ -226,10 +226,10 @@ func (c *Client) Export(batch core.ExportRequest) {
 }
 
 func (c *clientStream) resendPending() {
-	var requests []*otlp.TraceExportRequest
+	var requests []*experimental.TraceExportRequest
 	c.pendingAckMutex.Lock()
 	for _, request := range c.pendingAckMap {
-		requests = append(requests, request.Value.(*otlp.TraceExportRequest))
+		requests = append(requests, request.Value.(*experimental.TraceExportRequest))
 	}
 	c.pendingAckMutex.Unlock()
 
