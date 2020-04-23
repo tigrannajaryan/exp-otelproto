@@ -17,7 +17,7 @@ type Client struct {
 	sem    chan bool
 }
 
-const CONCURRENCY = 20
+const CONCURRENCY = 10
 
 func (c *Client) Connect(server string) error {
 	// Set up a connection to the server.
