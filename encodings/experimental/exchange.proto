@@ -83,18 +83,21 @@ message RequestHeader {
   int32 compression_level = 2;
 }
 
+enum RequestType {
+    _ = 0;
+    TraceExport = 1;
+}
+
 // RequestBody is used by transports that unlike gRPC don't have built-in message type
 // multiplexing such as WebSocket.
 message RequestBody {
-  oneof body {
+    RequestType request_type = 1;
     TraceExportRequest export = 2;
-  }
 }
 
 // Response is used by transports that unlike gRPC don't have built-in message type
 // multiplexing such as WebSocket.
 message Response {
-    oneof body {
-        ExportResponse export = 2;
-    }
+    RequestType response_type = 1;
+    ExportResponse export = 2;
 }

@@ -30,12 +30,6 @@ message InstrumentationLibrarySpans {
   repeated Span spans = 2;
 }
 
-// A collection of spans from a Resource.
-message ResourceSpansPrepared {
-  bytes resource = 1;
-  repeated SpanPrepared spans = 2;
-}
-
 // Span represents a single operation within a trace. Spans can be
 // nested to form a trace tree. Spans may also be linked to other spans
 // from the same or different trace and form graphs. Often, a trace
@@ -250,6 +244,12 @@ message Status {
 
   // A developer-facing human readable error message.
   string message = 2;
+}
+
+// A collection of spans from a Resource.
+message ResourceSpansPrepared {
+  bytes resource = 1;
+  repeated SpanPrepared spans = 2;
 }
 
 message SpanPrepared {

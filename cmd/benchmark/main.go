@@ -100,7 +100,7 @@ func main() {
 	case "http11conc":
 		benchmarkHttp11(options, 10)
 	case "sapm":
-		benchmarkSAPM(options, 10)
+		benchmarkSAPM(options, 1)
 	default:
 		flag.Usage()
 	}
@@ -246,11 +246,11 @@ func benchmarkWSStreamAsync(options core.Options, compression experimental.Compr
 
 func benchmarkHttp11(options core.Options, concurrency int) {
 	benchmarkImpl(
-		"HTTP1.1/"+strconv.Itoa(concurrency),
+		"OTLP/HTTP1.1/"+strconv.Itoa(concurrency),
 		options,
 		func() core.Client { return &http11.Client{Concurrency: concurrency} },
 		func() core.Server { return &http11.Server{} },
-		func() core.SpanGenerator { return experimental.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -278,7 +278,7 @@ func benchmarkImpl(
 		options,
 	)
 
-	fmt.Printf("%-28s %7d spans, CPU time %5.1f sec, wall time %5.1f sec, %7.1f batches/cpusec, %8.1f batches/wallsec, %4.1f cpumicro/span\n",
+	fmt.Printf("%-28s %7d spans|%5.1f cpusec|%5.1f wallsec|%7.1f batches/cpusec|%8.1f batches/wallsec|%5.1f cpuμs/span\n",
 		name,
 		options.Batches*options.SpansPerBatch,
 		cpuSecs,

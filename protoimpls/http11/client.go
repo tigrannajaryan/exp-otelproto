@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sync/atomic"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
@@ -20,7 +20,7 @@ type Client struct {
 	Compression   experimental.CompressionMethod
 	clientStreams []*worker
 	Concurrency   int
-	requestsCh    chan *experimental.TraceExportRequest
+	requestsCh    chan *otlptracecol.ExportTraceServiceRequest
 	//semaphor   chan int
 	nextStream int64
 }
@@ -32,13 +32,13 @@ type worker struct {
 	//pendingAckMutex sync.Mutex
 	nextId      uint64
 	Compression experimental.CompressionMethod
-	requestsCh  chan *experimental.TraceExportRequest
+	requestsCh  chan *otlptracecol.ExportTraceServiceRequest
 	url         string
 }
 
 func (c *Client) Connect(server string) error {
 	//c.semaphor = make(chan int, c.Concurrency)
-	c.requestsCh = make(chan *experimental.TraceExportRequest, 10*c.Concurrency)
+	c.requestsCh = make(chan *otlptracecol.ExportTraceServiceRequest, 10*c.Concurrency)
 	c.clientStreams = make([]*worker, c.Concurrency)
 
 	for i := 0; i < c.Concurrency; i++ {
@@ -66,7 +66,7 @@ func newWorker(client *Client) *worker {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	if c.Concurrency == 1 {
-		c.clientStreams[0].sendRequest(batch.(*experimental.TraceExportRequest))
+		c.clientStreams[0].sendRequest(batch.(*otlptracecol.ExportTraceServiceRequest))
 		return
 	}
 
@@ -79,7 +79,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 	//c.clientStreams[si%int64(c.Concurrency)].requestsCh <- batch.(*experimental.TraceExportRequest)
 	//<-c.semaphor
 
-	c.requestsCh <- batch.(*experimental.TraceExportRequest)
+	c.requestsCh <- batch.(*otlptracecol.ExportTraceServiceRequest)
 }
 
 func (c *Client) Shutdown() {
@@ -101,20 +101,28 @@ func (c *worker) processSendRequests() {
 }
 
 func (c *worker) sendRequest(batch core.ExportRequest) {
-	request := batch.(*experimental.TraceExportRequest)
-	if request.Id != 0 {
-		log.Fatal("Request is still processing but got overwritten")
+	request := batch.(*otlptracecol.ExportTraceServiceRequest)
+	//if request.Id != 0 {
+	//	log.Fatal("Request is still processing but got overwritten")
+	//}
+
+	//Id := atomic.AddUint64(&c.nextId, 1)
+	//request.Id = Id
+
+	//body := &experimental.RequestBody{
+	//	RequestType: experimental.RequestType_TraceExport,
+	//	Export:      request,
+	//}
+	//b := encodings.Encode(body, c.Compression)
+	//request.Id = 0
+
+	b, err := proto.Marshal(request)
+	if err != nil {
+		log.Fatal("write:", err)
 	}
 
-	Id := atomic.AddUint64(&c.nextId, 1)
-	request.Id = Id
-
-	body := &experimental.RequestBody{Body: &experimental.RequestBody_Export{request}}
-	b := encodings.Encode(body, c.Compression)
-	request.Id = 0
-
 	buf := bytes.NewBuffer(b)
-	resp, err := http.Post(c.url, "application/x-prtobuf", buf)
+	resp, err := http.Post(c.url, "application/x-protobuf", buf)
 	if err != nil {
 		log.Fatal("write:", err)
 	}
@@ -124,10 +132,10 @@ func (c *worker) sendRequest(batch core.ExportRequest) {
 		log.Fatal("write:", err)
 	}
 
-	var response experimental.Response
+	var response otlptracecol.ExportTraceServiceResponse
 	err = proto.Unmarshal(b, &response)
 	if err != nil {
-		log.Fatal("cannnot decode:", err)
+		log.Fatal("cannot decode:", err)
 	}
 }
 

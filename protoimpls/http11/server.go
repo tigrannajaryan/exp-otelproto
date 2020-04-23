@@ -6,10 +6,9 @@ import (
 	"net/http"
 
 	"github.com/golang/protobuf/proto"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type Server struct {
@@ -23,20 +22,21 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 		log.Fatal("read:", err)
 	}
 
-	request := encodings.Decode(bytes)
-
-	Id := request.GetExport().Id
-	if Id == 0 {
-		log.Fatal("Received 0 Id")
+	//request := encodings.Decode(bytes)
+	var request otlptracecol.ExportTraceServiceRequest
+	err = proto.Unmarshal(bytes, &request)
+	if err != nil {
+		log.Fatal("Unmarshal:", err)
 	}
 
-	onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+	//Id := request.GetExport().Id
+	//if Id == 0 {
+	//	log.Fatal("Received 0 Id")
+	//}
 
-	response := &experimental.Response{
-		Body: &experimental.Response_Export{
-			Export: &experimental.ExportResponse{Id: Id},
-		},
-	}
+	onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+
+	response := &otlptracecol.ExportTraceServiceResponse{}
 	responseBytes, err := proto.Marshal(response)
 	if err != nil {
 		log.Fatal("cannot encode:", err)

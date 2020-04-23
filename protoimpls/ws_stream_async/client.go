@@ -152,7 +152,10 @@ func (c *clientStream) sendRequest(batch core.ExportRequest) {
 	Id := atomic.AddUint64(&c.nextId, 1)
 	request.Id = Id
 
-	body := &experimental.RequestBody{Body: &experimental.RequestBody_Export{request}}
+	body := &experimental.RequestBody{
+		RequestType: experimental.RequestType_TraceExport,
+		Export:      request,
+	}
 	bytes := encodings.Encode(body, c.Compression)
 	request.Id = 0
 

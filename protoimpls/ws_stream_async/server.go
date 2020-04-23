@@ -48,9 +48,8 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 		onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
 		response := &experimental.Response{
-			Body: &experimental.Response_Export{
-				Export: &experimental.ExportResponse{Id: Id},
-			},
+			ResponseType: experimental.RequestType_TraceExport,
+			Export:       &experimental.ExportResponse{Id: Id},
 		}
 		responseBytes, err := proto.Marshal(response)
 		if err != nil {

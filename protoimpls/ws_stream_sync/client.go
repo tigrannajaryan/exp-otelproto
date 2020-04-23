@@ -38,7 +38,10 @@ func (c *Client) Export(batch core.ExportRequest) {
 	request := batch.(*experimental.TraceExportRequest)
 	request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	body := &experimental.RequestBody{Body: &experimental.RequestBody_Export{request}}
+	body := &experimental.RequestBody{
+		RequestType: experimental.RequestType_TraceExport,
+		Export:      request,
+	}
 	bytes := encodings.Encode(body, c.Compression)
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
