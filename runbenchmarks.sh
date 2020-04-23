@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=5
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
-echo "OTLP/Sequential             - OTLP, sequential. One request per batch, load balancer friendly, with ack"
-echo "OTLP/Concurrent             - OTLP, 20 concurrent requests, load balancer friendly, with ack"
-echo "GRPC/Stream/LBTimed/Sync    - GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
-echo "GRPC/Stream/LBTimed/Async/N - GRPC, streaming. N streams, load balancer friendly, close stream every 30 sec, with async ack"
+echo "OTLP/Sequential             - OTLP, Unary, sequential. One request per batch, load balancer friendly, with ack"
+echo "OTLP/Concurrent             - OTLP, Unary, 10 concurrent requests, load balancer friendly, with ack"
+echo "GRPC/Stream/LBTimed/Sync    - OTLP ProtoBuf,GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
+echo "GRPC/Stream/LBTimed/Async/N - OTLP ProtoBuf,GRPC, streaming. N streams, load balancer friendly, close stream every 30 sec, with async ack"
 echo "GRPC/OpenCensus             - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
-echo "GRPC/Stream/NoLB            - GRPC, streaming, not load balancer friendly, with ack"
-echo "GRPC/Stream/LBAlways/Sync   - GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
-echo "GRPC/Stream/LBSrv/Async     - GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
-echo "WebSocket/Stream/Sync       - WebSocket, streaming, unknown load balancer friendliness, with sync ack"
-echo "WebSocket/Stream/Async/N    - WebSocket, N streams, unknown load balancer friendliness, with async ack"
-echo "WebSocket/Stream/Async/zlib - WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
-echo "OTLP/HTTP1.1/N              - HTTP 1.1, N concurrent requests. Load balacner friendly."
+echo "GRPC/Stream/NoLB            - OTLP ProtoBuf, GRPC, streaming, not load balancer friendly, with ack"
+echo "GRPC/Stream/LBAlways/Sync   - OTLP ProtoBuf,GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
+echo "GRPC/Stream/LBSrv/Async     - OTLP ProtoBuf,GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
+echo "WebSocket/Stream/Sync       - OTLP ProtoBuf,WebSocket, streaming, unknown load balancer friendliness, with sync ack"
+echo "WebSocket/Stream/Async/N    - OTLP ProtoBuf,WebSocket, N streams, unknown load balancer friendliness, with async ack"
+echo "WebSocket/Stream/Async/zlib - OTLP ProtoBuf,WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
+echo "OTLP/HTTP1.1/N              - OTLP ProtoBuf,HTTP 1.1, N concurrent requests. Load balacner friendly."
 echo "SAPM/N                      - SAPM, N concurrent requests. Load balacner friendly."
 echo
 
@@ -27,16 +27,16 @@ benchmark() {
 
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
-    benchmark sapm
+    #benchmark sapm
     benchmark http11
-    #benchmark http11conc
+    benchmark http11conc
     #benchmark wsstreamsync
     #benchmark wsstreamasync
     #benchmark wsstreamasyncconc
     #benchmark wsstreamasynczlib
     benchmark unary
-    #benchmark unaryasync
-    #benchmark streamlbasync
+    benchmark unaryasync
+    benchmark streamlbasync
     #benchmark streamlbconc
     benchmark opencensus
     #benchmark ocack
