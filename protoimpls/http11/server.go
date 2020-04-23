@@ -1,6 +1,7 @@
 package http11
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -49,11 +50,25 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 }
 
 func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest, spanCount int)) error {
-	http.HandleFunc(
+	//http.HandleFunc(
+	//	"/telemetry",
+	//	func(w http.ResponseWriter, r *http.Request) { telemetryReceiver(w, r, onReceive) },
+	//)
+
+	m := http.NewServeMux()
+	m.HandleFunc(
 		"/telemetry",
 		func(w http.ResponseWriter, r *http.Request) { telemetryReceiver(w, r, onReceive) },
 	)
-	log.Fatal(http.ListenAndServe(endpoint, nil))
+
+	s := &http.Server{
+		Handler:      m,
+		Addr:         endpoint,
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
+	}
+
+	log.Fatal(s.ListenAndServe())
+	// log.Fatal(http.ListenAndServe(endpoint, nil))
 	return nil
 }
 

@@ -34,6 +34,7 @@ type worker struct {
 	Compression experimental.CompressionMethod
 	requestsCh  chan *otlptracecol.ExportTraceServiceRequest
 	url         string
+	httpClient  *http.Client
 }
 
 func (c *Client) Connect(server string) error {
@@ -60,6 +61,17 @@ func newWorker(client *Client) *worker {
 	//c.sentCh = client.sentCh
 	// c.pendingAckList = list.New()
 	// go c.processTimeouts()
+
+	defaultRoundTripper := http.DefaultTransport
+	defaultTransportPointer, ok := defaultRoundTripper.(*http.Transport)
+	if !ok {
+		panic("defaultRoundTripper not an *http.Transport")
+	}
+	defaultTransport := *defaultTransportPointer // dereference it to get a copy of the struct that the pointer points to
+	defaultTransport.MaxIdleConns = 100
+	defaultTransport.MaxIdleConnsPerHost = 100
+
+	c.httpClient = &http.Client{Transport: &defaultTransport}
 	go c.processSendRequests()
 	return &c
 }
@@ -122,7 +134,7 @@ func (c *worker) sendRequest(batch core.ExportRequest) {
 	}
 
 	buf := bytes.NewBuffer(b)
-	resp, err := http.Post(c.url, "application/x-protobuf", buf)
+	resp, err := c.httpClient.Post(c.url, "application/x-protobuf", buf)
 	if err != nil {
 		log.Fatal("write:", err)
 	}
@@ -131,6 +143,8 @@ func (c *worker) sendRequest(batch core.ExportRequest) {
 	if err != nil {
 		log.Fatal("write:", err)
 	}
+
+	resp.Body.Close()
 
 	var response otlptracecol.ExportTraceServiceResponse
 	err = proto.Unmarshal(b, &response)
