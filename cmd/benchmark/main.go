@@ -130,7 +130,7 @@ func benchmarkGRPCOpenCensusWithAck(options core.Options) {
 
 func benchmarkGRPCUnary(options core.Options) {
 	benchmarkImpl(
-		"GRPC/OTLP/Sequential",
+		"OTLP/GRPC-Unary/Sequential",
 		options,
 		func() core.Client { return &grpc_unary.Client{} },
 		func() core.Server { return &grpc_unary.Server{} },
@@ -140,7 +140,7 @@ func benchmarkGRPCUnary(options core.Options) {
 
 func benchmarkGRPCUnaryAsync(options core.Options) {
 	benchmarkImpl(
-		"GRPC/OTLP/Concurrent",
+		"OTLP/GRPC-Unary/Concurrent",
 		options,
 		func() core.Client { return &grpc_unary_async.Client{} },
 		func() core.Server { return &grpc_unary_async.Server{} },

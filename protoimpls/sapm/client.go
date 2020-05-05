@@ -19,6 +19,7 @@ func (c *Client) Connect(server string) error {
 	var err error
 	opts := []sapmclient.Option{
 		sapmclient.WithEndpoint("http://" + server + "/v2/trace"),
+		sapmclient.WithDisabledCompression(),
 	}
 	if c.Concurrency > 0 {
 		opts = append(opts, sapmclient.WithMaxConnections(uint(c.Concurrency)))
@@ -33,7 +34,7 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	if err := c.client.Export(context.Background(), batch.(*jaegerpb.Batch)); err != nil {
+	if err := c.client.Export(context.Background(), []*jaegerpb.Batch{batch.(*jaegerpb.Batch)}); err != nil {
 		log.Fatal(err)
 	}
 }
