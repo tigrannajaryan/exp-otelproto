@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
@@ -19,7 +19,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-const spansPerBatch = 1000
+const spansPerBatch = 1
 const metricsPerBatch = spansPerBatch
 const logsPerBatch = spansPerBatch
 
@@ -31,9 +31,13 @@ var tests = []struct {
 	name string
 	gen  func() core.Generator
 }{
+	//{
+	//	name: "OpenCensus",
+	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	//},
 	{
-		name: "OpenCensus",
-		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+		name: "Baseline",
+		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	{
 		name: "Experimental",
@@ -43,10 +47,6 @@ var tests = []struct {
 		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
-	//{
-	//	name: "Baseline",
-	//	gen:  func() core.Generator { return baseline.NewGenerator() },
-	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -65,12 +65,12 @@ var batchTypes = []struct {
 	{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	{name: "Trace/Events", batchGen: generateTimedEventBatches},
-	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
-	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
-	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
-	{name: "Metric/Mix", batchGen: generateMetricOneBatches},
-	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
+	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
+	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
+	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
+	//{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
+	//{name: "Metric/Mix", batchGen: generateMetricOneBatches},
+	//{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1

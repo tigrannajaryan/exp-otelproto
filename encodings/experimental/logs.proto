@@ -28,6 +28,12 @@ message ResourceLogs {
     // If this field is not set then no resource info is known.
     Resource resource = 1;
 
+    repeated Logs logs = 2;
+}
+
+message Logs {
+    repeated AttributeKeyValue common_attributes = 1;
+
     // A list of Logs that originate from a resource.
     repeated Log logs = 2;
 }

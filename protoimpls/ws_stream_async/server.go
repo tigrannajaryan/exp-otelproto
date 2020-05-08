@@ -45,7 +45,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 		}
 		lastId = Id
 
-		onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		onReceive(request, len(request.GetExport().ResourceSpans[0].Spans[0].Spans))
 
 		response := &experimental.Response{
 			ResponseType: experimental.RequestType_TraceExport,

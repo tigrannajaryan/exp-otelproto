@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=5
+MULTIPLIER=10
 
 echo ====================================================================================
 echo Legend:
@@ -29,13 +29,13 @@ benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
     #benchmark sapm
     benchmark http11
-    #benchmark http11conc
+    benchmark http11conc
     #benchmark wsstreamsync
     #benchmark wsstreamasync
     #benchmark wsstreamasyncconc
     #benchmark wsstreamasynczlib
     benchmark unary
-    #benchmark unaryasync
+    benchmark unaryasync
     #benchmark streamlbasync
     #benchmark streamlbconc
     #benchmark opencensus

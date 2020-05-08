@@ -52,7 +52,9 @@ func GenResource() *otlpresource.Resource {
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	il := &otlptrace.InstrumentationLibrarySpans{}
+	il := &otlptrace.InstrumentationLibrarySpans{
+		InstrumentationLibrary: &otlpcommon.InstrumentationLibrary{Name: "io.opentelemetry"},
+	}
 	batch := &otlptracecol.ExportTraceServiceRequest{
 		ResourceSpans: []*otlptrace.ResourceSpans{
 			{

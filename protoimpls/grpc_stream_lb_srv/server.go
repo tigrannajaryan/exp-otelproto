@@ -42,7 +42,7 @@ func (s *GrpcServer) ExportTraces(stream experimental.StreamExporter_ExportTrace
 		}
 
 		// Process received batch.
-		s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		s.onReceive(batch, len(batch.ResourceSpans[0].Spans[0].Spans))
 
 		// Send response to client.
 		stream.Send(&experimental.ExportResponse{Id: batch.Id})

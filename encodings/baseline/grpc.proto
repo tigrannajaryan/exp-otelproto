@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package baseline;
+
+import "exchange.proto";
+
+option java_multiple_files = true;
+option java_package = "io.opencensus.proto.trace.v1";
+option java_outer_classname = "TraceProto";
+
+option ruby_package = "OpenCensus.Proto.Trace.V1";
+
+// Unary exporter service definition.
+service UnaryExporter {
+    rpc ExportTraces(TraceExportRequest) returns (ExportResponse) {}
+    //rpc ExportMetrics(MetricExportRequest) returns (ExportResponse) {}
+}
+
+// Streaming exporter service definition.
+service StreamExporter {
+    rpc ExportTraces(stream TraceExportRequest) returns (stream ExportResponse) {}
+    //rpc ExportMetrics(stream MetricExportRequest) returns (stream ExportResponse) {}
+}
+
