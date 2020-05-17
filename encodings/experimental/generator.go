@@ -47,20 +47,14 @@ func GenResource() *Resource {
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	il := &Spans{
-		CommonAttributes: []*AttributeKeyValue{
-			{
-				Type:        AttributeKeyValue_STRING,
-				Key:         "instrumentation.library.name",
-				StringValue: "io.opentelemetry",
-			},
-		},
+	il := &InstrumentationLibrarySpans{
+		InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
 	}
 	batch := &TraceExportRequest{
 		ResourceSpans: []*ResourceSpans{
 			{
-				Resource: GenResource(),
-				Spans:    []*Spans{il},
+				Resource:                    GenResource(),
+				InstrumentationLibrarySpans: []*InstrumentationLibrarySpans{il},
 			},
 		},
 	}
@@ -118,24 +112,9 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	batch := &ExportLogsServiceRequest{
-		ResourceLogs: []*ResourceLogs{{
-			Resource: GenResource(),
-			Logs: []*Logs{
-				{
-					CommonAttributes: []*AttributeKeyValue{
-						{
-							Type:        AttributeKeyValue_STRING,
-							Key:         "instrumentation.library.name",
-							StringValue: "io.opentelemetry",
-						},
-					},
-				},
-			},
-		}},
-	}
-
+	batch := &ExportLogsServiceRequest{ResourceLogs: []*ResourceLogs{{Resource: GenResource()}}}
 	logs := []*Log{}
+
 	for i := 0; i < logsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
@@ -178,7 +157,12 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 		logs = append(logs, log)
 	}
 
-	batch.ResourceLogs[0].Logs[0].Logs = logs
+	batch.ResourceLogs[0].InstrumentationLibraryLogs = []*InstrumentationLibraryLogs{
+		{
+			InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
+			Logs:                   logs,
+		},
+	}
 
 	return batch
 }

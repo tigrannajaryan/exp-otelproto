@@ -13,8 +13,6 @@ import (
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
@@ -43,10 +41,10 @@ var tests = []struct {
 		name: "Experimental",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	{
-		name: "OTLP",
-		gen:  func() core.Generator { return otlp.NewGenerator() },
-	},
+	//{
+	//	name: "OTLP",
+	//	gen:  func() core.Generator { return otlp.NewGenerator() },
+	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -62,9 +60,9 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	{name: "Logs", batchGen: generateLogBatches},
+	//{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
-	{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
 	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
 	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
