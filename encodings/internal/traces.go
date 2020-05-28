@@ -35,14 +35,14 @@ type Resource struct {
 
 type AttributeValue struct {
 	// type of the value.
-	typ         experimental.AttributeKeyValue_ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.AttributeKeyValue_ValueType" json:"type,omitempty"`
-	stringValue string                                   `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
-	intValue    int64                                    `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
-	doubleValue float64                                  `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
+	typ         experimental.ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.ValueType" json:"type,omitempty"`
+	stringValue string                 `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
+	intValue    int64                  `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
+	doubleValue float64                `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
 	boolValue   bool
 }
 
-func (a *AttributeValue) Type() experimental.AttributeKeyValue_ValueType {
+func (a *AttributeValue) Type() experimental.ValueType {
 	return a.typ
 }
 
@@ -50,7 +50,7 @@ func (a *AttributeValue) String() string {
 	return a.stringValue
 }
 
-func (a *AttributeValue) Set(t experimental.AttributeKeyValue_ValueType, s string, i int64, d float64, b bool) {
+func (a *AttributeValue) Set(t experimental.ValueType, s string, i int64, d float64, b bool) {
 	a.typ = t
 	a.stringValue = s
 	a.intValue = i
@@ -313,13 +313,13 @@ func MarshalAttributeKeyValue(buf *proto.Buffer, key string, val unsafe.Pointer)
 	encodeVarint(buf, 2, uint64(v.Type()))
 
 	switch v.Type() {
-	case experimental.AttributeKeyValue_STRING:
+	case experimental.ValueType_STRING:
 		encodeString(buf, 3, v.String())
-	case experimental.AttributeKeyValue_INT:
+	case experimental.ValueType_INT:
 		encodeVarint(buf, 4, uint64(v.Int()))
-	case experimental.AttributeKeyValue_DOUBLE:
+	case experimental.ValueType_DOUBLE:
 		encodeFixed64(buf, 5, math.Float64bits(v.Double()))
-	case experimental.AttributeKeyValue_BOOL:
+	case experimental.ValueType_BOOL:
 		if v.Bool() {
 			encodeVarint(buf, 6, 1)
 		}

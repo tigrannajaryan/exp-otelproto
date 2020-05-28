@@ -32,7 +32,7 @@ type AttributeValue struct {
 	orig *experimental.AttributeKeyValue
 }
 
-func (a AttributeValue) Type() experimental.AttributeKeyValue_ValueType {
+func (a AttributeValue) Type() experimental.ValueType {
 	return a.orig.Type
 }
 

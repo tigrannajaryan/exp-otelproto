@@ -8,16 +8,19 @@ import (
 	"log"
 	"runtime"
 	"testing"
+	"unsafe"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
+
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-const spansPerBatch = 1
+const spansPerBatch = 1000
 const metricsPerBatch = spansPerBatch
 const logsPerBatch = spansPerBatch
 
@@ -34,17 +37,17 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	//},
 	{
-		name: "Baseline",
+		name: "OTLP(Current)",
+		gen:  func() core.Generator { return otlp.NewGenerator() },
+	},
+	{
+		name: "Proposed",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	{
-		name: "Experimental",
+		name: "Alternate",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
 	},
-	//{
-	//	name: "OTLP",
-	//	gen:  func() core.Generator { return otlp.NewGenerator() },
-	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -60,7 +63,7 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	//{name: "Logs", batchGen: generateLogBatches},
+	{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
@@ -510,5 +513,65 @@ func BenchmarkEndianness(b *testing.B) {
 				test.order.PutUint64(spanID[:], uint64(i))
 			}
 		})
+	}
+}
+
+func TestSizes(t *testing.T) {
+	akv := experimental.AttributeKeyValue{}
+	log.Printf("AKV=%d", unsafe.Sizeof(akv))
+	log.Printf("AKV.Key=%d", unsafe.Sizeof(akv.Key))
+
+	av := experimental.AttributeKeyValue{}
+	log.Printf("AV=%d", unsafe.Sizeof(av))
+
+	av = experimental.AttributeKeyValue{
+		Type: experimental.ValueType_MAP,
+		//ListOrMap: &experimental.ValueListOrMap{
+		//	Map: []*experimental.AttributeKeyValue{
+		//		{
+		//			Key:         "strkey",
+		//			Type:        experimental.ValueType_STRING,
+		//			StringValue: "strval",
+		//		},
+		//		{
+		//			Key:  "mapkey",
+		//			Type: experimental.ValueType_LIST,
+		//			ListOrMap: &experimental.ValueListOrMap{
+		//				List: []*experimental.AnyValue{},
+		//			},
+		//		},
+		//	},
+		//},
+	}
+
+	log.Printf("Span=%d", unsafe.Sizeof(experimental.Span{}))
+	log.Printf("LogRecord=%d", unsafe.Sizeof(experimental.LogRecord{}))
+}
+
+func createAKV() *experimental.AttributeKeyValue {
+	for i := 0; i < 1; i++ {
+		return &experimental.AttributeKeyValue{}
+	}
+	return nil
+}
+
+func createAV() *experimental.AttributeKeyValue {
+	for i := 0; i < 1; i++ {
+		return &experimental.AttributeKeyValue{}
+	}
+	return nil
+}
+
+func BenchmarkAttributeKeyValueSize(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := createAKV()
+		s.Type = 0
+	}
+}
+
+func BenchmarkAttributeValueSize(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := createAV()
+		s.Type = 0
 	}
 }

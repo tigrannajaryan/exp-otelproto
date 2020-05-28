@@ -20,16 +20,134 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type SeverityNumber int32
+
+const (
+	SeverityNumber_UNDEFINED_SEVERITY_NUMBER SeverityNumber = 0
+	SeverityNumber_TRACE                     SeverityNumber = 1
+	SeverityNumber_TRACE2                    SeverityNumber = 2
+	SeverityNumber_TRACE3                    SeverityNumber = 3
+	SeverityNumber_TRACE4                    SeverityNumber = 4
+	SeverityNumber_DEBUG                     SeverityNumber = 5
+	SeverityNumber_DEBUG2                    SeverityNumber = 6
+	SeverityNumber_DEBUG3                    SeverityNumber = 7
+	SeverityNumber_DEBUG4                    SeverityNumber = 8
+	SeverityNumber_INFO                      SeverityNumber = 9
+	SeverityNumber_INFO2                     SeverityNumber = 10
+	SeverityNumber_INFO3                     SeverityNumber = 11
+	SeverityNumber_INFO4                     SeverityNumber = 12
+	SeverityNumber_WARN                      SeverityNumber = 13
+	SeverityNumber_WARN2                     SeverityNumber = 14
+	SeverityNumber_WARN3                     SeverityNumber = 15
+	SeverityNumber_WARN4                     SeverityNumber = 16
+	SeverityNumber_ERROR                     SeverityNumber = 17
+	SeverityNumber_ERROR2                    SeverityNumber = 18
+	SeverityNumber_ERROR3                    SeverityNumber = 19
+	SeverityNumber_ERROR4                    SeverityNumber = 20
+	SeverityNumber_FATAL                     SeverityNumber = 21
+	SeverityNumber_FATAL2                    SeverityNumber = 22
+	SeverityNumber_FATAL3                    SeverityNumber = 23
+	SeverityNumber_FATAL4                    SeverityNumber = 24
+)
+
+var SeverityNumber_name = map[int32]string{
+	0:  "UNDEFINED_SEVERITY_NUMBER",
+	1:  "TRACE",
+	2:  "TRACE2",
+	3:  "TRACE3",
+	4:  "TRACE4",
+	5:  "DEBUG",
+	6:  "DEBUG2",
+	7:  "DEBUG3",
+	8:  "DEBUG4",
+	9:  "INFO",
+	10: "INFO2",
+	11: "INFO3",
+	12: "INFO4",
+	13: "WARN",
+	14: "WARN2",
+	15: "WARN3",
+	16: "WARN4",
+	17: "ERROR",
+	18: "ERROR2",
+	19: "ERROR3",
+	20: "ERROR4",
+	21: "FATAL",
+	22: "FATAL2",
+	23: "FATAL3",
+	24: "FATAL4",
+}
+
+var SeverityNumber_value = map[string]int32{
+	"UNDEFINED_SEVERITY_NUMBER": 0,
+	"TRACE":                     1,
+	"TRACE2":                    2,
+	"TRACE3":                    3,
+	"TRACE4":                    4,
+	"DEBUG":                     5,
+	"DEBUG2":                    6,
+	"DEBUG3":                    7,
+	"DEBUG4":                    8,
+	"INFO":                      9,
+	"INFO2":                     10,
+	"INFO3":                     11,
+	"INFO4":                     12,
+	"WARN":                      13,
+	"WARN2":                     14,
+	"WARN3":                     15,
+	"WARN4":                     16,
+	"ERROR":                     17,
+	"ERROR2":                    18,
+	"ERROR3":                    19,
+	"ERROR4":                    20,
+	"FATAL":                     21,
+	"FATAL2":                    22,
+	"FATAL3":                    23,
+	"FATAL4":                    24,
+}
+
+func (x SeverityNumber) String() string {
+	return proto.EnumName(SeverityNumber_name, int32(x))
+}
+
+func (SeverityNumber) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_782e6d65c19305b4, []int{0}
+}
+
+type LogRecordFlags int32
+
+const (
+	LogRecordFlags_UNDEFINED_LOG_RECORD_FLAG LogRecordFlags = 0
+	LogRecordFlags_TRACE_FLAGS_MASK          LogRecordFlags = 255
+)
+
+var LogRecordFlags_name = map[int32]string{
+	0:   "UNDEFINED_LOG_RECORD_FLAG",
+	255: "TRACE_FLAGS_MASK",
+}
+
+var LogRecordFlags_value = map[string]int32{
+	"UNDEFINED_LOG_RECORD_FLAG": 0,
+	"TRACE_FLAGS_MASK":          255,
+}
+
+func (x LogRecordFlags) String() string {
+	return proto.EnumName(LogRecordFlags_name, int32(x))
+}
+
+func (LogRecordFlags) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_782e6d65c19305b4, []int{1}
+}
+
 // A collection of logs from a Resource.
 type ResourceLogs struct {
 	// The resource for the spans in this message.
 	// If this field is not set then no resource info is known.
-	Resource *Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
-	// A list of InstrumentationLibrarySpans that originate from a resource.
-	InstrumentationLibraryLogs []*InstrumentationLibraryLogs `protobuf:"bytes,2,rep,name=instrumentation_library_logs,json=instrumentationLibraryLogs,proto3" json:"instrumentation_library_logs,omitempty"`
-	XXX_NoUnkeyedLiteral       struct{}                      `json:"-"`
-	XXX_unrecognized           []byte                        `json:"-"`
-	XXX_sizecache              int32                         `json:"-"`
+	Resource             *Resource    `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	Logs                 []*LogRecord `protobuf:"bytes,2,rep,name=logs,proto3" json:"logs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
 func (m *ResourceLogs) Reset()         { *m = ResourceLogs{} }
@@ -64,146 +182,145 @@ func (m *ResourceLogs) GetResource() *Resource {
 	return nil
 }
 
-func (m *ResourceLogs) GetInstrumentationLibraryLogs() []*InstrumentationLibraryLogs {
-	if m != nil {
-		return m.InstrumentationLibraryLogs
-	}
-	return nil
-}
-
-// A collection of Spans produced by an InstrumentationLibrary.
-type InstrumentationLibraryLogs struct {
-	// The instrumentation library information for the spans in this message.
-	// If this field is not set then no library info is known.
-	InstrumentationLibrary *InstrumentationLibrary `protobuf:"bytes,1,opt,name=instrumentation_library,json=instrumentationLibrary,proto3" json:"instrumentation_library,omitempty"`
-	// A list of Logs that originate from a resource.
-	Logs                 []*Log   `protobuf:"bytes,2,rep,name=logs,proto3" json:"logs,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *InstrumentationLibraryLogs) Reset()         { *m = InstrumentationLibraryLogs{} }
-func (m *InstrumentationLibraryLogs) String() string { return proto.CompactTextString(m) }
-func (*InstrumentationLibraryLogs) ProtoMessage()    {}
-func (*InstrumentationLibraryLogs) Descriptor() ([]byte, []int) {
-	return fileDescriptor_782e6d65c19305b4, []int{1}
-}
-
-func (m *InstrumentationLibraryLogs) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_InstrumentationLibraryLogs.Unmarshal(m, b)
-}
-func (m *InstrumentationLibraryLogs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_InstrumentationLibraryLogs.Marshal(b, m, deterministic)
-}
-func (m *InstrumentationLibraryLogs) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InstrumentationLibraryLogs.Merge(m, src)
-}
-func (m *InstrumentationLibraryLogs) XXX_Size() int {
-	return xxx_messageInfo_InstrumentationLibraryLogs.Size(m)
-}
-func (m *InstrumentationLibraryLogs) XXX_DiscardUnknown() {
-	xxx_messageInfo_InstrumentationLibraryLogs.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_InstrumentationLibraryLogs proto.InternalMessageInfo
-
-func (m *InstrumentationLibraryLogs) GetInstrumentationLibrary() *InstrumentationLibrary {
-	if m != nil {
-		return m.InstrumentationLibrary
-	}
-	return nil
-}
-
-func (m *InstrumentationLibraryLogs) GetLogs() []*Log {
+func (m *ResourceLogs) GetLogs() []*LogRecord {
 	if m != nil {
 		return m.Logs
 	}
 	return nil
 }
 
-type Log struct {
+type LogRecord struct {
+	// time_unix_nano is the time when the event occurred.
+	// Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
+	// Value of 0 indicates unknown or missing timestamp.
 	TimeUnixnano uint64 `protobuf:"fixed64,1,opt,name=time_unixnano,json=timeUnixnano,proto3" json:"time_unixnano,omitempty"`
-	TraceId      []byte `protobuf:"bytes,2,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	SpanId       []byte `protobuf:"bytes,3,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
-	//string event_type = 4;
-	Body                   *AttributeValue      `protobuf:"bytes,5,opt,name=body,proto3" json:"body,omitempty"`
-	Flags                  uint64               `protobuf:"varint,6,opt,name=flags,proto3" json:"flags,omitempty"`
-	Attributes             []*AttributeKeyValue `protobuf:"bytes,7,rep,name=attributes,proto3" json:"attributes,omitempty"`
-	DroppedAttributesCount uint32               `protobuf:"varint,8,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
+	// A unique identifier for a trace. All logs from the same trace share
+	// the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes
+	// is considered invalid. Can be set for logs that are part of request processing
+	// and have an assigned trace id. Optional.
+	TraceId []byte `protobuf:"bytes,2,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
+	// A unique identifier for a span within a trace, assigned when the span
+	// is created. The ID is an 8-byte array. An ID with all zeroes is considered
+	// invalid. Can be set for logs that are part of a particular processing span.
+	// If span_id is present trace_id SHOULD be also present. Optional.
+	SpanId []byte `protobuf:"bytes,3,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
+	// Optional flags, a bit field. 8 least significant bits are the trace flags as
+	// defined in W3C Trace Context specification. 24 most significant bits are reserved
+	// and must be set to 0. Readers that must not assume that 24 most significant bits
+	// will be zero and must correctly mask the bits when reading 8-bit trace flag (use
+	// flags & TRACE_FLAGS_MASK). Optional.
+	Flags uint32 `protobuf:"fixed32,4,opt,name=flags,proto3" json:"flags,omitempty"`
+	// Numerical value of the severity, normalized to values described in
+	// https://github.com/open-telemetry/oteps/pull/97. Optional.
+	SeverityNumber SeverityNumber `protobuf:"varint,5,opt,name=severity_number,json=severityNumber,proto3,enum=experimental.SeverityNumber" json:"severity_number,omitempty"`
+	// The severity text (also known as log level). The original string representation as
+	// it is known at the source. Optional.
+	SeverityText string `protobuf:"bytes,6,opt,name=severity_text,json=severityText,proto3" json:"severity_text,omitempty"`
+	// Short event identifier that does not contain varying parts. ShortName describes
+	// what happened (e.g. "ProcessStarted"). Recommended to be no longer than 50
+	// characters. Not guaranteed to be unique in any way. Optional.
+	ShortName string `protobuf:"bytes,7,opt,name=short_name,json=shortName,proto3" json:"short_name,omitempty"`
+	// A value containing the body of the log record. Can be for example a human-readable
+	// string message (including multi-line) describing the event in a free form or it can
+	// be a structured data composed of arrays and maps of other values. Optional.
+	Body *AnyValue `protobuf:"bytes,8,opt,name=body,proto3" json:"body,omitempty"`
+	// Additional attributes that describe the specific event occurrence. Optional.
+	Attributes             []*AttributeKeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	DroppedAttributesCount uint32               `protobuf:"varint,10,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 	XXX_NoUnkeyedLiteral   struct{}             `json:"-"`
 	XXX_unrecognized       []byte               `json:"-"`
 	XXX_sizecache          int32                `json:"-"`
 }
 
-func (m *Log) Reset()         { *m = Log{} }
-func (m *Log) String() string { return proto.CompactTextString(m) }
-func (*Log) ProtoMessage()    {}
-func (*Log) Descriptor() ([]byte, []int) {
-	return fileDescriptor_782e6d65c19305b4, []int{2}
+func (m *LogRecord) Reset()         { *m = LogRecord{} }
+func (m *LogRecord) String() string { return proto.CompactTextString(m) }
+func (*LogRecord) ProtoMessage()    {}
+func (*LogRecord) Descriptor() ([]byte, []int) {
+	return fileDescriptor_782e6d65c19305b4, []int{1}
 }
 
-func (m *Log) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Log.Unmarshal(m, b)
+func (m *LogRecord) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LogRecord.Unmarshal(m, b)
 }
-func (m *Log) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Log.Marshal(b, m, deterministic)
+func (m *LogRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LogRecord.Marshal(b, m, deterministic)
 }
-func (m *Log) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Log.Merge(m, src)
+func (m *LogRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogRecord.Merge(m, src)
 }
-func (m *Log) XXX_Size() int {
-	return xxx_messageInfo_Log.Size(m)
+func (m *LogRecord) XXX_Size() int {
+	return xxx_messageInfo_LogRecord.Size(m)
 }
-func (m *Log) XXX_DiscardUnknown() {
-	xxx_messageInfo_Log.DiscardUnknown(m)
+func (m *LogRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogRecord.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Log proto.InternalMessageInfo
+var xxx_messageInfo_LogRecord proto.InternalMessageInfo
 
-func (m *Log) GetTimeUnixnano() uint64 {
+func (m *LogRecord) GetTimeUnixnano() uint64 {
 	if m != nil {
 		return m.TimeUnixnano
 	}
 	return 0
 }
 
-func (m *Log) GetTraceId() []byte {
+func (m *LogRecord) GetTraceId() []byte {
 	if m != nil {
 		return m.TraceId
 	}
 	return nil
 }
 
-func (m *Log) GetSpanId() []byte {
+func (m *LogRecord) GetSpanId() []byte {
 	if m != nil {
 		return m.SpanId
 	}
 	return nil
 }
 
-func (m *Log) GetBody() *AttributeValue {
-	if m != nil {
-		return m.Body
-	}
-	return nil
-}
-
-func (m *Log) GetFlags() uint64 {
+func (m *LogRecord) GetFlags() uint32 {
 	if m != nil {
 		return m.Flags
 	}
 	return 0
 }
 
-func (m *Log) GetAttributes() []*AttributeKeyValue {
+func (m *LogRecord) GetSeverityNumber() SeverityNumber {
+	if m != nil {
+		return m.SeverityNumber
+	}
+	return SeverityNumber_UNDEFINED_SEVERITY_NUMBER
+}
+
+func (m *LogRecord) GetSeverityText() string {
+	if m != nil {
+		return m.SeverityText
+	}
+	return ""
+}
+
+func (m *LogRecord) GetShortName() string {
+	if m != nil {
+		return m.ShortName
+	}
+	return ""
+}
+
+func (m *LogRecord) GetBody() *AnyValue {
+	if m != nil {
+		return m.Body
+	}
+	return nil
+}
+
+func (m *LogRecord) GetAttributes() []*AttributeKeyValue {
 	if m != nil {
 		return m.Attributes
 	}
 	return nil
 }
 
-func (m *Log) GetDroppedAttributesCount() uint32 {
+func (m *LogRecord) GetDroppedAttributesCount() uint32 {
 	if m != nil {
 		return m.DroppedAttributesCount
 	}
@@ -211,38 +328,52 @@ func (m *Log) GetDroppedAttributesCount() uint32 {
 }
 
 func init() {
+	proto.RegisterEnum("experimental.SeverityNumber", SeverityNumber_name, SeverityNumber_value)
+	proto.RegisterEnum("experimental.LogRecordFlags", LogRecordFlags_name, LogRecordFlags_value)
 	proto.RegisterType((*ResourceLogs)(nil), "experimental.ResourceLogs")
-	proto.RegisterType((*InstrumentationLibraryLogs)(nil), "experimental.InstrumentationLibraryLogs")
-	proto.RegisterType((*Log)(nil), "experimental.Log")
+	proto.RegisterType((*LogRecord)(nil), "experimental.LogRecord")
 }
 
 func init() { proto.RegisterFile("logs.proto", fileDescriptor_782e6d65c19305b4) }
 
 var fileDescriptor_782e6d65c19305b4 = []byte{
-	// 392 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0x41, 0x8f, 0xd3, 0x30,
-	0x10, 0x85, 0xe5, 0xb6, 0xdb, 0x96, 0xd9, 0xec, 0x01, 0x0b, 0x75, 0x4d, 0xb5, 0x82, 0xa8, 0x80,
-	0x94, 0x0b, 0x11, 0x94, 0x0b, 0x37, 0xc4, 0x72, 0xaa, 0xe8, 0x61, 0x65, 0x09, 0x6e, 0x28, 0x72,
-	0x1b, 0x13, 0x19, 0x25, 0x9e, 0xc8, 0x76, 0xd0, 0xe6, 0xe7, 0xc0, 0x0f, 0xe0, 0x37, 0x22, 0x3b,
-	0xd9, 0xa5, 0x91, 0x88, 0xb4, 0xc7, 0x99, 0xef, 0xbd, 0xa7, 0x37, 0xb2, 0x01, 0x4a, 0x2c, 0x6c,
-	0x5a, 0x1b, 0x74, 0x48, 0x23, 0x79, 0x5b, 0x4b, 0xa3, 0x2a, 0xa9, 0x9d, 0x28, 0xd7, 0xd1, 0x11,
-	0xab, 0x0a, 0x75, 0xc7, 0x36, 0x7f, 0x08, 0x44, 0x5c, 0x5a, 0x6c, 0xcc, 0x51, 0xee, 0xb1, 0xb0,
-	0x74, 0x0b, 0x4b, 0xd3, 0xcf, 0x8c, 0xc4, 0x24, 0x39, 0xdf, 0xae, 0xd2, 0x53, 0x7f, 0x7a, 0xa7,
-	0xe6, 0xf7, 0x3a, 0xfa, 0x03, 0xae, 0x94, 0xb6, 0xce, 0x34, 0x41, 0xe2, 0x14, 0xea, 0xac, 0x54,
-	0x07, 0x23, 0x4c, 0x9b, 0xf9, 0x1a, 0x6c, 0x12, 0x4f, 0x93, 0xf3, 0x6d, 0x32, 0xcc, 0xd9, 0x0d,
-	0x1d, 0xfb, 0xce, 0xe0, 0x3b, 0xf0, 0xb5, 0x1a, 0x65, 0x9b, 0xdf, 0x04, 0xd6, 0xe3, 0x56, 0xfa,
-	0x0d, 0x2e, 0x47, 0xaa, 0xf4, 0xd7, 0xbc, 0x7c, 0x48, 0x0b, 0xbe, 0xfa, 0x7f, 0x03, 0xfa, 0x0a,
-	0x66, 0x27, 0x17, 0x3d, 0x1e, 0x66, 0xed, 0xb1, 0xe0, 0x01, 0x6f, 0x7e, 0x4d, 0x60, 0xba, 0xc7,
-	0x82, 0xbe, 0x80, 0x0b, 0xa7, 0x2a, 0x99, 0x35, 0x5a, 0xdd, 0x6a, 0xa1, 0x31, 0x74, 0x98, 0xf3,
-	0xc8, 0x2f, 0xbf, 0xf4, 0x3b, 0xfa, 0x14, 0x96, 0xce, 0x88, 0xa3, 0xcc, 0x54, 0xce, 0x26, 0x31,
-	0x49, 0x22, 0xbe, 0x08, 0xf3, 0x2e, 0xa7, 0x97, 0xb0, 0xb0, 0xb5, 0xd0, 0x9e, 0x4c, 0x03, 0x99,
-	0xfb, 0x71, 0x97, 0xd3, 0x37, 0x30, 0x3b, 0x60, 0xde, 0xb2, 0xb3, 0x70, 0xd3, 0xd5, 0xb0, 0xc7,
-	0x47, 0xe7, 0x8c, 0x3a, 0x34, 0x4e, 0x7e, 0x15, 0x65, 0x23, 0x79, 0x50, 0xd2, 0x27, 0x70, 0xf6,
-	0xbd, 0x14, 0x85, 0x65, 0xf3, 0x98, 0x24, 0x33, 0xde, 0x0d, 0xf4, 0x03, 0x80, 0xb8, 0x53, 0x5b,
-	0xb6, 0x08, 0x57, 0x3d, 0x1f, 0x49, 0xfb, 0x2c, 0xdb, 0x2e, 0xf0, 0xc4, 0x42, 0xdf, 0x03, 0xcb,
-	0x0d, 0xd6, 0xb5, 0xcc, 0xb3, 0x7f, 0xdb, 0xec, 0x88, 0x8d, 0x76, 0x6c, 0x19, 0x93, 0xe4, 0x82,
-	0xaf, 0x7a, 0x7e, 0x9f, 0x63, 0x3f, 0x79, 0x7a, 0xfd, 0x1a, 0x9e, 0x29, 0x4c, 0xb1, 0x96, 0xda,
-	0xc9, 0x52, 0x56, 0xd2, 0x99, 0xb6, 0xfb, 0x93, 0x69, 0xf8, 0xba, 0x3f, 0xdf, 0x5e, 0x3f, 0xf2,
-	0x2f, 0x7a, 0xe3, 0x57, 0x37, 0xe4, 0x30, 0x0f, 0xec, 0xdd, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x77, 0xc7, 0x3c, 0x50, 0xd9, 0x02, 0x00, 0x00,
+	// 605 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x93, 0xdd, 0x6e, 0xda, 0x4e,
+	0x10, 0xc5, 0x63, 0xbe, 0x99, 0x10, 0x32, 0xff, 0xfd, 0xe7, 0xc3, 0xa9, 0x9a, 0x16, 0xa5, 0x37,
+	0x56, 0xaa, 0x22, 0xd5, 0xe6, 0xa2, 0x77, 0x95, 0x09, 0x26, 0x42, 0x21, 0x26, 0x5a, 0x20, 0x55,
+	0xaf, 0x2c, 0x83, 0xb7, 0xd4, 0x12, 0xf6, 0x22, 0x7b, 0x89, 0xe0, 0x9d, 0xfa, 0x12, 0x7d, 0xb2,
+	0x56, 0xbb, 0xc1, 0x6e, 0xa8, 0x7a, 0xf7, 0x9b, 0x73, 0xce, 0xec, 0xae, 0x46, 0x3b, 0x00, 0x4b,
+	0xbe, 0x48, 0xdb, 0xab, 0x84, 0x0b, 0x4e, 0x1a, 0x6c, 0xb3, 0x62, 0x49, 0x18, 0xb1, 0x58, 0xf8,
+	0xcb, 0x57, 0x8d, 0x39, 0x8f, 0x22, 0x1e, 0x3f, 0x7b, 0x57, 0x1c, 0x1a, 0x94, 0xa5, 0x7c, 0x9d,
+	0xcc, 0xd9, 0x90, 0x2f, 0x52, 0x62, 0x42, 0x2d, 0xd9, 0xd5, 0xba, 0xd6, 0xd2, 0x8c, 0x43, 0xf3,
+	0xac, 0xfd, 0xb2, 0xbd, 0x9d, 0xa5, 0x69, 0x9e, 0x23, 0xef, 0xa1, 0x24, 0x6f, 0xd3, 0x0b, 0xad,
+	0xa2, 0x71, 0x68, 0x9e, 0xef, 0xe7, 0x87, 0x7c, 0x41, 0xd9, 0x9c, 0x27, 0x01, 0x55, 0xa1, 0xab,
+	0x1f, 0x45, 0xa8, 0xe7, 0x1a, 0x79, 0x07, 0x47, 0x22, 0x8c, 0x98, 0xb7, 0x8e, 0xc3, 0x4d, 0xec,
+	0xc7, 0x5c, 0xdd, 0x59, 0xa1, 0x0d, 0x29, 0x4e, 0x77, 0x1a, 0xb9, 0x80, 0x9a, 0x48, 0xfc, 0x39,
+	0xf3, 0xc2, 0x40, 0x2f, 0xb4, 0x34, 0xa3, 0x41, 0xab, 0xaa, 0x1e, 0x04, 0xe4, 0x1c, 0xaa, 0xe9,
+	0xca, 0x8f, 0xa5, 0x53, 0x54, 0x4e, 0x45, 0x96, 0x83, 0x80, 0x9c, 0x40, 0xf9, 0xdb, 0xd2, 0x5f,
+	0xa4, 0x7a, 0xa9, 0xa5, 0x19, 0x55, 0xfa, 0x5c, 0x10, 0x07, 0x8e, 0x53, 0xf6, 0xc4, 0x92, 0x50,
+	0x6c, 0xbd, 0x78, 0x1d, 0xcd, 0x58, 0xa2, 0x97, 0x5b, 0x9a, 0xd1, 0x34, 0x5f, 0xef, 0x3f, 0x7a,
+	0xbc, 0x0b, 0xb9, 0x2a, 0x43, 0x9b, 0xe9, 0x5e, 0x2d, 0x5f, 0x9d, 0x1f, 0x23, 0xd8, 0x46, 0xe8,
+	0x95, 0x96, 0x66, 0xd4, 0x69, 0x23, 0x13, 0x27, 0x6c, 0x23, 0xc8, 0x25, 0x40, 0xfa, 0x9d, 0x27,
+	0xc2, 0x8b, 0xfd, 0x88, 0xe9, 0x55, 0x95, 0xa8, 0x2b, 0xc5, 0xf5, 0x23, 0x46, 0xae, 0xa1, 0x34,
+	0xe3, 0xc1, 0x56, 0xaf, 0xfd, 0x6b, 0xc8, 0x76, 0xbc, 0x7d, 0xf4, 0x97, 0x6b, 0x46, 0x55, 0x86,
+	0x7c, 0x06, 0xf0, 0x85, 0x48, 0xc2, 0xd9, 0x5a, 0xb0, 0x54, 0xaf, 0xab, 0x31, 0xbf, 0xfd, 0xab,
+	0x23, 0xf3, 0xef, 0xd8, 0xae, 0xf5, 0x45, 0x0b, 0xf9, 0x04, 0x7a, 0x90, 0xf0, 0xd5, 0x8a, 0x05,
+	0xde, 0x1f, 0xd5, 0x9b, 0xf3, 0x75, 0x2c, 0x74, 0x68, 0x69, 0xc6, 0x11, 0x3d, 0xdb, 0xf9, 0xf9,
+	0x39, 0xe9, 0x8d, 0x74, 0xaf, 0x7f, 0x16, 0xa0, 0xb9, 0x3f, 0x0d, 0x72, 0x09, 0x17, 0x53, 0xb7,
+	0xe7, 0xf4, 0x07, 0xae, 0xd3, 0xf3, 0xc6, 0xce, 0xa3, 0x43, 0x07, 0x93, 0xaf, 0x9e, 0x3b, 0xbd,
+	0xef, 0x3a, 0x14, 0x0f, 0x48, 0x1d, 0xca, 0x13, 0x6a, 0xdf, 0x38, 0xa8, 0x11, 0x80, 0x8a, 0x42,
+	0x13, 0x0b, 0x39, 0x5b, 0x58, 0xcc, 0xb9, 0x83, 0x25, 0x19, 0xef, 0x39, 0xdd, 0xe9, 0x2d, 0x96,
+	0xa5, 0xac, 0xd0, 0xc4, 0x4a, 0xce, 0x16, 0x56, 0x73, 0xee, 0x60, 0x8d, 0xd4, 0xa0, 0x34, 0x70,
+	0xfb, 0x23, 0xac, 0xcb, 0x46, 0x49, 0x26, 0x42, 0x86, 0x16, 0x1e, 0x66, 0xd8, 0xc1, 0x86, 0x8c,
+	0x7e, 0xb1, 0xa9, 0x8b, 0x47, 0x52, 0x94, 0x64, 0x62, 0x33, 0x43, 0x0b, 0x8f, 0x33, 0xec, 0x20,
+	0x4a, 0x74, 0x28, 0x1d, 0x51, 0xfc, 0x4f, 0x5e, 0xa6, 0xd0, 0x44, 0x92, 0xb3, 0x85, 0xff, 0xe7,
+	0xdc, 0xc1, 0x13, 0x19, 0xef, 0xdb, 0x13, 0x7b, 0x88, 0xa7, 0x52, 0x56, 0x68, 0xe2, 0x59, 0xce,
+	0x16, 0x9e, 0xe7, 0xdc, 0x41, 0xfd, 0xba, 0x0f, 0xcd, 0xfc, 0xc7, 0xf7, 0xd5, 0x3f, 0xdc, 0x1b,
+	0xe1, 0x70, 0x74, 0xeb, 0x51, 0xe7, 0x66, 0x44, 0x7b, 0x5e, 0x7f, 0x68, 0xdf, 0xe2, 0x01, 0x39,
+	0x05, 0x54, 0xf3, 0x51, 0xf5, 0xd8, 0xbb, 0xb7, 0xc7, 0x77, 0xf8, 0x4b, 0xeb, 0x7e, 0x80, 0x37,
+	0x21, 0x6f, 0xf3, 0x15, 0x8b, 0x05, 0x5b, 0xb2, 0x88, 0x89, 0x64, 0xfb, 0xbc, 0xc5, 0x6d, 0xb5,
+	0xec, 0x4f, 0x1f, 0xbb, 0x72, 0xb3, 0xd2, 0x07, 0x29, 0x3d, 0x68, 0xb3, 0x8a, 0xf2, 0xac, 0xdf,
+	0x01, 0x00, 0x00, 0xff, 0xff, 0x55, 0x1d, 0x15, 0xbe, 0x0b, 0x04, 0x00, 0x00,
 }

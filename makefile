@@ -1,4 +1,4 @@
-.PHONY: all genprotobuf genflatbuffers build build-image build-images publish-images
+.PHONY: all gen genflatbuffers build build-image build-images publish-images
 
 GO=$(shell which go)
 
@@ -14,9 +14,9 @@ export DOCKER_REGISTRY
 export IMAGE_NAME
 export PROTOCOL
 
-all: genprotobuf build test
+all: gen build test
 
-genprotobuf:
+gen:
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/resource.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/exchange.proto --go_out=plugins=grpc:encodings/traceprotobuf

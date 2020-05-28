@@ -19,8 +19,9 @@ message Resource {
 }
 
 
-// AttributeValueType is the enumeration of possible types that value can have.
-enum AttributeValueType {
+// ValueType is the enumeration of possible types that value can have.
+// TODO: consolidate this with AttributeKeyValue.ValueType.
+enum ValueType {
     STRING  = 0;
     INT     = 1;
     DOUBLE  = 2;
@@ -29,37 +30,55 @@ enum AttributeValueType {
     MAP     = 5;
 };
 
-// AttributeValue is a value that is used to store Log body.
-message AttributeValue {
+// AnyValue is a value that is used to store values that can be one of the supported
+// value types.
+message AnyValue {
     // type of the value.
-    AttributeValueType type = 1;
+    ValueType type = 1;
 
     // Only one of the following fields is supposed to contain data (determined by `type` field).
     // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
 
-    string string_value = 2;
-    int64 int_value = 3;
-    double double_value = 4;
-    bool bool_value = 5;
-    AttributeValueListOrMap listOrMap = 6;
+    bool bool_value = 2;
+    string string_value = 3;
+    int64 int_value = 4;
+    double double_value = 5;
+
+    // If the type is LIST or MAP then this field is set and the list or the map
+    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
+    // field is not set.
+    // LIST and MAP are less frequent types and thus are stored in a separate message
+    // to avoid consuming memory. This saves about 10-15% of memory for the most frequent
+    // case when the value is a primitive type.
+    ValueListOrMap list_or_map = 6;
 }
 
-message AttributeValueListOrMap {
-    repeated AttributeValue list = 1;
+// ValueListOrMap is used for storing a list or a map of values.
+message ValueListOrMap {
+    // AnyValue.type field defines which of the 2 fields in this message are set.
+
+    // A list of values.
+    repeated AnyValue list = 1;
+
+    // A key/value map of values.
     repeated AttributeKeyValue map = 2;
 }
+
+//// ValueList is used for storing a list.
+//message ValueList {
+//    // A list of values.
+//    repeated AnyValue list = 1;
+//}
+//
+//// ValueMap is used for storing a map.
+//message ValueMap {
+//    // A key/value map of values.
+//    repeated AttributeKeyValue map = 1;
+//}
 
 // AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
 message AttributeKeyValue {
-    // ValueType is the enumeration of possible types that value can have.
-    enum ValueType {
-        STRING  = 0;
-        INT     = 1;
-        DOUBLE  = 2;
-        BOOL    = 3;
-    };
-
     // key part of the key-value pair.
     string key = 1;
 
@@ -73,6 +92,11 @@ message AttributeKeyValue {
     int64 int_value = 4;
     double double_value = 5;
     bool bool_value = 6;
+
+    // If the type is LIST or MAP then this field is set and the list or the map
+    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
+    // field is not set.
+    ValueListOrMap listOrMap = 7;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
