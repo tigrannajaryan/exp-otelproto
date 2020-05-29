@@ -21,6 +21,7 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // ValueType is the enumeration of possible types that value can have.
+// TODO: consolidate this with AttributeKeyValue.ValueType.
 type ValueType int32
 
 const (
@@ -29,7 +30,7 @@ const (
 	ValueType_DOUBLE ValueType = 2
 	ValueType_BOOL   ValueType = 3
 	ValueType_LIST   ValueType = 4
-	ValueType_MAP    ValueType = 5
+	ValueType_KVLIST ValueType = 5
 )
 
 var ValueType_name = map[int32]string{
@@ -38,7 +39,7 @@ var ValueType_name = map[int32]string{
 	2: "DOUBLE",
 	3: "BOOL",
 	4: "LIST",
-	5: "MAP",
+	5: "KVLIST",
 }
 
 var ValueType_value = map[string]int32{
@@ -47,7 +48,7 @@ var ValueType_value = map[string]int32{
 	"DOUBLE": 2,
 	"BOOL":   3,
 	"LIST":   4,
-	"MAP":    5,
+	"KVLIST": 5,
 }
 
 func (x ValueType) String() string {
@@ -109,255 +110,25 @@ func (m *Resource) GetDroppedAttributesCount() uint32 {
 	return 0
 }
 
-// AnyValue is a value that is used to store values that can be one of the supported
-// value types.
-type AnyValue struct {
-	// type of the value.
-	Type        ValueType `protobuf:"varint,1,opt,name=type,proto3,enum=experimental.ValueType" json:"type,omitempty"`
-	BoolValue   bool      `protobuf:"varint,2,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
-	StringValue string    `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
-	IntValue    int64     `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
-	DoubleValue float64   `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
-	// If the type is LIST or MAP then this field is set and the list or the map
-	// is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-	// field is not set.
-	// A list of values.
-	List []*AnyValue `protobuf:"bytes,6,rep,name=list,proto3" json:"list,omitempty"`
-	// A key/value map of values.
-	Map                  []*AttributeKeyValue `protobuf:"bytes,7,rep,name=map,proto3" json:"map,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
-}
-
-func (m *AnyValue) Reset()         { *m = AnyValue{} }
-func (m *AnyValue) String() string { return proto.CompactTextString(m) }
-func (*AnyValue) ProtoMessage()    {}
-func (*AnyValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{1}
-}
-
-func (m *AnyValue) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AnyValue.Unmarshal(m, b)
-}
-func (m *AnyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AnyValue.Marshal(b, m, deterministic)
-}
-func (m *AnyValue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AnyValue.Merge(m, src)
-}
-func (m *AnyValue) XXX_Size() int {
-	return xxx_messageInfo_AnyValue.Size(m)
-}
-func (m *AnyValue) XXX_DiscardUnknown() {
-	xxx_messageInfo_AnyValue.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AnyValue proto.InternalMessageInfo
-
-func (m *AnyValue) GetType() ValueType {
-	if m != nil {
-		return m.Type
-	}
-	return ValueType_STRING
-}
-
-func (m *AnyValue) GetBoolValue() bool {
-	if m != nil {
-		return m.BoolValue
-	}
-	return false
-}
-
-func (m *AnyValue) GetStringValue() string {
-	if m != nil {
-		return m.StringValue
-	}
-	return ""
-}
-
-func (m *AnyValue) GetIntValue() int64 {
-	if m != nil {
-		return m.IntValue
-	}
-	return 0
-}
-
-func (m *AnyValue) GetDoubleValue() float64 {
-	if m != nil {
-		return m.DoubleValue
-	}
-	return 0
-}
-
-func (m *AnyValue) GetList() []*AnyValue {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-func (m *AnyValue) GetMap() []*AttributeKeyValue {
-	if m != nil {
-		return m.Map
-	}
-	return nil
-}
-
-// ValueListOrMap is used for storing a list or a map of values.
-type ValueListOrMap struct {
-	// A list of values.
-	List []*AnyValue `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
-	// A key/value map of values.
-	Map                  []*AttributeKeyValue `protobuf:"bytes,2,rep,name=map,proto3" json:"map,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
-}
-
-func (m *ValueListOrMap) Reset()         { *m = ValueListOrMap{} }
-func (m *ValueListOrMap) String() string { return proto.CompactTextString(m) }
-func (*ValueListOrMap) ProtoMessage()    {}
-func (*ValueListOrMap) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{2}
-}
-
-func (m *ValueListOrMap) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ValueListOrMap.Unmarshal(m, b)
-}
-func (m *ValueListOrMap) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ValueListOrMap.Marshal(b, m, deterministic)
-}
-func (m *ValueListOrMap) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueListOrMap.Merge(m, src)
-}
-func (m *ValueListOrMap) XXX_Size() int {
-	return xxx_messageInfo_ValueListOrMap.Size(m)
-}
-func (m *ValueListOrMap) XXX_DiscardUnknown() {
-	xxx_messageInfo_ValueListOrMap.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ValueListOrMap proto.InternalMessageInfo
-
-func (m *ValueListOrMap) GetList() []*AnyValue {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-func (m *ValueListOrMap) GetMap() []*AttributeKeyValue {
-	if m != nil {
-		return m.Map
-	}
-	return nil
-}
-
-// ValueList is used for storing a list.
-type ValueList struct {
-	// A list of values.
-	List                 []*AnyValue `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
-}
-
-func (m *ValueList) Reset()         { *m = ValueList{} }
-func (m *ValueList) String() string { return proto.CompactTextString(m) }
-func (*ValueList) ProtoMessage()    {}
-func (*ValueList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{3}
-}
-
-func (m *ValueList) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ValueList.Unmarshal(m, b)
-}
-func (m *ValueList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ValueList.Marshal(b, m, deterministic)
-}
-func (m *ValueList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueList.Merge(m, src)
-}
-func (m *ValueList) XXX_Size() int {
-	return xxx_messageInfo_ValueList.Size(m)
-}
-func (m *ValueList) XXX_DiscardUnknown() {
-	xxx_messageInfo_ValueList.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ValueList proto.InternalMessageInfo
-
-func (m *ValueList) GetList() []*AnyValue {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-// ValueMap is used for storing a map.
-type ValueMap struct {
-	// A key/value map of values.
-	Map                  []*AttributeKeyValue `protobuf:"bytes,1,rep,name=map,proto3" json:"map,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
-}
-
-func (m *ValueMap) Reset()         { *m = ValueMap{} }
-func (m *ValueMap) String() string { return proto.CompactTextString(m) }
-func (*ValueMap) ProtoMessage()    {}
-func (*ValueMap) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{4}
-}
-
-func (m *ValueMap) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ValueMap.Unmarshal(m, b)
-}
-func (m *ValueMap) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ValueMap.Marshal(b, m, deterministic)
-}
-func (m *ValueMap) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueMap.Merge(m, src)
-}
-func (m *ValueMap) XXX_Size() int {
-	return xxx_messageInfo_ValueMap.Size(m)
-}
-func (m *ValueMap) XXX_DiscardUnknown() {
-	xxx_messageInfo_ValueMap.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ValueMap proto.InternalMessageInfo
-
-func (m *ValueMap) GetMap() []*AttributeKeyValue {
-	if m != nil {
-		return m.Map
-	}
-	return nil
-}
-
 // AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
 type AttributeKeyValue struct {
-	// key part of the key-value pair.
+	// key part of the key-value pair. The key is empty if this AttributeKeyValue
+	// is not a key-value list element (e.g. it is an element of a list).
+	// See `list_values` field comment below.
 	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	// type of the value.
 	Type        ValueType `protobuf:"varint,2,opt,name=type,proto3,enum=experimental.ValueType" json:"type,omitempty"`
+	BoolValue   bool      `protobuf:"varint,6,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
 	StringValue string    `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
 	IntValue    int64     `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
 	DoubleValue float64   `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
-	BoolValue   bool      `protobuf:"varint,6,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
-	// If the type is LIST or MAP then this field is set and the list or the map
-	// is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-	// field is not set.
-	//    ValueListOrMap listOrMap = 7;
-	// If the type is LIST or MAP then this field is set and the list or the map
-	// is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-	// field is not set.
-	// A list of values.
-	List []*AnyValue `protobuf:"bytes,7,rep,name=list,proto3" json:"list,omitempty"`
-	// A key/value map of values.
-	Map                  []*AttributeKeyValue `protobuf:"bytes,8,rep,name=map,proto3" json:"map,omitempty"`
+	// A list of values or a map of values.
+	// If ValueType=LIST then this is a list of values and `key` field inside each child
+	// AttributeKeyValue must be set empty by writers and must be ignored by readers.
+	// If ValueType=KVLIST then this is a list of key-values and child AttributeKeyValue
+	// `key` is significant.
+	ListValues           []*AttributeKeyValue `protobuf:"bytes,7,rep,name=list_values,json=listValues,proto3" json:"list_values,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
 	XXX_sizecache        int32                `json:"-"`
@@ -367,7 +138,7 @@ func (m *AttributeKeyValue) Reset()         { *m = AttributeKeyValue{} }
 func (m *AttributeKeyValue) String() string { return proto.CompactTextString(m) }
 func (*AttributeKeyValue) ProtoMessage()    {}
 func (*AttributeKeyValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{5}
+	return fileDescriptor_555bd8c177793206, []int{1}
 }
 
 func (m *AttributeKeyValue) XXX_Unmarshal(b []byte) error {
@@ -402,6 +173,13 @@ func (m *AttributeKeyValue) GetType() ValueType {
 	return ValueType_STRING
 }
 
+func (m *AttributeKeyValue) GetBoolValue() bool {
+	if m != nil {
+		return m.BoolValue
+	}
+	return false
+}
+
 func (m *AttributeKeyValue) GetStringValue() string {
 	if m != nil {
 		return m.StringValue
@@ -423,23 +201,9 @@ func (m *AttributeKeyValue) GetDoubleValue() float64 {
 	return 0
 }
 
-func (m *AttributeKeyValue) GetBoolValue() bool {
+func (m *AttributeKeyValue) GetListValues() []*AttributeKeyValue {
 	if m != nil {
-		return m.BoolValue
-	}
-	return false
-}
-
-func (m *AttributeKeyValue) GetList() []*AnyValue {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-func (m *AttributeKeyValue) GetMap() []*AttributeKeyValue {
-	if m != nil {
-		return m.Map
+		return m.ListValues
 	}
 	return nil
 }
@@ -458,7 +222,7 @@ func (m *StringKeyValue) Reset()         { *m = StringKeyValue{} }
 func (m *StringKeyValue) String() string { return proto.CompactTextString(m) }
 func (*StringKeyValue) ProtoMessage()    {}
 func (*StringKeyValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{6}
+	return fileDescriptor_555bd8c177793206, []int{2}
 }
 
 func (m *StringKeyValue) XXX_Unmarshal(b []byte) error {
@@ -507,7 +271,7 @@ func (m *InstrumentationLibrary) Reset()         { *m = InstrumentationLibrary{}
 func (m *InstrumentationLibrary) String() string { return proto.CompactTextString(m) }
 func (*InstrumentationLibrary) ProtoMessage()    {}
 func (*InstrumentationLibrary) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{7}
+	return fileDescriptor_555bd8c177793206, []int{3}
 }
 
 func (m *InstrumentationLibrary) XXX_Unmarshal(b []byte) error {
@@ -545,10 +309,6 @@ func (m *InstrumentationLibrary) GetVersion() string {
 func init() {
 	proto.RegisterEnum("experimental.ValueType", ValueType_name, ValueType_value)
 	proto.RegisterType((*Resource)(nil), "experimental.Resource")
-	proto.RegisterType((*AnyValue)(nil), "experimental.AnyValue")
-	proto.RegisterType((*ValueListOrMap)(nil), "experimental.ValueListOrMap")
-	proto.RegisterType((*ValueList)(nil), "experimental.ValueList")
-	proto.RegisterType((*ValueMap)(nil), "experimental.ValueMap")
 	proto.RegisterType((*AttributeKeyValue)(nil), "experimental.AttributeKeyValue")
 	proto.RegisterType((*StringKeyValue)(nil), "experimental.StringKeyValue")
 	proto.RegisterType((*InstrumentationLibrary)(nil), "experimental.InstrumentationLibrary")
@@ -557,39 +317,33 @@ func init() {
 func init() { proto.RegisterFile("common.proto", fileDescriptor_555bd8c177793206) }
 
 var fileDescriptor_555bd8c177793206 = []byte{
-	// 531 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x54, 0xdd, 0x8e, 0xd2, 0x40,
-	0x14, 0x76, 0xda, 0x02, 0xed, 0x01, 0x49, 0x9d, 0x18, 0xac, 0x51, 0x63, 0xe5, 0xaa, 0x59, 0x93,
-	0x26, 0xac, 0x17, 0xee, 0x8d, 0x31, 0xb0, 0xfe, 0x11, 0xd9, 0x85, 0x0c, 0xb8, 0xb7, 0xa4, 0xc0,
-	0xc4, 0x4c, 0x84, 0x99, 0x66, 0x3a, 0x25, 0xf2, 0x00, 0xbe, 0x83, 0xef, 0xe1, 0x5b, 0xf9, 0x14,
-	0x66, 0xa6, 0xa5, 0xfb, 0x63, 0x62, 0xe0, 0xc6, 0xbb, 0x73, 0xbe, 0xef, 0x9b, 0xf3, 0x75, 0xbe,
-	0x39, 0x00, 0xad, 0xa5, 0xd8, 0x6c, 0x04, 0x8f, 0x53, 0x29, 0x94, 0xc0, 0x2d, 0xfa, 0x3d, 0xa5,
-	0x92, 0x6d, 0x28, 0x57, 0xc9, 0xba, 0xfb, 0x03, 0x81, 0x4b, 0x68, 0x26, 0x72, 0xb9, 0xa4, 0xf8,
-	0x2d, 0x40, 0xa2, 0x94, 0x64, 0x8b, 0x5c, 0xd1, 0x2c, 0x40, 0xa1, 0x1d, 0x35, 0x4f, 0x9f, 0xc7,
-	0x37, 0xf5, 0x71, 0x7f, 0xcf, 0x7f, 0xa6, 0xbb, 0xab, 0x64, 0x9d, 0x53, 0x72, 0xe3, 0x08, 0x3e,
-	0x83, 0x60, 0x25, 0x45, 0x9a, 0xd2, 0xd5, 0xfc, 0x1a, 0x9d, 0x2f, 0x45, 0xce, 0x55, 0x60, 0x85,
-	0x28, 0xba, 0x4f, 0x3a, 0x25, 0x5f, 0xcd, 0xc9, 0xce, 0x35, 0xdb, 0xfd, 0x69, 0x81, 0xdb, 0xe7,
-	0xc5, 0x48, 0xfc, 0x12, 0x1c, 0xb5, 0x4b, 0x69, 0x80, 0x42, 0x14, 0xb5, 0x4f, 0x1f, 0xdd, 0xfe,
-	0x02, 0x23, 0x99, 0xed, 0x52, 0x4a, 0x8c, 0x08, 0x3f, 0x03, 0x58, 0x08, 0xb1, 0x9e, 0x6f, 0x35,
-	0x6e, 0x5c, 0x5c, 0xe2, 0x69, 0xa4, 0x98, 0xf5, 0x02, 0x5a, 0x99, 0x92, 0x8c, 0x7f, 0x2d, 0x05,
-	0x76, 0x88, 0x22, 0x8f, 0x34, 0x0b, 0xac, 0x90, 0x3c, 0x01, 0x8f, 0x71, 0x55, 0xf2, 0x4e, 0x88,
-	0x22, 0x9b, 0xb8, 0x8c, 0xab, 0xea, 0xfc, 0x4a, 0xe4, 0x8b, 0x35, 0x2d, 0xf9, 0x5a, 0x88, 0x22,
-	0x44, 0x9a, 0x05, 0x56, 0x48, 0x4e, 0xc0, 0x59, 0xb3, 0x4c, 0x05, 0x75, 0x13, 0x58, 0xe7, 0x4e,
-	0x60, 0xe5, 0xa5, 0x88, 0xd1, 0xe0, 0x1e, 0xd8, 0x9b, 0x24, 0x0d, 0x1a, 0x87, 0x65, 0xab, 0xb5,
-	0x5d, 0x01, 0x6d, 0xd3, 0x8d, 0x58, 0xa6, 0xc6, 0xf2, 0x22, 0x49, 0x2b, 0x43, 0x74, 0xb8, 0xa1,
-	0x75, 0x84, 0xe1, 0x6b, 0xf0, 0x2a, 0xc3, 0x63, 0xbc, 0xba, 0x6f, 0xc0, 0x35, 0xad, 0xfe, 0xc6,
-	0xd2, 0x17, 0x1d, 0xe1, 0xfb, 0xcb, 0x82, 0x07, 0x7f, 0x51, 0xd8, 0x07, 0xfb, 0x1b, 0xdd, 0x99,
-	0x5d, 0xf0, 0x88, 0x2e, 0xab, 0xf5, 0xb0, 0x0e, 0x59, 0x8f, 0xff, 0xf0, 0xfe, 0xb7, 0x37, 0xb0,
-	0x7e, 0x77, 0x03, 0xf7, 0x09, 0x36, 0x0e, 0x7f, 0x2d, 0xf7, 0x88, 0xd4, 0xce, 0xa0, 0x3d, 0x35,
-	0x97, 0xf9, 0x47, 0x62, 0x0f, 0xa1, 0x76, 0xfd, 0xf3, 0xf0, 0x48, 0xd1, 0x74, 0x3f, 0x40, 0x67,
-	0xc8, 0x33, 0x25, 0x73, 0x63, 0xa0, 0x98, 0xe0, 0x23, 0xb6, 0x90, 0x89, 0xdc, 0x61, 0x0c, 0x0e,
-	0x4f, 0x36, 0xb4, 0x1c, 0x61, 0x6a, 0x1c, 0x40, 0x63, 0x4b, 0x65, 0xc6, 0x04, 0x2f, 0xa7, 0xec,
-	0xdb, 0x93, 0x61, 0xb9, 0x2f, 0x3a, 0x75, 0x0c, 0x50, 0x9f, 0xce, 0xc8, 0xf0, 0xf2, 0xa3, 0x7f,
-	0x0f, 0x37, 0xc0, 0x1e, 0x5e, 0xce, 0x7c, 0xa4, 0xc1, 0x77, 0xe3, 0x2f, 0x83, 0xd1, 0x7b, 0xdf,
-	0xc2, 0x2e, 0x38, 0x83, 0xf1, 0x78, 0xe4, 0xdb, 0xba, 0x1a, 0x0d, 0xa7, 0x33, 0xdf, 0xd1, 0xc2,
-	0x8b, 0xfe, 0xc4, 0xaf, 0x0d, 0x3e, 0xc1, 0x53, 0x26, 0x62, 0x91, 0x52, 0xbe, 0xa4, 0x3c, 0xcb,
-	0xb3, 0xe2, 0x3f, 0x2b, 0x56, 0x32, 0x59, 0xd2, 0x78, 0xdb, 0x1b, 0xc0, 0x4c, 0x57, 0x13, 0x0d,
-	0x4e, 0xd0, 0x6f, 0xeb, 0xf1, 0x38, 0xa5, 0xfc, 0xbc, 0x50, 0x1a, 0x30, 0x36, 0x7c, 0x7c, 0xd5,
-	0x5b, 0xd4, 0xcd, 0xc9, 0x57, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x0a, 0xa4, 0x5a, 0x77, 0xfd,
-	0x04, 0x00, 0x00,
+	// 441 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0xdd, 0x8a, 0xd3, 0x4e,
+	0x14, 0xff, 0x4f, 0x92, 0x7e, 0x9d, 0xf6, 0xbf, 0xc4, 0x41, 0xd6, 0x88, 0x8a, 0xb1, 0x57, 0x41,
+	0x21, 0xb0, 0xeb, 0xcd, 0xde, 0xa9, 0x5d, 0xbf, 0xca, 0x86, 0xed, 0x92, 0xc6, 0xde, 0x96, 0x24,
+	0x3d, 0xc8, 0x60, 0x3a, 0x13, 0x66, 0x26, 0xc5, 0x3c, 0x80, 0xaf, 0xe0, 0x43, 0xfa, 0x14, 0x32,
+	0x93, 0x6c, 0x5d, 0x11, 0xc4, 0xbb, 0xdf, 0xfc, 0xbe, 0xce, 0xe1, 0x30, 0x30, 0x2b, 0xc5, 0x7e,
+	0x2f, 0x78, 0x5c, 0x4b, 0xa1, 0x05, 0x9d, 0xe1, 0xd7, 0x1a, 0x25, 0xdb, 0x23, 0xd7, 0x79, 0x35,
+	0xff, 0x46, 0x60, 0x9c, 0xa2, 0x12, 0x8d, 0x2c, 0x91, 0xbe, 0x02, 0xc8, 0xb5, 0x96, 0xac, 0x68,
+	0x34, 0xaa, 0x80, 0x84, 0x6e, 0x34, 0x3d, 0x7f, 0x1a, 0xdf, 0xf5, 0xc7, 0x6f, 0x6e, 0xf5, 0x2b,
+	0x6c, 0x37, 0x79, 0xd5, 0x60, 0x7a, 0x27, 0x42, 0x2f, 0x20, 0xd8, 0x49, 0x51, 0xd7, 0xb8, 0xdb,
+	0xfe, 0x62, 0xb7, 0xa5, 0x68, 0xb8, 0x0e, 0x9c, 0x90, 0x44, 0xff, 0xa7, 0xa7, 0xbd, 0x7e, 0xec,
+	0x51, 0x97, 0x46, 0x9d, 0x7f, 0x77, 0xe0, 0xde, 0x1f, 0xdd, 0xd4, 0x07, 0xf7, 0x0b, 0xb6, 0x01,
+	0x09, 0x49, 0x34, 0x49, 0x0d, 0xa4, 0x2f, 0xc0, 0xd3, 0x6d, 0x8d, 0xb6, 0xed, 0xe4, 0xfc, 0xc1,
+	0xef, 0xcb, 0xd9, 0x50, 0xd6, 0xd6, 0x98, 0x5a, 0x13, 0x7d, 0x02, 0x50, 0x08, 0x51, 0x6d, 0x0f,
+	0x86, 0x0f, 0x86, 0x21, 0x89, 0xc6, 0xe9, 0xc4, 0x30, 0x5d, 0xfb, 0x33, 0x98, 0x29, 0x2d, 0x19,
+	0xff, 0xdc, 0x1b, 0x5c, 0x3b, 0x66, 0xda, 0x71, 0x9d, 0xe5, 0x11, 0x4c, 0x18, 0xd7, 0xbd, 0xee,
+	0x85, 0x24, 0x72, 0xd3, 0x31, 0xe3, 0xfa, 0x98, 0xdf, 0x89, 0xa6, 0xa8, 0xb0, 0xd7, 0x07, 0x21,
+	0x89, 0x48, 0x3a, 0xed, 0xb8, 0xce, 0xf2, 0x1a, 0xa6, 0x15, 0x53, 0x7d, 0x81, 0x0a, 0x46, 0xff,
+	0x78, 0x52, 0x93, 0xb1, 0x50, 0xcd, 0x2f, 0xe0, 0x64, 0x6d, 0x17, 0xfa, 0xcb, 0x51, 0xee, 0xc3,
+	0xa0, 0xdb, 0xc0, 0xb1, 0x5c, 0xf7, 0x98, 0xbf, 0x87, 0xd3, 0x25, 0x57, 0x5a, 0x36, 0x76, 0x8e,
+	0x66, 0x82, 0x27, 0xac, 0x90, 0xb9, 0x6c, 0x29, 0x05, 0x8f, 0xe7, 0x7b, 0xec, 0x2b, 0x2c, 0xa6,
+	0x01, 0x8c, 0x0e, 0x28, 0x15, 0x13, 0xbc, 0x6f, 0xb9, 0x7d, 0x3e, 0x4f, 0x60, 0x72, 0x3c, 0x2c,
+	0x05, 0x18, 0xae, 0xb3, 0x74, 0x79, 0xfd, 0xc1, 0xff, 0x8f, 0x8e, 0xc0, 0x5d, 0x5e, 0x67, 0x3e,
+	0x31, 0xe4, 0xdb, 0xd5, 0xa7, 0x45, 0xf2, 0xce, 0x77, 0xe8, 0x18, 0xbc, 0xc5, 0x6a, 0x95, 0xf8,
+	0xae, 0x41, 0xc9, 0x72, 0x9d, 0xf9, 0x9e, 0xd1, 0xaf, 0x36, 0x16, 0x0f, 0x16, 0x1f, 0xe1, 0x31,
+	0x13, 0xb1, 0xa8, 0x91, 0x97, 0xc8, 0x55, 0xa3, 0xba, 0x5f, 0x19, 0x6b, 0x99, 0x97, 0x18, 0x1f,
+	0xce, 0x16, 0x90, 0x19, 0x74, 0x63, 0xc8, 0x1b, 0xf2, 0xc3, 0x79, 0xb8, 0xaa, 0x91, 0x5f, 0x76,
+	0x4e, 0x4b, 0xc6, 0x56, 0x8f, 0x37, 0x67, 0xc5, 0xd0, 0x26, 0x5f, 0xfe, 0x0c, 0x00, 0x00, 0xff,
+	0xff, 0xc1, 0x8f, 0xba, 0x18, 0xdf, 0x02, 0x00, 0x00,
 }

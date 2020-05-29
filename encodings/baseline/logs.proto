@@ -116,7 +116,7 @@ message LogRecord {
     // A value containing the body of the log record. Can be for example a human-readable
     // string message (including multi-line) describing the event in a free form or it can
     // be a structured data composed of arrays and maps of other values. Optional.
-    AnyValue body = 8;
+    AttributeKeyValue body = 8;
 
     // Additional attributes that describe the specific event occurrence. Optional.
     repeated AttributeKeyValue attributes = 9;

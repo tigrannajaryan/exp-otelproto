@@ -518,34 +518,11 @@ func BenchmarkEndianness(b *testing.B) {
 
 func TestSizes(t *testing.T) {
 	akv := experimental.AttributeKeyValue{}
-	log.Printf("AKV=%d", unsafe.Sizeof(akv))
-	log.Printf("AKV.Key=%d", unsafe.Sizeof(akv.Key))
+	log.Printf("AttributeKeyValue is %d bytes", unsafe.Sizeof(akv))
+	log.Printf("AttributeKeyValue.Key is %d bytes", unsafe.Sizeof(akv.Key))
 
-	av := experimental.AttributeKeyValue{}
-	log.Printf("AV=%d", unsafe.Sizeof(av))
-
-	av = experimental.AttributeKeyValue{
-		Type: experimental.ValueType_MAP,
-		//ListOrMap: &experimental.ValueListOrMap{
-		//	Map: []*experimental.AttributeKeyValue{
-		//		{
-		//			Key:         "strkey",
-		//			Type:        experimental.ValueType_STRING,
-		//			StringValue: "strval",
-		//		},
-		//		{
-		//			Key:  "mapkey",
-		//			Type: experimental.ValueType_LIST,
-		//			ListOrMap: &experimental.ValueListOrMap{
-		//				List: []*experimental.AnyValue{},
-		//			},
-		//		},
-		//	},
-		//},
-	}
-
-	log.Printf("Span=%d", unsafe.Sizeof(experimental.Span{}))
-	log.Printf("LogRecord=%d", unsafe.Sizeof(experimental.LogRecord{}))
+	log.Printf("Span is %d bytes", unsafe.Sizeof(experimental.Span{}))
+	log.Printf("LogRecord is %d bytes", unsafe.Sizeof(experimental.LogRecord{}))
 }
 
 func createAKV() *experimental.AttributeKeyValue {

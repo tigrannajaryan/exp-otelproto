@@ -20,91 +20,60 @@ message Resource {
 
 
 // ValueType is the enumeration of possible types that value can have.
+// TODO: consolidate this with AttributeKeyValue.ValueType.
 enum ValueType {
     STRING  = 0;
     INT     = 1;
     DOUBLE  = 2;
     BOOL    = 3;
     LIST    = 4;
-    MAP     = 5;
+    KVLIST  = 5;
 };
 
-// AnyValue is a value that is used to store values that can be one of the supported
-// value types.
-message AnyValue {
-    // type of the value.
-    ValueType type = 1;
-
-    // Only one of the following fields is supposed to contain data (determined by `type` field).
-    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
-
-    bool bool_value = 2;
-    string string_value = 3;
-    int64 int_value = 4;
-    double double_value = 5;
-
-    // If the type is LIST or MAP then this field is set and the list or the map
-    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-    // field is not set.
-    // A list of values.
-    repeated AnyValue list = 6;
-
-    // A key/value map of values.
-    repeated AttributeKeyValue map = 7;
-}
-
-// ValueListOrMap is used for storing a list or a map of values.
-message ValueListOrMap {
-    // AnyValue.type field defines which of the 2 fields in this message are set.
-
-    // A list of values.
-    repeated AnyValue list = 1;
-
-    // A key/value map of values.
-    repeated AttributeKeyValue map = 2;
-}
-
-// ValueList is used for storing a list.
-message ValueList {
-    // A list of values.
-    repeated AnyValue list = 1;
-}
-
-// ValueMap is used for storing a map.
-message ValueMap {
-    // A key/value map of values.
-    repeated AttributeKeyValue map = 1;
-}
+//// AnyValue is a value that is used to store values that can be one of the supported
+//// value types.
+//message AnyValue {
+//    // type of the value.
+//    ValueType type = 1;
+//
+//    // Only one of the following fields is supposed to contain data (determined by `type` field).
+//    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
+//
+//    bool bool_value = 2;
+//    string string_value = 3;
+//    int64 int_value = 4;
+//    double double_value = 5;
+//
+//    repeated AnyValue list_values = 6;
+//    repeated AttributeKeyValue map_values = 7;
+//}
 
 // AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
 message AttributeKeyValue {
-    // key part of the key-value pair.
+    // key part of the key-value pair. The key is empty if this AttributeKeyValue
+    // is not a key-value list element (e.g. it is an element of a list).
+    // See `list_values` field comment below.
     string key = 1;
 
     // type of the value.
     ValueType type = 2;
 
-    // Only one of the following fields is supposed to contain data (determined by `type` field).
-    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
+    // Only one of the *_value fields is supposed to contain data (determined by the
+    // `type` field). This is deliberately not using Protobuf `oneof` for performance
+    // reasons (verified by benchmarks).
 
+    bool bool_value = 6;
     string string_value = 3;
     int64 int_value = 4;
     double double_value = 5;
-    bool bool_value = 6;
 
-    // If the type is LIST or MAP then this field is set and the list or the map
-    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-    // field is not set.
-//    ValueListOrMap listOrMap = 7;
-    // If the type is LIST or MAP then this field is set and the list or the map
-    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-    // field is not set.
-    // A list of values.
-    repeated AnyValue list = 7;
-
-    // A key/value map of values.
-    repeated AttributeKeyValue map = 8;
+    // A list of values or a map of values.
+    // If ValueType=LIST then this is a list of values and `key` field inside each child
+    // AttributeKeyValue must be set empty by writers and must be ignored by readers.
+    // If ValueType=KVLIST then this is a list of key-values and child AttributeKeyValue
+    // `key` is significant.
+    repeated AttributeKeyValue list_values = 7;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version

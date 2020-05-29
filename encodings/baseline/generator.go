@@ -132,10 +132,10 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			SeverityNumber: SeverityNumber_INFO,
 			SeverityText:   "info",
 			ShortName:      "ProcessStarted",
-			Body: &AnyValue{
-				Type: ValueType_MAP,
-				ListOrMap: &ValueListOrMap{
-					Map: []*AttributeKeyValue{
+			Body: &AttributeKeyValue{
+				Type: ValueType_KVLIST,
+				ListValues: &ValueList{
+					ListValues: []*AttributeKeyValue{
 						{
 							Key:         "bodykey",
 							Type:        ValueType_STRING,

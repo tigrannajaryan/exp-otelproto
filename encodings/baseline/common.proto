@@ -27,41 +27,41 @@ enum ValueType {
     DOUBLE  = 2;
     BOOL    = 3;
     LIST    = 4;
-    MAP     = 5;
+    KVLIST  = 5;
 };
 
-// AnyValue is a value that is used to store values that can be one of the supported
-// value types.
-message AnyValue {
-    // type of the value.
-    ValueType type = 1;
+//// AnyValue is a value that is used to store values that can be one of the supported
+//// value types.
+//message AnyValue {
+//    // type of the value.
+//    ValueType type = 1;
+//
+//    // Only one of the following fields is supposed to contain data (determined by `type` field).
+//    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
+//
+//    bool bool_value = 2;
+//    string string_value = 3;
+//    int64 int_value = 4;
+//    double double_value = 5;
+//
+//    // If the type is LIST or KVLIST then this field is set and the list or the map
+//    // is stored in the ValueListOrMap message. If type is neither LIST nor KVLIST then
+//    // field is not set.
+//    // LIST and KVLIST are less frequent types and thus are stored in a separate message
+//    // to avoid consuming memory. This saves about 10-15% of memory for the most frequent
+//    // case when the value is a primitive type.
+//    ValueListOrMap list_or_map = 6;
+//}
 
-    // Only one of the following fields is supposed to contain data (determined by `type` field).
-    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
-
-    bool bool_value = 2;
-    string string_value = 3;
-    int64 int_value = 4;
-    double double_value = 5;
-
-    // If the type is LIST or MAP then this field is set and the list or the map
-    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
-    // field is not set.
-    // LIST and MAP are less frequent types and thus are stored in a separate message
-    // to avoid consuming memory. This saves about 10-15% of memory for the most frequent
-    // case when the value is a primitive type.
-    ValueListOrMap list_or_map = 6;
-}
-
-// ValueListOrMap is used for storing a list or a map of values.
-message ValueListOrMap {
+// ValueList is used for storing a list of values or a list of key-values.
+message ValueList {
     // AnyValue.type field defines which of the 2 fields in this message are set.
 
-    // A list of values.
-    repeated AnyValue list = 1;
+//    // A list of values.
+//    repeated AnyValue list = 1;
 
     // A key/value map of values.
-    repeated AttributeKeyValue map = 2;
+    repeated AttributeKeyValue list_values = 2;
 }
 
 //// ValueList is used for storing a list.
@@ -88,15 +88,15 @@ message AttributeKeyValue {
     // Only one of the following fields is supposed to contain data (determined by `type` field).
     // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
 
+    bool bool_value = 6;
     string string_value = 3;
     int64 int_value = 4;
     double double_value = 5;
-    bool bool_value = 6;
 
-    // If the type is LIST or MAP then this field is set and the list or the map
-    // is stored in the ValueListOrMap message. If type is neither LIST nor MAP then
+    // If the type is LIST or KVLIST then this field is set and the list or key-value list
+    // is stored in the ValueList message. If type is neither LIST nor KVLIST then
     // field is not set.
-    ValueListOrMap listOrMap = 7;
+    ValueList list_values = 7;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
