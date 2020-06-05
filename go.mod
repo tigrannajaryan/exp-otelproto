@@ -13,10 +13,11 @@ require (
 	github.com/jaegertracing/jaeger v1.15.1
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/open-telemetry/opentelemetry-proto v0.3.0
+	github.com/open-telemetry/opentelemetry-proto v0.3.1-0.20200602210206-b54688569186
 	github.com/prometheus/client_golang v1.1.0
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/signalfx/sapm-proto v0.5.1
+	github.com/stretchr/testify v1.4.0
 	google.golang.org/genproto v0.0.0-20190927181202-20e1ac93f88c
 	google.golang.org/grpc v1.24.0
 )

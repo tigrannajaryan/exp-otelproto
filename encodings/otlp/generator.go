@@ -214,17 +214,17 @@ func GenMetricDescriptor(i int) *otlpmetric.MetricDescriptor {
 	descr := &otlpmetric.MetricDescriptor{
 		Name:        "metric" + strconv.Itoa(i),
 		Description: "some description: " + strconv.Itoa(i),
-		Type:        otlpmetric.MetricDescriptor_GAUGE_INT64,
-		Labels: []*otlpcommon.StringKeyValue{
-			{
-				Key:   "label1",
-				Value: "val1",
-			},
-			{
-				Key:   "label2",
-				Value: "val2",
-			},
-		},
+		Type:        otlpmetric.MetricDescriptor_INT64,
+		//Labels: []*otlpcommon.StringKeyValue{
+		//	{
+		//		Key:   "label1",
+		//		Value: "val1",
+		//	},
+		//	{
+		//		Key:   "label2",
+		//		Value: "val2",
+		//	},
+		//},
 	}
 	return descr
 }
@@ -232,7 +232,7 @@ func GenMetricDescriptor(i int) *otlpmetric.MetricDescriptor {
 func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *otlpmetric.Metric {
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
-	descr.Type = otlpmetric.MetricDescriptor_GAUGE_HISTOGRAM
+	descr.Type = otlpmetric.MetricDescriptor_INT64
 
 	var timeseries2 []*otlpmetric.HistogramDataPoint
 	for j := 0; j < 1; j++ {

@@ -14,10 +14,6 @@ export DOCKER_REGISTRY
 export IMAGE_NAME
 export PROTOCOL
 
-all: gen build test
-
-gen:
-
 # Function to execute a command.
 # Accepts command to execute as first parameter.
 define exec-command
@@ -29,9 +25,9 @@ endef
 OTLP_PROTO_FILES := $(wildcard encodings/otlp_gogo/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo/opentelemetry/proto/collector/*/v1/*.proto)
 
 
-all: genprotobuf build test
+all: gen build test
 
-genprotobuf:
+gen:
 	$(foreach file,$(OTLP_PROTO_FILES),$(call exec-command,protoc -Iencodings/otlp_gogo/ --gogofaster_out=plugins=grpc:encodings/otlp_gogo $(file)))
 	cp -R encodings/otlp_gogo/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/* encodings/otlp_gogo/
 	rm -rf encodings/otlp_gogo/github.com/
