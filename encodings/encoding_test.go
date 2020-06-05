@@ -10,14 +10,13 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-
 	"github.com/golang/protobuf/proto"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo"
 )
 
 const spansPerBatch = 1000
@@ -36,6 +35,14 @@ var tests = []struct {
 	//	name: "OpenCensus",
 	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	//},
+	//{
+	//	name: "Baseline",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
+	//},
+	//{
+	//	name: "Experimental",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
 	{
 		name: "OTLP(Current)",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
@@ -47,6 +54,10 @@ var tests = []struct {
 	{
 		name: "Alternate",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
+	},
+	{
+		name: "OTLPgogo",
+		gen:  func() core.Generator { return otlp_gogo.NewGenerator() },
 	},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
