@@ -1,7 +1,6 @@
 package experimental
 
 import (
-	fmt "fmt"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -135,13 +134,13 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			ShortName:      "ProcessStarted",
 			Body: &AttributeKeyValue{
 				Type: ValueType_KVLIST,
-				ListValues: []*AttributeKeyValue{
-					{
-						Key:         "bodykey",
-						Type:        ValueType_STRING,
-						StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
-					},
-				},
+				//ListValues: []*AttributeKeyValue{
+				//	{
+				//		Key:         "bodykey",
+				//		Type:        ValueType_STRING,
+				//		StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+				//	},
+				//},
 			},
 		}
 

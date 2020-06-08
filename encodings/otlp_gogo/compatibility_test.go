@@ -13,6 +13,8 @@ import (
 )
 
 func TestCompatibility(t *testing.T) {
+	t.SkipNow()
+
 	gen := otlp.NewGenerator()
 	batch := gen.GenerateSpanBatch(3, 10, 5)
 	request := batch.(*otlptrace.ExportTraceServiceRequest)

@@ -13,10 +13,12 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo3"
 )
 
 const spansPerBatch = 1000
@@ -32,32 +34,48 @@ var tests = []struct {
 	gen  func() core.Generator
 }{
 	//{
-	//	name: "OpenCensus",
-	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	//},
-	//{
-	//	name: "Baseline",
-	//	gen:  func() core.Generator { return baseline.NewGenerator() },
-	//},
-	//{
-	//	name: "Experimental",
-	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//	name: "SepAnyExtValue",
+	//	gen:  func() core.Generator { return baseline2.NewGenerator() },
 	//},
 	{
-		name: "OTLP(Current)",
+		name: "Current",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	{
 		name: "Proposed",
-		gen:  func() core.Generator { return baseline.NewGenerator() },
+		gen:  func() core.Generator { return experimental2.NewGenerator() },
 	},
+	//{
+	//	name: "FatAnyValue",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
+	//},
+	//{
+	//	name: "MoreFieldsinAKV",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
+	//{
+	//	name: "Proposed",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
+	//},
+	//{
+	//	name: "Alternate",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
 	{
-		name: "Alternate",
-		gen:  func() core.Generator { return experimental.NewGenerator() },
-	},
-	{
-		name: "OTLPgogo",
+		name: "Current(Gogo)",
 		gen:  func() core.Generator { return otlp_gogo.NewGenerator() },
+	},
+	//{
+	//	name: "gogoCustom",
+	//	gen:  func() core.Generator { return otlp_gogo2.NewGenerator() },
+	//},
+	{
+		name: "Proposed(Gogo)",
+		gen:  func() core.Generator { return otlp_gogo3.NewGenerator() },
+	},
+	{
+		name: "OpenCensus",
+		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
 	},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
@@ -74,7 +92,7 @@ var batchTypes = []struct {
 	name     string
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
-	{name: "Logs", batchGen: generateLogBatches},
+	//{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
 	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
@@ -86,6 +104,27 @@ var batchTypes = []struct {
 }
 
 const BatchCount = 1
+
+func BenchmarkGenerate(b *testing.B) {
+	b.SkipNow()
+
+	for _, batchType := range batchTypes {
+		for _, test := range tests {
+			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
+				gen := test.gen()
+				for i:=0; i<b.N; i++ {
+					batches := batchType.batchGen(gen)
+					if batches == nil {
+						// Unsupported test type and batch type combination.
+						b.SkipNow()
+						return
+					}
+				}
+			})
+		}
+		fmt.Println("")
+	}
+}
 
 func BenchmarkEncode(b *testing.B) {
 
@@ -290,7 +329,7 @@ func generateAttrBatches(gen core.Generator) []core.ExportRequest {
 func generateTimedEventBatches(gen core.Generator) []core.ExportRequest {
 	var batches []core.ExportRequest
 	for i := 0; i < BatchCount; i++ {
-		batches = append(batches, gen.GenerateSpanBatch(spansPerBatch, 0, eventsPerSpan))
+		batches = append(batches, gen.GenerateSpanBatch(spansPerBatch, 3, eventsPerSpan))
 	}
 	return batches
 }

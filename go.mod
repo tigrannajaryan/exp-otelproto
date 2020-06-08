@@ -16,8 +16,10 @@ require (
 	github.com/open-telemetry/opentelemetry-proto v0.3.1-0.20200602210206-b54688569186
 	github.com/prometheus/client_golang v1.1.0
 	github.com/shirou/gopsutil v2.18.12+incompatible
+	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
 	github.com/signalfx/sapm-proto v0.5.1
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect
 	google.golang.org/genproto v0.0.0-20190927181202-20e1ac93f88c
 	google.golang.org/grpc v1.24.0
 )

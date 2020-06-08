@@ -30,52 +30,54 @@ enum ValueType {
     KVLIST  = 5;
 };
 
-//// AnyValue is a value that is used to store values that can be one of the supported
-//// value types.
 //message AnyValue {
 //    // type of the value.
-//    ValueType type = 1;
+//    ValueType type = 2;
 //
 //    // Only one of the following fields is supposed to contain data (determined by `type` field).
 //    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
 //
-//    bool bool_value = 2;
+//    bool bool_value = 6;
 //    string string_value = 3;
 //    int64 int_value = 4;
-//    double double_value = 5;
-//
-//    repeated AnyValue list_values = 6;
-//    repeated AttributeKeyValue map_values = 7;
+//    ExoticValue extended_value = 5;
 //}
+//
+//message ExoticValue {
+//    repeated AttributeKeyValue list_or_kvlist_values = 2;
+//}
+
+// Design goals:
+// 1. The representation of attributes should be consistent for spans and log records.
+// 2. Allow representing arbitrary attribute values, including primitives, arrays and
+//    and key-value pair lists (any JSON-like data is representable). This is partially
+//    driven by the needs of logs, however it is also beneficial to have such capability
+//    for spans, and futureproofs our needs for representing arbitrary structured data.
+// 3. Aim to be fast and compact with regular ProtoBuf compilers, however may tradeoff
+//    performance for consistency and flexibility of message schema provided that high
+//    performance may be gained with specialized ProtoBuf compiler (GogoProtobuf), which
+//    matters in critical high-performance applications (e.g. Collector).
 
 // AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
 message AttributeKeyValue {
-    // key part of the key-value pair. The key is empty if this AttributeKeyValue
-    // is not a key-value list element (e.g. it is an element of a list).
-    // See `list_values` field comment below.
-    string key = 1;
 
+    // key part of the key-value pair.
+    string key = 1;
     // type of the value.
     ValueType type = 2;
 
-    // Only one of the *_value fields is supposed to contain data (determined by the
-    // `type` field). This is deliberately not using Protobuf `oneof` for performance
-    // reasons (verified by benchmarks).
+    // Only one of the following fields is supposed to contain data (determined by `type` field).
+    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
 
-    bool bool_value = 6;
-    string string_value = 3;
-    int64 int_value = 4;
-    double double_value = 5;
-
-    // A list of values or a map of values.
-    // If ValueType=LIST then this is a list of values and `key` field inside each child
-    // AttributeKeyValue must be set empty by writers and must be ignored by readers.
-    // If ValueType=KVLIST then this is a list of key-values and child AttributeKeyValue
-    // `key` is significant.
-    repeated AttributeKeyValue list_values = 7;
+    bool bool_value = 3;
+    string string_value = 4;
+    int64 int_value = 5;
+    double double_value = 6;
+    //ExoticValue extended_value = 7;
+    repeated AttributeKeyValue list_or_kvlist_values = 7;
+    bytes bytes_value = 8;
 }
-
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
 // of AttributeKeyValue that only supports string values.
 message StringKeyValue {

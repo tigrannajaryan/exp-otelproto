@@ -23,25 +23,38 @@ endef
 
 # Find all .proto files.
 OTLP_PROTO_FILES := $(wildcard encodings/otlp_gogo/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo/opentelemetry/proto/collector/*/v1/*.proto)
+OTLP_PROTO_FILES2 := $(wildcard encodings/otlp_gogo2/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo2/opentelemetry/proto/collector/*/v1/*.proto)
+OTLP_PROTO_FILES3 := $(wildcard encodings/otlp_gogo3/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo3/opentelemetry/proto/collector/*/v1/*.proto)
 
 
-all: gen build test
+all: build test
 
-gen:
-	$(foreach file,$(OTLP_PROTO_FILES),$(call exec-command,protoc -Iencodings/otlp_gogo/ --gogofaster_out=plugins=grpc:encodings/otlp_gogo $(file)))
+gen: gen-baseline gen-experimental gen-gogo
+
+gen-gogo:
+	$(foreach file,$(OTLP_PROTO_FILES),$(call exec-command,protoc -Iencodings/otlp_gogo/ -Ivendor --gogofaster_out=plugins=grpc:encodings/otlp_gogo $(file)))
 	cp -R encodings/otlp_gogo/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/* encodings/otlp_gogo/
 	rm -rf encodings/otlp_gogo/github.com/
 
+	$(foreach file,$(OTLP_PROTO_FILES2),$(call exec-command,protoc -Iencodings/otlp_gogo2/ -Ivendor --gogofaster_out=plugins=grpc:encodings/otlp_gogo2 $(file)))
+	cp -R encodings/otlp_gogo2/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/* encodings/otlp_gogo2/
+	rm -rf encodings/otlp_gogo2/github.com/
+
+	$(foreach file,$(OTLP_PROTO_FILES3),$(call exec-command,protoc -Iencodings/otlp_gogo3/ -Ivendor --gogofaster_out=plugins=grpc:encodings/otlp_gogo3 $(file)))
+	cp -R encodings/otlp_gogo3/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo3/* encodings/otlp_gogo3/
+	rm -rf encodings/otlp_gogo3/github.com/
+
+gen-traceprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/resource.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/exchange.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/grpc.proto --go_out=plugins=grpc:encodings/traceprotobuf
-
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobufb
 	protoc -I/usr/local/include -I encodings/traceprotobufb/ encodings/traceprotobufb/exchange.proto --go_out=plugins=grpc:encodings/traceprotobufb
 
 #	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
 
+gen-experimental:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/common.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental
@@ -50,6 +63,15 @@ gen:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=plugins=grpc:encodings/experimental
 
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/common.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/metric_data.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/exchange.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/logs.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/logs_service.proto --go_out=plugins=grpc:encodings/experimental2
+	protoc -I/usr/local/include -I encodings/experimental2/ encodings/experimental2/grpc.proto --go_out=plugins=grpc:encodings/experimental2
+
+gen-baseline:
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/common.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/metric_data.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/telemetry_data.proto --go_out=plugins=grpc:encodings/baseline
@@ -58,6 +80,15 @@ gen:
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/logs_service.proto --go_out=plugins=grpc:encodings/baseline
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/grpc.proto --go_out=plugins=grpc:encodings/baseline
 
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/common.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/metric_data.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/telemetry_data.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/exchange.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/logs.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/logs_service.proto --go_out=plugins=grpc:encodings/baseline2
+	protoc -I/usr/local/include -I encodings/baseline2/ encodings/baseline2/grpc.proto --go_out=plugins=grpc:encodings/baseline2
+
+gen-otlptimewrapped:
 	protoc -I/usr/local/include -I encodings/otlptimewrapped/ encodings/otlptimewrapped/telemetry_data.proto --go_out=plugins=grpc:encodings/otlptimewrapped
 	protoc -I/usr/local/include -I encodings/otlptimewrapped/ encodings/otlptimewrapped/exchange.proto --go_out=plugins=grpc:encodings/otlptimewrapped
 

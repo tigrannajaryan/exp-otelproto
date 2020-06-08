@@ -1,7 +1,6 @@
 package baseline
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"sync/atomic"
@@ -36,10 +35,10 @@ func (g *Generator) genRandByteString(len int) string {
 func GenResource() *Resource {
 	return &Resource{
 		Attributes: []*AttributeKeyValue{
-			{Key: "StartTimeUnixnano", IntValue: 12345678},
-			{Key: "Pid", IntValue: 1234},
-			{Key: "HostName", StringValue: "fakehost"},
-			{Key: "ServiceName", StringValue: "generator"},
+			{Key: "StartTimeUnixnano", Value: &AnyValue{IntValue: 12345678}},
+			{Key: "Pid", Value: &AnyValue{IntValue: 1234}},
+			{Key: "HostName", Value: &AnyValue{StringValue: "fakehost"}},
+			{Key: "ServiceName", Value: &AnyValue{StringValue: "generator"}},
 		},
 	}
 }
@@ -80,15 +79,15 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: ValueType_INT, IntValue: int64(spanID)})
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Value: &AnyValue{Type: ValueType_INT, IntValue: int64(spanID)}})
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: ValueType_INT, IntValue: int64(traceID)})
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Value: &AnyValue{Type: ValueType_INT, IntValue: int64(traceID)}})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
-					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+					&AttributeKeyValue{Key: attrName, Value: &AnyValue{Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)}})
 			}
 		}
 
@@ -98,7 +97,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 					TimeUnixNano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*AttributeKeyValue{
-						{Key: "te", Type: ValueType_INT, IntValue: int64(spanID)},
+						{Key: "te", Value: &AnyValue{Type: ValueType_INT, IntValue: int64(spanID)}},
 					},
 				})
 			}
@@ -132,17 +131,17 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			SeverityNumber: SeverityNumber_INFO,
 			SeverityText:   "info",
 			ShortName:      "ProcessStarted",
-			Body: &AttributeKeyValue{
-				Type: ValueType_KVLIST,
-				ListValues: &ValueList{
-					ListValues: []*AttributeKeyValue{
-						{
-							Key:         "bodykey",
-							Type:        ValueType_STRING,
-							StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
-						},
-					},
-				},
+			Body:           &AttributeKeyValue{
+				//Type: ValueType_KVLIST,
+				//ListValues: &ValueList{
+				//	ListValues: []*AttributeKeyValue{
+				//		{
+				//			Key:         "bodykey",
+				//			Type:        ValueType_STRING,
+				//			StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+				//		},
+				//	},
+				//},
 			},
 		}
 
@@ -152,19 +151,19 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 
 			if attrsPerLog >= 2 {
 				log.Attributes = append(log.Attributes,
-					&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: ValueType_INT, IntValue: int64(spanID)})
+					&AttributeKeyValue{Key: "load_generator.span_seq_num", Value: &AnyValue{Type: ValueType_INT, IntValue: int64(spanID)}})
 				log.Attributes = append(log.Attributes,
-					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: ValueType_INT, IntValue: int64(traceID)})
+					&AttributeKeyValue{Key: "load_generator.trace_seq_num", Value: &AnyValue{Type: ValueType_INT, IntValue: int64(traceID)}})
 			}
 
 			for j := len(log.Attributes); j < attrsPerLog; j++ {
 				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				log.Attributes = append(log.Attributes,
-					&AttributeKeyValue{Key: attrName, Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+					&AttributeKeyValue{Key: attrName, Value: &AnyValue{Type: ValueType_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)}})
 			}
 
 			log.Attributes = append(log.Attributes,
-				&AttributeKeyValue{Key: "event_type", Type: ValueType_STRING, StringValue: "auto_generated_event"})
+				&AttributeKeyValue{Key: "event_type", Value: &AnyValue{Type: ValueType_STRING, StringValue: "auto_generated_event"}})
 
 		}
 
