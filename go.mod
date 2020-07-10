@@ -6,7 +6,7 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.4.1
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.14.3 // indirect
@@ -20,6 +20,7 @@ require (
 	github.com/signalfx/sapm-proto v0.5.1
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect
-	google.golang.org/genproto v0.0.0-20190927181202-20e1ac93f88c
-	google.golang.org/grpc v1.24.0
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/grpc v1.27.0
+	google.golang.org/protobuf v1.24.0
 )

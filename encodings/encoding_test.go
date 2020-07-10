@@ -10,7 +10,9 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
@@ -601,4 +603,15 @@ func BenchmarkAttributeValueSize(b *testing.B) {
 		s := createAV()
 		s.Type = 0
 	}
+}
+
+func TestJson(t*testing.T) {
+	g := experimental2.NewGenerator()
+	b := g.GenerateSpanBatch(1,1,1)
+	// proto.Marshal(b.(*experimental2.TraceExportRequest))
+	//json := protojson.Format(b.(*experimental2.TraceExportRequest))
+	m := jsonpb.Marshaler{}
+	str, err := m.MarshalToString(b.(*experimental2.TraceExportRequest))
+	assert.NoError(t, err)
+	fmt.Printf(str)
 }
