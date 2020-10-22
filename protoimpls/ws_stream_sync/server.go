@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 )
 
 type Server struct {
@@ -34,15 +34,13 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		request := encodings.Decode(bytes)
 
-		if request.GetExport().Id == 0 {
-			log.Fatal("Received 0 Id")
-		}
+		//if request.GetExport().Id == 0 {
+		//	log.Fatal("Received 0 Id")
+		//}
 
-		onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
-		response := &experimental.Response{
-			ResponseType: experimental.RequestType_TraceExport,
-			Export:       &experimental.ExportResponse{Id: request.GetExport().Id},
+		response := &otlptracecol.ExportTraceServiceResponse{
 		}
 		responseBytes, err := proto.Marshal(response)
 		if err != nil {

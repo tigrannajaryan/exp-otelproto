@@ -220,7 +220,7 @@ func benchmarkWSStreamSync(options core.Options) {
 		options,
 		func() core.Client { return &ws_stream_sync.Client{} },
 		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.SpanGenerator { return experimental.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 
@@ -240,7 +240,7 @@ func benchmarkWSStreamAsync(options core.Options, compression experimental.Compr
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
-		func() core.SpanGenerator { return experimental.NewGenerator() },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
 

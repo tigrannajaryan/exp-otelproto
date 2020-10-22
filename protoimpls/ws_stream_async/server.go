@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 )
 
 type Server struct {
@@ -26,7 +26,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 		return
 	}
 	defer c.Close()
-	lastId := uint64(0)
+	//lastId := uint64(0)
 	for {
 		mt, bytes, err := c.ReadMessage()
 		if err != nil {
@@ -36,20 +36,20 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		request := encodings.Decode(bytes)
 
-		Id := request.GetExport().Id
-		if Id == 0 {
-			log.Fatal("Received 0 Id")
-		}
-		if Id != lastId+1 {
-			log.Fatalf("Received out of order request ID=%d instead of expected ID=%d", Id, lastId+1)
-		}
-		lastId = Id
+		//Id := request.GetExport().Id
+		//if Id == 0 {
+		//	log.Fatal("Received 0 Id")
+		//}
+		//if Id != lastId+1 {
+		//	log.Fatalf("Received out of order request ID=%d instead of expected ID=%d", Id, lastId+1)
+		//}
+		//lastId = Id
 
-		onReceive(request, len(request.GetExport().ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
-		response := &experimental.Response{
-			ResponseType: experimental.RequestType_TraceExport,
-			Export:       &experimental.ExportResponse{Id: Id},
+		response := &otlptracecol.ExportTraceServiceResponse{
+			//ResponseType: experimental.RequestType_TraceExport,
+			//Export:       &experimental.ExportResponse{Id: Id},
 		}
 		responseBytes, err := proto.Marshal(response)
 		if err != nil {

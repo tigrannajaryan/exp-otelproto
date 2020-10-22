@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/url"
 	"sync"
-	"sync/atomic"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
@@ -13,13 +12,14 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 )
 
 type Client struct {
 	Compression   experimental.CompressionMethod
 	clientStreams []*clientStream
 	Concurrency   int
-	requestsCh    chan *experimental.TraceExportRequest
+	requestsCh    chan *otlptracecol.ExportTraceServiceRequest
 	//semaphor   chan int
 	nextStream int64
 }
@@ -31,12 +31,12 @@ type clientStream struct {
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 	Compression     experimental.CompressionMethod
-	requestsCh      chan *experimental.TraceExportRequest
+	requestsCh      chan *otlptracecol.ExportTraceServiceRequest
 }
 
 func (c *Client) Connect(server string) error {
 	//c.semaphor = make(chan int, c.Concurrency)
-	c.requestsCh = make(chan *experimental.TraceExportRequest, 10*c.Concurrency)
+	c.requestsCh = make(chan *otlptracecol.ExportTraceServiceRequest, 10*c.Concurrency)
 	c.clientStreams = make([]*clientStream, c.Concurrency)
 
 	for i := 0; i < c.Concurrency; i++ {
@@ -64,7 +64,7 @@ func newClientStream(client *Client) *clientStream {
 
 func (c *Client) Export(batch core.ExportRequest) {
 	if c.Concurrency == 1 {
-		c.clientStreams[0].sendRequest(batch.(*experimental.TraceExportRequest))
+		c.clientStreams[0].sendRequest(batch.(*otlptracecol.ExportTraceServiceRequest))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (c *Client) Export(batch core.ExportRequest) {
 	//c.clientStreams[si%int64(c.Concurrency)].requestsCh <- batch.(*experimental.TraceExportRequest)
 	//<-c.semaphor
 
-	c.requestsCh <- batch.(*experimental.TraceExportRequest)
+	c.requestsCh <- batch.(*otlptracecol.ExportTraceServiceRequest)
 }
 
 func (c *Client) Shutdown() {
@@ -93,7 +93,9 @@ func (c *clientStream) Connect(server string) error {
 	u := url.URL{Scheme: "ws", Host: server, Path: "/telemetry"}
 
 	var err error
-	c.conn, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+	dialer := *websocket.DefaultDialer
+	dialer.WriteBufferSize = 256*1024
+	c.conn, _, err = dialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
@@ -112,25 +114,25 @@ func (c *clientStream) processSendRequests() {
 
 func (c *clientStream) readStream() {
 	// defer close(done)
-	lastId := uint64(0)
+	//lastId := uint64(0)
 	for {
 		_, bytes, err := c.conn.ReadMessage()
 		if err != nil {
 			log.Fatal("read:", err)
 			return
 		}
-		var response experimental.Response
+		var response otlptracecol.ExportTraceServiceResponse
 		err = proto.Unmarshal(bytes, &response)
 		if err != nil {
 			log.Fatal("cannnot decode:", err)
 			break
 		}
 
-		Id := response.GetExport().Id
-		if Id != lastId+1 {
-			log.Fatalf("Received out of order response ID=%d", Id)
-		}
-		lastId = Id
+		//Id := response.GetExport().Id
+		//if Id != lastId+1 {
+		//	log.Fatalf("Received out of order response ID=%d", Id)
+		//}
+		//lastId = Id
 
 		//c.pendingAckMutex.Lock()
 		//_, ok := c.pendingAck[Id]
@@ -144,20 +146,20 @@ func (c *clientStream) readStream() {
 }
 
 func (c *clientStream) sendRequest(batch core.ExportRequest) {
-	request := batch.(*experimental.TraceExportRequest)
-	if request.Id != 0 {
-		log.Fatal("Request is still processing but got overwritten")
-	}
+	request := batch.(*otlptracecol.ExportTraceServiceRequest)
+	//if request.Id != 0 {
+	//	log.Fatal("Request is still processing but got overwritten")
+	//}
 
-	Id := atomic.AddUint64(&c.nextId, 1)
-	request.Id = Id
+	//Id := atomic.AddUint64(&c.nextId, 1)
+	//request.Id = Id
 
-	body := &experimental.RequestBody{
-		RequestType: experimental.RequestType_TraceExport,
-		Export:      request,
-	}
-	bytes := encodings.Encode(body, c.Compression)
-	request.Id = 0
+	//body := &experimental.RequestBody{
+	//	RequestType: experimental.RequestType_TraceExport,
+	//	Export:      request,
+	//}
+	bytes := encodings.Encode(request, c.Compression)
+	//request.Id = 0
 
 	//// Add the ID to pendingAck map
 	//c.pendingAckMutex.Lock()

@@ -1,17 +1,18 @@
 package ws_stream_sync
 
 import (
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"log"
 	"net/url"
-	"sync/atomic"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 )
 
 // Client can connect to a server and send a batch of spans.
@@ -26,7 +27,9 @@ func (c *Client) Connect(server string) error {
 	u := url.URL{Scheme: "ws", Host: server, Path: "/telemetry"}
 
 	var err error
-	c.conn, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+	dialer := *websocket.DefaultDialer
+	dialer.WriteBufferSize = 256*1024
+	c.conn, _, err = dialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
@@ -35,14 +38,14 @@ func (c *Client) Connect(server string) error {
 }
 
 func (c *Client) Export(batch core.ExportRequest) {
-	request := batch.(*experimental.TraceExportRequest)
-	request.Id = atomic.AddUint64(&c.nextId, 1)
+	request := batch.(*otlptracecol.ExportTraceServiceRequest)
+	//request.Id = atomic.AddUint64(&c.nextId, 1)
 
-	body := &experimental.RequestBody{
-		RequestType: experimental.RequestType_TraceExport,
-		Export:      request,
-	}
-	bytes := encodings.Encode(body, c.Compression)
+	//body := &experimental.RequestBody{
+	//	RequestType: experimental.RequestType_TraceExport,
+	//	Export:      request,
+	//}
+	bytes := encodings.Encode(request, c.Compression)
 	err := c.conn.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		log.Fatal("write:", err)
@@ -53,14 +56,14 @@ func (c *Client) Export(batch core.ExportRequest) {
 		log.Fatal("read:", err)
 		return
 	}
-	var response experimental.Response
+	var response otlptracecol.ExportTraceServiceResponse
 	err = proto.Unmarshal(bytes, &response)
 	if err != nil {
 		log.Fatal("cannnot decode:", err)
 	}
-	if response.GetExport().Id != request.Id {
-		log.Fatal("received ack on unexpected ID")
-	}
+	//if response.GetExport().Id != request.Id {
+	//	log.Fatal("received ack on unexpected ID")
+	//}
 }
 
 func (c *Client) Shutdown() {

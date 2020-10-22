@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 )
 
 type RequestHeader byte
@@ -28,7 +29,7 @@ const (
 // + Header Length Byte | Variable length Header (Protobuf-encoded) | Variable length Body (Protobuf-encoded) |
 // +--------------------+-------------------------------------------+-----------------------------------------+
 func Encode(
-	requestBody *experimental.RequestBody,
+	requestBody proto.Message,
 	compression experimental.CompressionMethod,
 ) []byte {
 	bodyBytes, err := proto.Marshal(requestBody)
@@ -59,7 +60,7 @@ func Encode(
 
 // Decode a continuous message of bytes into a RequestBody. This function perform the
 // reverse of Encode operation.
-func Decode(messageBytes []byte) *experimental.RequestBody {
+func Decode(messageBytes []byte) *otlptracecol.ExportTraceServiceRequest {
 	header := RequestHeader(messageBytes[0])
 	bodyBytes := messageBytes[RequestHeaderSize:]
 
@@ -80,7 +81,7 @@ func Decode(messageBytes []byte) *experimental.RequestBody {
 		}
 	}
 
-	var body experimental.RequestBody
+	var body otlptracecol.ExportTraceServiceRequest
 	err := proto.Unmarshal(bodyBytes, &body)
 	if err != nil {
 		log.Fatal("cannot decode:", err)
