@@ -3,26 +3,26 @@ package otlp_gogo2
 import (
 	"testing"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
-	otlpgogo2 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/trace/v1"
+	otlpgogo "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/collector/trace/v1"
 
 	gogoproto "github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/proto"
+	otlptrace "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 func TestCompatibility(t *testing.T) {
-	//t.SkipNow()
+	t.SkipNow()
 
-	gen := baseline.NewGenerator()
+	gen := otlp.NewGenerator()
 	batch := gen.GenerateSpanBatch(3, 10, 5)
-	request := batch.(*baseline.TraceExportRequest)
-	rs := request.ResourceSpans
-	wire, err := proto.Marshal(rs[0])
+	request := batch.(*otlptrace.ExportTraceServiceRequest)
+	wire, err := proto.Marshal(request)
 	assert.NotNil(t, wire)
 	assert.NoError(t, err)
 
-	var gogoRequest otlpgogo2.ResourceSpans
+	var gogoRequest otlpgogo.ExportTraceServiceRequest
 	err = gogoproto.Unmarshal(wire, &gogoRequest)
 	assert.NoError(t, err)
 

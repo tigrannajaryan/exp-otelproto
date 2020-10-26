@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package opentelemetrygogo2.proto.common.v1;
+package opentelemetrygogo.proto.common.v1;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.common.v1";
 option java_outer_classname = "CommonProto";
-option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/common/v1";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/common/v1";
 
 // ValueType is the enumeration of possible types that value can have.
 enum ValueType {
@@ -43,13 +43,8 @@ message AnyValue {
   string string_value = 3;
   int64 int_value = 4;
   double double_value = 5;
-  repeated AnyValue list_values = 6
-  [
-    (gogoproto.nullable) = false,
-    (gogoproto.customtype) = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/common/v1.AnyValueCustom",
-    (gogoproto.customname) = "AnyValueCustom"
-  ];
-  repeated AttributeKeyValue kvlist_values = 7 [(gogoproto.nullable) = false];
+  repeated AnyValue list_values = 6;
+  repeated AttributeKeyValue kvlist_values = 7;
   bytes bytes_value = 8;
 }
 
@@ -66,21 +61,16 @@ message AttributeKeyValue {
   string key = 1;
 
   // type of the value.
-  //  ValueType type = 2;
+//  ValueType type = 2;
 
   // Only one of the following fields is supposed to contain data (determined by `type` field).
   // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
 
-  //  string string_value = 3;
-  //  int64 int_value = 4;
-  //  double double_value = 5;
-  //  bool bool_value = 6;
-  AnyValue value = 2
-  [
-    (gogoproto.nullable) = false,
-    (gogoproto.customtype) = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/common/v1.AnyValueCustom",
-    (gogoproto.customname) = "AnyValueCustom"
-  ];
+//  string string_value = 3;
+//  int64 int_value = 4;
+//  double double_value = 5;
+//  bool bool_value = 6;
+  AnyValue value = 2 [(gogoproto.nullable) = false];
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
