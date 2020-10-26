@@ -17,14 +17,14 @@ syntax = "proto3";
 // NOTE: This proto is experimental and is subject to change at this point.
 // Please do not use it at the moment.
 
-package opentelemetrygogo.proto.collector.trace.v1;
+package opentelemetrygogo2.proto.collector.trace.v1;
 
 import "opentelemetry/proto/trace/v1/trace.proto";
 
 option java_multiple_files = true;
-option java_package = "io.opentelemetrygogo.proto.collector.trace.v1";
+option java_package = "io.opentelemetrygogo2.proto.collector.trace.v1";
 option java_outer_classname = "TraceServiceProto";
-option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/collector/trace/v1";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/collector/trace/v1";
 
 // Service that can be used to push spans between one Application instrumented with
 // OpenTelemetry and an collector, or between an collector and a central collector (in this
@@ -41,7 +41,7 @@ message ExportTraceServiceRequest {
   // element. Intermediary nodes (such as OpenTelemetry Collector) that receive
   // data from multiple origins typically batch the data before forwarding further and
   // in that case this array will contain multiple elements.
-  repeated opentelemetrygogo.proto.trace.v1.ResourceSpans resource_spans = 1;
+  repeated opentelemetrygogo2.proto.trace.v1.ResourceSpans resource_spans = 1;
 }
 
 message ExportTraceServiceResponse {

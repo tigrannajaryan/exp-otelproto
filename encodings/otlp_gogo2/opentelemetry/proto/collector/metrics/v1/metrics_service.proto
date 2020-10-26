@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package opentelemetrygogo.proto.collector.metrics.v1;
+package opentelemetrygogo2.proto.collector.metrics.v1;
 
 import "opentelemetry/proto/metrics/v1/metrics.proto";
 
 option java_multiple_files = true;
-option java_package = "io.opentelemetrygogo.proto.collector.metrics.v1";
+option java_package = "io.opentelemetrygogo2.proto.collector.metrics.v1";
 option java_outer_classname = "MetricsServiceProto";
-option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/collector/metrics/v1";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/collector/metrics/v1";
 
 // Service that can be used to push metrics between one Application
 // instrumented with OpenTelemetry and a collector, or between a collector and a
@@ -38,7 +38,7 @@ message ExportMetricsServiceRequest {
   // element. Intermediary nodes (such as OpenTelemetry Collector) that receive
   // data from multiple origins typically batch the data before forwarding further and
   // in that case this array will contain multiple elements.
-  repeated opentelemetrygogo.proto.metrics.v1.ResourceMetrics resource_metrics = 1;
+  repeated opentelemetrygogo2.proto.metrics.v1.ResourceMetrics resource_metrics = 1;
 }
 
 message ExportMetricsServiceResponse {

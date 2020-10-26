@@ -14,21 +14,21 @@
 
 syntax = "proto3";
 
-package opentelemetrygogo.proto.metrics.v1;
+package opentelemetrygogo2.proto.metrics.v1;
 
 import "opentelemetry/proto/common/v1/common.proto";
 import "opentelemetry/proto/resource/v1/resource.proto";
 
 option java_multiple_files = true;
-option java_package = "io.opentelemetrygogo.proto.metrics.v1";
+option java_package = "io.opentelemetrygogo2.proto.metrics.v1";
 option java_outer_classname = "MetricsProto";
-option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/metrics/v1";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/metrics/v1";
 
 // A collection of InstrumentationLibraryMetrics from a Resource.
 message ResourceMetrics {
   // The resource for the metrics in this message.
   // If this field is not set then no resource info is known.
-  opentelemetrygogo.proto.resource.v1.Resource resource = 1;
+  opentelemetrygogo2.proto.resource.v1.Resource resource = 1;
 
   // A list of metrics that originate from a resource.
   repeated InstrumentationLibraryMetrics instrumentation_library_metrics = 2;
@@ -38,7 +38,7 @@ message ResourceMetrics {
 message InstrumentationLibraryMetrics {
   // The instrumentation library information for the metrics in this message.
   // If this field is not set then no library info is known.
-  opentelemetrygogo.proto.common.v1.InstrumentationLibrary instrumentation_library = 1;
+  opentelemetrygogo2.proto.common.v1.InstrumentationLibrary instrumentation_library = 1;
 
   // A list of metrics that originate from an instrumentation library.
   repeated Metric metrics = 2;
@@ -232,7 +232,7 @@ message MetricDescriptor {
 // values of a int64 metric.
 message Int64DataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated opentelemetrygogo.proto.common.v1.StringKeyValue labels = 1;
+  repeated opentelemetrygogo2.proto.common.v1.StringKeyValue labels = 1;
 
   // start_time_unix_nano is the time when the cumulative value was reset to zero.
   // This is used for Counter type only. For Gauge the value is not specified and
@@ -257,7 +257,7 @@ message Int64DataPoint {
 // value of a double metric.
 message DoubleDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated opentelemetrygogo.proto.common.v1.StringKeyValue labels = 1;
+  repeated opentelemetrygogo2.proto.common.v1.StringKeyValue labels = 1;
 
   // start_time_unix_nano is the time when the cumulative value was reset to zero.
   // This is used for Counter type only. For Gauge the value is not specified and
@@ -283,7 +283,7 @@ message DoubleDataPoint {
 // it may optionally contain the distribution of those values across a set of buckets.
 message HistogramDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated opentelemetrygogo.proto.common.v1.StringKeyValue labels = 1;
+  repeated opentelemetrygogo2.proto.common.v1.StringKeyValue labels = 1;
 
   // start_time_unix_nano is the time when the cumulative value was reset to zero.
   //
@@ -329,7 +329,7 @@ message HistogramDataPoint {
 
       // exemplar_attachments are contextual information about the example value.
       // Keys in this list must be unique.
-      repeated opentelemetrygogo.proto.common.v1.StringKeyValue attachments = 3;
+      repeated opentelemetrygogo2.proto.common.v1.StringKeyValue attachments = 3;
     }
 
     // exemplar is an optional representative value of the bucket.
@@ -377,7 +377,7 @@ message HistogramDataPoint {
 // values of a Summary metric.
 message SummaryDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated opentelemetrygogo.proto.common.v1.StringKeyValue labels = 1;
+  repeated opentelemetrygogo2.proto.common.v1.StringKeyValue labels = 1;
 
   // start_time_unix_nano is the time when the cumulative value was reset to zero.
   //

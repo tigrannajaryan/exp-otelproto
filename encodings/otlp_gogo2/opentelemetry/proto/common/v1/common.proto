@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package opentelemetrygogo.proto.common.v1;
+package opentelemetrygogo2.proto.common.v1;
 
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.common.v1";
 option java_outer_classname = "CommonProto";
-option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/common/v1";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/common/v1";
 
 // ValueType is the enumeration of possible types that value can have.
 enum ValueType {
