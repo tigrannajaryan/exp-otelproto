@@ -30,9 +30,9 @@ benchmark_all() {
     #benchmark sapm
     benchmark http11
     benchmark http11conc
-    #benchmark wsstreamsync
-    #benchmark wsstreamasync
-    #benchmark wsstreamasyncconc
+    benchmark wsstreamsync
+    benchmark wsstreamasync
+    benchmark wsstreamasyncconc
     #benchmark wsstreamasynczlib
     benchmark unary
     benchmark unaryasync

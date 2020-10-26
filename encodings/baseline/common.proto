@@ -11,7 +11,7 @@ option ruby_package = "OpenCensus.Proto.Trace.V1";
 // Resource information.
 message Resource {
     // Set of labels that describe the resource.
-    repeated AttributeKeyValue attributes = 1;
+    repeated KeyValue attributes = 1;
 
     // dropped_attributes_count is the number of dropped attributes. If the value is 0, then
     // no attributes were dropped.
@@ -19,44 +19,49 @@ message Resource {
 }
 
 
-// ValueType is the enumeration of possible types that value can have.
-enum ValueType {
-    STRING  = 0;
-    INT     = 1;
-    DOUBLE  = 2;
-    BOOL    = 3;
-};
-
+// AnyValue is used to represent any type of attribute value. AnyValue may contain a
+// primitive value such as a string or integer or it may contain an arbitrary nested
+// object containing arrays, key-value lists and primitives.
 message AnyValue {
-    // type of the value.
-    ValueType type = 1;
-
-    // Only one of the following fields is supposed to contain data (determined by `type` field).
-    // This is deliberately not using Protobuf `oneof` for performance reasons (verified by benchmarks).
-
-    bool bool_value = 2;
-    string string_value = 3;
-    int64 int_value = 4;
-    double double_value = 5;
-    repeated AnyValue list_values = 6;
-    repeated AttributeKeyValue kvlist_values = 7;
-    bytes bytes_value = 8;
+    // The value is one of the listed fields. It is valid for all values to be unspecified
+    // in which case this AnyValue is considered to be "null".
+    oneof value {
+        string string_value = 1;
+        bool bool_value = 2;
+        int64 int_value = 3;
+        double double_value = 4;
+        ArrayValue array_value = 5;
+        KeyValueList kvlist_value = 6;
+    }
 }
 
-//message ExoticValue {
-//}
+// ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
+// since oneof in AnyValue does not allow repeated fields.
+message ArrayValue {
+    // Array of values. The array may be empty (contain 0 elements).
+    repeated AnyValue values = 1;
+}
 
-// AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
+// KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
+// since `oneof` in AnyValue does not allow repeated fields. Everywhere else where we need
+// a list of KeyValue messages (e.g. in Span) we use `repeated KeyValue` directly to
+// avoid unnecessary extra wrapping (which slows down the protocol). The 2 approaches
+// are semantically equivalent.
+message KeyValueList {
+    // A collection of key/value pairs of key-value pairs. The list may be empty (may
+    // contain 0 elements).
+    repeated KeyValue values = 1;
+}
+
+// KeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
-message AttributeKeyValue {
-
-    // key part of the key-value pair.
+message KeyValue {
     string key = 1;
     AnyValue value = 2;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
-// of AttributeKeyValue that only supports string values.
+// of KeyValue that only supports string values.
 message StringKeyValue {
     string key = 1;
     string value = 2;

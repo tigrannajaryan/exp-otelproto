@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
@@ -40,12 +41,12 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return baseline2.NewGenerator() },
 	//},
 	{
-		name: "Current",
+		name: "OTLP",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	{
-		name: "Proposed",
-		gen:  func() core.Generator { return experimental2.NewGenerator() },
+		name: "Baseline",
+		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	//{
 	//	name: "FatAnyValue",
