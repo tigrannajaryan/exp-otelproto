@@ -20,8 +20,6 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo3"
 )
 
 const spansPerBatch = 1000
@@ -64,18 +62,18 @@ var tests = []struct {
 	//	name: "Alternate",
 	//	gen:  func() core.Generator { return experimental.NewGenerator() },
 	//},
-	{
-		name: "Current(Gogo)",
-		gen:  func() core.Generator { return otlp_gogo.NewGenerator() },
-	},
+	//{
+	//	name: "Current(Gogo)",
+	//	gen:  func() core.Generator { return otlp_gogo.NewGenerator() },
+	//},
 	//{
 	//	name: "gogoCustom",
 	//	gen:  func() core.Generator { return otlp_gogo2.NewGenerator() },
 	//},
-	{
-		name: "Proposed(Gogo)",
-		gen:  func() core.Generator { return otlp_gogo3.NewGenerator() },
-	},
+	//{
+	//	name: "Proposed(Gogo)",
+	//	gen:  func() core.Generator { return otlp_gogo3.NewGenerator() },
+	//},
 	{
 		name: "OpenCensus",
 		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
@@ -570,7 +568,7 @@ func BenchmarkEndianness(b *testing.B) {
 }
 
 func TestSizes(t *testing.T) {
-	akv := experimental.AttributeKeyValue{}
+	akv := experimental.KeyValue{}
 	log.Printf("AttributeKeyValue is %d bytes", unsafe.Sizeof(akv))
 	log.Printf("AttributeKeyValue.Key is %d bytes", unsafe.Sizeof(akv.Key))
 
@@ -578,31 +576,29 @@ func TestSizes(t *testing.T) {
 	log.Printf("LogRecord is %d bytes", unsafe.Sizeof(experimental.LogRecord{}))
 }
 
-func createAKV() *experimental.AttributeKeyValue {
+func createAKV() *experimental.KeyValue {
 	for i := 0; i < 1; i++ {
-		return &experimental.AttributeKeyValue{}
+		return &experimental.KeyValue{}
 	}
 	return nil
 }
 
-func createAV() *experimental.AttributeKeyValue {
+func createAV() *experimental.KeyValue {
 	for i := 0; i < 1; i++ {
-		return &experimental.AttributeKeyValue{}
+		return &experimental.KeyValue{}
 	}
 	return nil
 }
 
 func BenchmarkAttributeKeyValueSize(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s := createAKV()
-		s.Type = 0
+		createAKV()
 	}
 }
 
 func BenchmarkAttributeValueSize(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		s := createAV()
-		s.Type = 0
+		createAV()
 	}
 }
 
