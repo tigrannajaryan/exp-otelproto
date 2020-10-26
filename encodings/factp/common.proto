@@ -58,6 +58,8 @@ message KeyValueList {
 message KeyValue {
     string key = 1;
     AnyValue value = 2;
+    uint64 key_ref = 3;
+    uint64 value_ref = 4;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
@@ -65,6 +67,8 @@ message KeyValue {
 message StringKeyValue {
     string key = 1;
     string value = 2;
+    uint64 key_ref = 3;
+    uint64 value_ref = 4;
 }
 
 // InstrumentationLibrary is a message representing the instrumentation library information

@@ -94,13 +94,13 @@ var batchTypes = []struct {
 }{
 	//{name: "Logs", batchGen: generateLogBatches},
 	{name: "Trace/Attribs", batchGen: generateAttrBatches},
-	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
-	//{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
-	//{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
-	//{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
-	//{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
-	//{name: "Metric/Mix", batchGen: generateMetricOneBatches},
-	//{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
+	{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
+	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
+	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},
+	{name: "Metric/HistogramSeries", batchGen: generateMetricHistogramSeriesBatches},
+	{name: "Metric/Mix", batchGen: generateMetricOneBatches},
+	{name: "Metric/MixSeries", batchGen: generateMetricSeriesBatches},
 }
 
 const BatchCount = 1

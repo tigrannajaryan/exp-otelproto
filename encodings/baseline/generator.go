@@ -264,6 +264,16 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 						},
 				},
 				ExplicitBounds: []float64{0, 1000000},
+				Labels: []*StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 			if k == 0 {
 				point.StartTimeUnixNano = pointTs
@@ -293,6 +303,16 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 			point := DoubleDataPoint{
 				TimeUnixNano: pointTs,
 				Value:          val,
+				Labels: []*StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 			if k == 0 {
 				point.StartTimeUnixNano = pointTs
