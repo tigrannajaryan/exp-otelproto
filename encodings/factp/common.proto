@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package experimental2;
+package factp;
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";

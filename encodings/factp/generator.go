@@ -1,4 +1,4 @@
-package experimental2
+package factp
 
 import (
 	"math/rand"

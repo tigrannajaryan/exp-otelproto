@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package experimental2;
+package factp;
 
 import "common.proto";
 

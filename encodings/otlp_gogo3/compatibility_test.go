@@ -7,15 +7,15 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	otlpgogo3 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo3/trace/v1"
 )
 
 func TestCompatibility(t *testing.T) {
 	//t.SkipNow()
-	gen := experimental2.NewGenerator()
+	gen := baseline.NewGenerator()
 	batch := gen.GenerateSpanBatch(3, 10, 5)
-	request := batch.(*experimental2.TraceExportRequest)
+	request := batch.(*baseline.TraceExportRequest)
 	rs := request.ResourceSpans
 	wire, err := proto.Marshal(rs[0])
 	assert.NotNil(t, wire)
