@@ -48,7 +48,7 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 github.com/jaegertracing/jaeger/model
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/open-telemetry/opentelemetry-proto v0.3.1-0.20200602210206-b54688569186
+# github.com/open-telemetry/opentelemetry-proto v0.4.0
 ## explicit
 github.com/open-telemetry/opentelemetry-proto/gen/go/collector/metrics/v1
 github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1

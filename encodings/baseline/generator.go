@@ -79,15 +79,24 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&KeyValue{Key: "load_generator.span_seq_num", Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}}})
+					&KeyValue{
+					Key: "load_generator.span_seq_num",
+					Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
+					})
 				span.Attributes = append(span.Attributes,
-					&KeyValue{Key: "load_generator.trace_seq_num", Value: &AnyValue{Value: &AnyValue_IntValue{IntValue:  int64(traceID)}}})
+					&KeyValue{
+					Key: "load_generator.trace_seq_num",
+						Value: &AnyValue{Value: &AnyValue_IntValue{IntValue:  int64(traceID)}},
+					})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
-					&KeyValue{Key: attrName, Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}}})
+					&KeyValue{
+						Key: attrName,
+						Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}},
+					})
 			}
 		}
 

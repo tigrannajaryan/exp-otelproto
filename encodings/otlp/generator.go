@@ -40,11 +40,11 @@ func (g *Generator) genRandByteString(len int) string {
 
 func GenResource() *otlpresource.Resource {
 	return &otlpresource.Resource{
-		Attributes: []*otlpcommon.AttributeKeyValue{
-			{Key: "StartTimeUnixnano", IntValue: 12345678},
-			{Key: "Pid", IntValue: 1234},
-			{Key: "HostName", StringValue: "fakehost"},
-			{Key: "ServiceName", StringValue: "generator"},
+		Attributes: []*otlpcommon.KeyValue{
+			{Key: "StartTimeUnixnano", Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: 12345678}}},
+			{Key: "Pid", Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: 1234}}},
+			{Key: "HostName", Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: "fakehost"}}},
+			{Key: "ServiceName", Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: "generator"}}},
 		},
 	}
 }
@@ -81,30 +81,27 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 		if attrsPerSpan >= 0 {
 			// Append attributes.
-			span.Attributes = []*otlpcommon.AttributeKeyValue{}
+			span.Attributes = []*otlpcommon.KeyValue{}
 
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
-					&otlpcommon.AttributeKeyValue{
-						Key:      "load_generator.span_seq_num",
-						Type:     otlpcommon.AttributeKeyValue_INT,
-						IntValue: int64(spanID),
+					&otlpcommon.KeyValue{
+						Key: "load_generator.span_seq_num",
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: int64(spanID)}},
 					})
 				span.Attributes = append(span.Attributes,
-					&otlpcommon.AttributeKeyValue{
-						Key:      "load_generator.trace_seq_num",
-						Type:     otlpcommon.AttributeKeyValue_INT,
-						IntValue: int64(traceID),
+					&otlpcommon.KeyValue{
+						Key: "load_generator.trace_seq_num",
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue:  int64(traceID)}},
 					})
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
 				attrName := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
-					&otlpcommon.AttributeKeyValue{
-						Key:         attrName,
-						Type:        otlpcommon.AttributeKeyValue_STRING,
-						StringValue: g.genRandByteString(g.random.Intn(20) + 1),
+					&otlpcommon.KeyValue{
+						Key: attrName,
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}},
 					})
 			}
 		}
@@ -114,8 +111,8 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 				span.Events = append(span.Events, &otlptrace.Span_Event{
 					TimeUnixNano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
-					Attributes: []*otlpcommon.AttributeKeyValue{
-						{Key: "te", Type: otlpcommon.AttributeKeyValue_INT, IntValue: int64(spanID)},
+					Attributes: []*otlpcommon.KeyValue{
+						{Key: "te", Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: int64(spanID)}}},
 					},
 				})
 			}
@@ -150,19 +147,19 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 
 			if attrsPerLog >= 0 {
 				// Append attributes.
-				log.Attributes = []*AttributeKeyValue{}
+				log.Attributes = []*KeyValue{}
 
 				if attrsPerLog >= 2 {
 					log.Attributes = append(log.Attributes,
-						&AttributeKeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
+						&KeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
 					log.Attributes = append(log.Attributes,
-						&AttributeKeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
+						&KeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
 				}
 
 				for j := len(log.Attributes); j < attrsPerLog; j++ {
 					attrName := g.genRandByteString(g.random.Intn(20) + 1)
 					log.Attributes = append(log.Attributes,
-						&AttributeKeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
+						&KeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
 				}
 			}
 
