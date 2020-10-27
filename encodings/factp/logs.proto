@@ -84,7 +84,7 @@ message LogRecord {
     // time_unix_nano is the time when the event occurred.
     // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January 1970.
     // Value of 0 indicates unknown or missing timestamp.
-    fixed64 time_unix_nano = 1;
+    int64 time_unix_nano = 1;
 
     // Numerical value of the severity, normalized to values described in Log Data Model.
     // [Optional].

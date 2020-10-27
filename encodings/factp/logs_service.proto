@@ -20,6 +20,7 @@ syntax = "proto3";
 package factp;
 
 import "logs.proto";
+import "common.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.collector.logs.v1";
@@ -41,6 +42,8 @@ message ExportLogsServiceRequest {
     // data from multiple origins typically batch the data before forwarding further and
     // in that case this array will contain multiple elements.
     repeated ResourceLogs resource_logs = 1;
+    StringDict stringDict = 2;
+    fixed64 start_time_unix_nano = 3;
 }
 
 message ExportLogsServiceResponse {

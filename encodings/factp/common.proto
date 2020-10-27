@@ -77,3 +77,9 @@ message InstrumentationLibrary {
     uint32 name_ref = 1;
     uint32 version_ref = 2;
 }
+
+message StringDict {
+    repeated string values = 2;
+    uint32 startIndex = 1;
+}
+

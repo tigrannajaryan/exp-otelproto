@@ -4,6 +4,7 @@ package factp;
 
 import "telemetry_data.proto";
 import "metric_data.proto";
+import "common.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";
@@ -15,11 +16,6 @@ enum Capabilities {
     SKIP = 0;
     ZLIB_COMPRESSION = 1; // bit 0 of capabilities
     LZ4_COMPRESSION = 2;  // bit 1 of capabilities
-}
-
-message StringDict {
-    repeated string values = 2;
-    uint32 startIndex = 1;
 }
 
 // A request from client to server containing trace data to export.

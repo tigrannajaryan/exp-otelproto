@@ -154,7 +154,7 @@ message Span {
   // text description and key-value pairs.
   message Event {
     // time_unix_nano is the time the event occurred.
-    fixed64 time_unix_nano = 1;
+    int64 time_unix_nano = 1;
 
     // name of the event.
     // This field is semantically required to be set to non-empty string.

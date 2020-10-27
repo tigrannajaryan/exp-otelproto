@@ -135,7 +135,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
 				span.Events = append(span.Events, &Span_Event{
-					TimeUnixNano: core.TimeToTimestamp(batchStartTime.Add(time.Duration(i) * time.Millisecond)),
+					TimeUnixNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*KeyValue{
 						{KeyRef: getStringRef(dict,"te"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}}},
@@ -154,7 +154,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
-	startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 	dict := map[string]uint32{}
 	il := &InstrumentationLibraryLogs{
@@ -165,7 +165,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			Resource: GenResource(dict),
 			InstrumentationLibraryLogs: []*InstrumentationLibraryLogs{il},
 		}},
-
+		StartTimeUnixNano: core.TimeToTimestamp(batchStartTime),
 	}
 
 	logs := []*LogRecord{}
@@ -175,7 +175,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 
 		// Create a log.
 		log := &LogRecord{
-			TimeUnixNano:   core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			TimeUnixNano:   (time.Duration(i) * time.Millisecond).Nanoseconds(),
 			TraceId:        core.GenerateTraceID(traceID),
 			SpanId:         core.GenerateSpanID(spanID),
 			SeverityNumber: SeverityNumber_SEVERITY_NUMBER_INFO,
@@ -213,7 +213,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			}
 
 			log.Attributes = append(log.Attributes,
-				&KeyValue{Key: "event_type", Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: "auto_generated_event"}}})
+				&KeyValue{KeyRef: getStringRef(dict, "event_type"), ValueRef: getStringRef(dict, "auto_generated_event")})
 
 		}
 
@@ -221,6 +221,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 	}
 
 	il.Logs = logs
+	batch.StringDict = createDict(dict)
 
 	return batch
 }
@@ -384,6 +385,7 @@ func (g *Generator) GenerateMetricBatch(
 				InstrumentationLibraryMetrics: []*InstrumentationLibraryMetrics{il},
 			},
 		},
+		StartTimeUnixNano: core.TimeToTimestamp(batchStartTime),
 	}
 
 	for i := 0; i < metricsPerBatch; i++ {
