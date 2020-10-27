@@ -91,10 +91,10 @@ message InstrumentationLibraryMetrics {
 //   - the instantaneous time of the event.
 message Metric {
   // name of the metric, including its DNS name prefix. It must be unique.
-  string name = 1;
+  uint32 name_ref = 1;
 
   // description of the metric, which can be used in documentation.
-  string description = 2;
+  uint32 description_ref = 2;
 
   // unit in which the metric value is reported. Follows the format
   // described by http://unitsofmeasure.org/ucum.html.
@@ -280,6 +280,8 @@ enum AggregationTemporality {
 message IntDataPoint {
   // The set of labels that uniquely identify this timeseries.
   repeated StringKeyValue labels = 1;
+//  repeated uint32 label_key_refs = 1;
+//  repeated uint32 label_value_refs = 1;
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -293,13 +295,13 @@ message IntDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  int64 start_time_unix_nano = 2;
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  int64 time_unix_nano = 3;
 
   // value itself.
   sfixed64 value = 4;
@@ -327,13 +329,13 @@ message DoubleDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  int64 start_time_unix_nano = 2;
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  int64 time_unix_nano = 3;
 
   // value itself.
   double value = 4;
@@ -363,13 +365,13 @@ message IntHistogramDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  int64 start_time_unix_nano = 2;
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  int64 time_unix_nano = 3;
 
   // count is the number of values in the population. Must be non-negative. This
   // value must be equal to the sum of the "count" fields in buckets if a
@@ -439,13 +441,13 @@ message DoubleHistogramDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  int64 start_time_unix_nano = 2;
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  int64 time_unix_nano = 3;
 
   // count is the number of values in the population. Must be non-negative. This
   // value must be equal to the sum of the "count" fields in buckets if a
@@ -509,7 +511,7 @@ message IntExemplar {
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 2;
+  int64 time_unix_nano = 2;
 
   // Numerical int value of the measurement that was recorded.
   sfixed64 value = 3;
@@ -539,7 +541,7 @@ message DoubleExemplar {
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 2;
+  int64 time_unix_nano = 2;
 
   // Numerical double value of the measurement that was recorded.
   double value = 3;

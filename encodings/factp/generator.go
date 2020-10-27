@@ -32,7 +32,7 @@ func (g *Generator) genRandByteString(len int) string {
 	return string(b)
 }
 
-func GenResource(dict map[string]uint64) *Resource {
+func GenResource(dict map[string]uint32) *Resource {
 	return &Resource{
 		Attributes: []*KeyValue{
 			{KeyRef: getStringRef(dict, "StartTimeUnixnano"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: 12345678}}},
@@ -45,33 +45,40 @@ func GenResource(dict map[string]uint64) *Resource {
 
 const FirstStringRef = 8192
 
-func getStringRef(dict map[string]uint64, str string) uint64 {
+func getStringRef(dict map[string]uint32, str string) uint32 {
 	if ref, found := dict[str]; found {
 		return ref
 	}
-	ref := uint64(FirstStringRef+len(dict))
+	ref := uint32(FirstStringRef+len(dict))
 	dict[str] = ref
 	return ref
 }
 
-func createDict(dict map[string]uint64) []*StringDictEntry {
-	var r []*StringDictEntry
-	for k,v:=range dict {
-		r = append(r, &StringDictEntry{
-			Index:                v,
-			Value:                k,
-		})
+func createDict(dict map[string]uint32) *StringDict {
+	r := &StringDict{
+		StartIndex:FirstStringRef,
+		Values: make([]string,len(dict)),
 	}
+	for k,v := range dict {
+		r.Values[v-FirstStringRef] = k
+	}
+	for _,v:= range r.Values {
+		if v=="" {
+			panic("Empty string in the dictionary")
+		}
+	}
+
 	return r
 }
 
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
+	dict := map[string]uint32{}
 	il := &InstrumentationLibrarySpans{
-		InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
+		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(dict,"io.opentelemetry")},
 	}
-	dict := map[string]uint64{}
 	batch := &TraceExportRequest{
 		ResourceSpans: []*ResourceSpans{
 			{
@@ -79,12 +86,13 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 				InstrumentationLibrarySpans: []*InstrumentationLibrarySpans{il},
 			},
 		},
+		StartTimeUnixNano: core.TimeToTimestamp(batchStartTime),
 	}
 
 	for i := 0; i < spansPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		// Create a span.
 		span := &Span{
@@ -92,8 +100,8 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			SpanId:            core.GenerateSpanID(spanID),
 			Name:              "load-generator-span",
 			Kind:              Span_SPAN_KIND_CLIENT,
-			StartTimeUnixNano: core.TimeToTimestamp(startTime),
-			EndTimeUnixNano:   core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			StartTimeUnixNano: startTime.Sub(batchStartTime).Nanoseconds(),
+			DurationNano:   uint64((time.Duration(i) * time.Millisecond).Nanoseconds()),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -114,11 +122,12 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(20) + 1)
+				attrName := core.GenRandAttrName(g.random)
+				attrVal := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-						Key: attrName,
-						Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}},
+						KeyRef: getStringRef(dict, attrName),
+						Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: attrVal}},
 					})
 			}
 		}
@@ -126,7 +135,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 		if timedEventsPerSpan > 0 {
 			for i := 0; i < timedEventsPerSpan; i++ {
 				span.Events = append(span.Events, &Span_Event{
-					TimeUnixNano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+					TimeUnixNano: core.TimeToTimestamp(batchStartTime.Add(time.Duration(i) * time.Millisecond)),
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*KeyValue{
 						{KeyRef: getStringRef(dict,"te"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}}},
@@ -145,21 +154,22 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
+	startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
+	dict := map[string]uint32{}
 	il := &InstrumentationLibraryLogs{
-		InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
+		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(dict,"io.opentelemetry")},
 	}
-	dict := map[string]uint64{}
 	batch := &ExportLogsServiceRequest{
 		ResourceLogs: []*ResourceLogs{{
 			Resource: GenResource(dict),
 			InstrumentationLibraryLogs: []*InstrumentationLibraryLogs{il},
 		}},
+
 	}
 
 	logs := []*LogRecord{}
 	for i := 0; i < logsPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
@@ -191,15 +201,15 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 
 			if attrsPerLog >= 2 {
 				log.Attributes = append(log.Attributes,
-					&KeyValue{Key: "load_generator.span_seq_num", Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}}})
+					&KeyValue{KeyRef: getStringRef(dict, "load_generator.span_seq_num"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}}})
 				log.Attributes = append(log.Attributes,
-					&KeyValue{Key: "load_generator.trace_seq_num", Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(traceID)}}})
+					&KeyValue{KeyRef: getStringRef(dict, "load_generator.trace_seq_num"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(traceID)}}})
 			}
 
 			for j := len(log.Attributes); j < attrsPerLog; j++ {
-				attrName := g.genRandByteString(g.random.Intn(20) + 1)
+				attrName := core.GenRandAttrName(g.random)
 				log.Attributes = append(log.Attributes,
-					&KeyValue{Key: attrName, Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}}})
+					&KeyValue{KeyRef: getStringRef(dict, attrName), Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}}})
 			}
 
 			log.Attributes = append(log.Attributes,
@@ -215,13 +225,13 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 	return batch
 }
 
-func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int, dict map[string]uint64) *Metric_IntGauge {
+func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int, dict map[string]uint32) *Metric_IntGauge {
 	var timeseries []*IntDataPoint
 	for j := 0; j < 5; j++ {
 		var points []*IntDataPoint
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := (time.Duration(j*k) * time.Millisecond).Nanoseconds()
 
 			point := IntDataPoint{
 				TimeUnixNano: pointTs,
@@ -251,23 +261,23 @@ func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int
 	return &Metric_IntGauge{IntGauge: &IntGauge{DataPoints:timeseries}}
 }
 
-func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint64) *Metric {
-	descr := GenMetricDescriptor(i)
+func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint32) *Metric {
+	descr := GenMetricDescriptor(i, dict)
 	descr.Data = GenInt64Timeseries(startTime, i, valuesPerTimeseries, dict)
 	return descr
 }
 
-func GenMetricDescriptor(i int) *Metric {
+func GenMetricDescriptor(i int, dict map[string]uint32) *Metric {
 	descr := &Metric{
-		Name:        "metric" + strconv.Itoa(i),
-		Description: "some description: " + strconv.Itoa(i),
+		NameRef:      getStringRef(dict, "metric" + strconv.Itoa(i)),
+		DescriptionRef: getStringRef(dict, "some description: " + strconv.Itoa(i)),
 	}
 	return descr
 }
 
-func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint64) *Metric {
+func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint32) *Metric {
 	// Add Histogram
-	descr := GenMetricDescriptor(i)
+	descr := GenMetricDescriptor(i, dict)
 
 	var timeseries2 []*DoubleHistogramDataPoint
 	for j := 0; j < 1; j++ {
@@ -275,7 +285,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 
 		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := (time.Duration(j*k) * time.Millisecond).Nanoseconds()
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
 			val := float64(i * j * k)
@@ -316,16 +326,16 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	return descr
 }
 
-func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint64) *Metric {
+func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict map[string]uint32) *Metric {
 	// Add Histogram
-	descr := GenMetricDescriptor(i)
+	descr := GenMetricDescriptor(i, dict)
 
 	var timeseries2 []*DoubleDataPoint
 	for j := 0; j < 1; j++ {
 		var points []*DoubleDataPoint
 
 		for k := 0; k < valuesPerTimeseries; k++ {
-			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
+			pointTs := (time.Duration(j*k) * time.Millisecond).Nanoseconds()
 			val := float64(i * j * k)
 			point := DoubleDataPoint{
 				TimeUnixNano: pointTs,
@@ -363,8 +373,10 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+
 	il := &InstrumentationLibraryMetrics{}
-	dict := map[string]uint64{}
+	dict := map[string]uint32{}
 	batch := &MetricExportRequest{
 		ResourceMetrics: []*ResourceMetrics{
 			{
@@ -375,7 +387,7 @@ func (g *Generator) GenerateMetricBatch(
 	}
 
 	for i := 0; i < metricsPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		labelKeys := []string{
 			"label1",

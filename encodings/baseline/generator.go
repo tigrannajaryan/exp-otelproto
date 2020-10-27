@@ -45,6 +45,7 @@ func GenResource() *Resource {
 
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 	il := &InstrumentationLibrarySpans{
 		InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
@@ -59,7 +60,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	}
 
 	for i := 0; i < spansPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
@@ -91,7 +92,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(20) + 1)
+				attrName := core.GenRandAttrName(g.random)
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
 						Key: attrName,
@@ -170,7 +171,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			}
 
 			for j := len(log.Attributes); j < attrsPerLog; j++ {
-				attrName := g.genRandByteString(g.random.Intn(20) + 1)
+				attrName := core.GenRandAttrName(g.random)
 				log.Attributes = append(log.Attributes,
 					&KeyValue{Key: attrName, Value: &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}}})
 			}
@@ -336,6 +337,8 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+
 	il := &InstrumentationLibraryMetrics{}
 	batch := &MetricExportRequest{
 		ResourceMetrics: []*ResourceMetrics{
@@ -347,7 +350,7 @@ func (g *Generator) GenerateMetricBatch(
 	}
 
 	for i := 0; i < metricsPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		labelKeys := []string{
 			"label1",

@@ -17,9 +17,9 @@ enum Capabilities {
     LZ4_COMPRESSION = 2;  // bit 1 of capabilities
 }
 
-message StringDictEntry {
-    uint64 index = 1;
-    string value = 2;
+message StringDict {
+    repeated string values = 2;
+    uint32 startIndex = 1;
 }
 
 // A request from client to server containing trace data to export.
@@ -30,7 +30,8 @@ message TraceExportRequest {
     // Telemetry data. An array of ResourceSpans.
     repeated ResourceSpans resourceSpans = 2;
 
-    repeated StringDictEntry stringDict = 3;
+    StringDict stringDict = 3;
+    fixed64 start_time_unix_nano = 4;
 }
 
 // A request from client to server containing metric data to export.
@@ -41,7 +42,8 @@ message MetricExportRequest {
     // Telemetry data. An array of ResourceMetrics.
     repeated ResourceMetrics resourceMetrics = 2;
 
-    repeated StringDictEntry stringDict = 3;
+    StringDict stringDict = 3;
+    fixed64 start_time_unix_nano = 4;
 }
 
 // A response to ExportRequest.

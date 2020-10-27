@@ -21,7 +21,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 )
 
-const spansPerBatch = 1000
+const spansPerBatch = 100
 const metricsPerBatch = spansPerBatch
 const logsPerBatch = spansPerBatch
 

@@ -66,7 +66,7 @@ func (g *Generator) GenerateBatch(spansPerBatch int, attrsPerSpan int) core.Expo
 			}
 
 			for j := len(span.Attributes); j < attrsPerSpan; j++ {
-				attrName := g.genRandByteString(g.random.Intn(20) + 1)
+				attrName := core.GenRandAttrName(g.random)
 				span.Attributes[attrName] = &AttributeValue{
 					Value: &AttributeValue_StringValue{
 						StringValue: g.genRandByteString(g.random.Intn(20) + 1),

@@ -58,22 +58,22 @@ message KeyValueList {
 message KeyValue {
     string key = 1;
     AnyValue value = 2;
-    uint64 key_ref = 3;
-    uint64 value_ref = 4;
+    uint32 key_ref = 3;
+    uint32 value_ref = 4;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
 // of KeyValue that only supports string values.
 message StringKeyValue {
-    string key = 1;
-    string value = 2;
-    uint64 key_ref = 3;
-    uint64 value_ref = 4;
+//    string key = 1;
+//    string value = 2;
+    uint32 key_ref = 3;
+    uint32 value_ref = 4;
 }
 
 // InstrumentationLibrary is a message representing the instrumentation library information
 // such as the fully qualified name and version.
 message InstrumentationLibrary {
-    string name = 1;
-    string version = 2;
+    uint32 name_ref = 1;
+    uint32 version_ref = 2;
 }
