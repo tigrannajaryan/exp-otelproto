@@ -12,6 +12,7 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -441,7 +442,8 @@ func TestEncodeSize(t *testing.T) {
 		name                 string
 		genFunc              func(gen core.Generator) core.ExportRequest
 		firstUncompessedSize int
-		firstCompressedSize  int
+		firstZlibedSize      int
+		firstZstdedSize      int
 	}{
 		{
 			name: "Logs",
@@ -484,7 +486,7 @@ func TestEncodeSize(t *testing.T) {
 	fmt.Println("===== Encoded sizes")
 
 	for _, v := range variation {
-		fmt.Println("Encoding                       Uncompressed  Improved        Compressed  Improved")
+		fmt.Println("Encoding                       Uncompressed  Improved      Compressed  Improved      Compressed  Improved")
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
 				gen := test.gen()
@@ -500,44 +502,72 @@ func TestEncodeSize(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				// Try to compress
-				var b bytes.Buffer
-				w := zlib.NewWriter(&b)
-				w.Write(bodyBytes)
-				w.Close()
-				compressedBytes := b.Bytes()
+				zlibedBytes := doZlib(bodyBytes)
+				zstdedBytes := doZstd(bodyBytes)
 
 				uncompressedSize := len(bodyBytes)
-				compressedSize := len(compressedBytes)
+				zlibedSize := len(zlibedBytes)
+				zstdedSize := len(zstdedBytes)
 
 				uncompressedRatioStr := "[1.000]"
-				compressedRatioStr := "[1.000]"
+				zlibedRatioStr := "[1.000]"
+				zstdedRatioStr := "[1.000]"
 
 				if v.firstUncompessedSize == 0 {
 					v.firstUncompessedSize = uncompressedSize
 				} else {
-					uncompressedRatioStr = fmt.Sprintf(" [%1.3f]", float64(v.firstUncompessedSize)/float64(uncompressedSize))
+					uncompressedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstUncompessedSize)/float64(uncompressedSize))
 				}
 
-				if v.firstCompressedSize == 0 {
-					v.firstCompressedSize = compressedSize
+				if v.firstZlibedSize == 0 {
+					v.firstZlibedSize = zlibedSize
 				} else {
-					compressedRatioStr = fmt.Sprintf(" [%1.3f]", float64(v.firstCompressedSize)/float64(compressedSize))
+					zlibedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstZlibedSize)/float64(zlibedSize))
+				}
+
+				if v.firstZstdedSize == 0 {
+					v.firstZstdedSize = zstdedSize
+				} else {
+					zstdedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstZstdedSize)/float64(zstdedSize))
 				}
 
 				fmt.Printf(
-					"%-31v %5d bytes%9s, gziped %4d bytes%9s\n",
+					"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
 					test.name+"/"+v.name,
 					uncompressedSize,
 					uncompressedRatioStr,
-					compressedSize,
-					compressedRatioStr,
+					zlibedSize,
+					zlibedRatioStr,
+					zstdedSize,
+					zstdedRatioStr,
 				)
 
 			})
 		}
 		fmt.Println("")
 	}
+}
+
+func doZlib(input []byte) []byte {
+	var b bytes.Buffer
+	w := zlib.NewWriter(&b)
+	w.Write(input)
+	w.Close()
+	return b.Bytes()
+}
+
+func doZstd(input []byte) []byte {
+	var b bytes.Buffer
+	w, err := zstd.NewWriter(&b)
+	if err != nil {
+		panic(err)
+	}
+	_, err = w.Write(input)
+	w.Close()
+	if err != nil {
+		panic(err)
+	}
+	return b.Bytes()
 }
 
 func BenchmarkEndianness(b *testing.B) {

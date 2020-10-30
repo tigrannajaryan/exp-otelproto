@@ -46,6 +46,13 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/jaegertracing/jaeger v1.15.1
 ## explicit
 github.com/jaegertracing/jaeger/model
+# github.com/klauspost/compress v1.11.2
+## explicit
+github.com/klauspost/compress/fse
+github.com/klauspost/compress/huff0
+github.com/klauspost/compress/snappy
+github.com/klauspost/compress/zstd
+github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/open-telemetry/opentelemetry-proto v0.4.0

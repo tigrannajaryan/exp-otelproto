@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway v1.15.2 // indirect
 	github.com/jaegertracing/jaeger v1.15.1
+	github.com/klauspost/compress v1.11.2
 	github.com/open-telemetry/opentelemetry-proto v0.4.0
 	github.com/prometheus/client_golang v1.1.0
 	github.com/shirou/gopsutil v2.18.12+incompatible
