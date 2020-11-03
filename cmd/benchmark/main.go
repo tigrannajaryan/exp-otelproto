@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	ws_async_worker "github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_async_workers"
 	"log"
 	"os"
 	"runtime"
@@ -40,7 +41,7 @@ func main() {
 	flag.StringVar(&protocol, "protocol", "",
 		"protocol to benchmark (opencensus,ocack,unary,unaryasync,streamsync,streamlbtimedsync,"+
 			"streamlbalwayssync,streamlbasync,streamlbconc,streamlbsrv,wsstreamsync,wsstreamasync,wsstreamasyncconc,"+
-			"wsstreamasynczlib,http11,http11conc,sapm)",
+			"wsstreamasynczlib,http11,http11conc,sapm,wsasyncworker,wsasyncworkerconc)",
 	)
 
 	flag.IntVar(&options.Batches, "batches", 100, "total batches to send")
@@ -66,6 +67,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	concurrency := 4 // runtime.GOMAXPROCS(0)
+	if concurrency<1 {
+		concurrency=1
+	}
+
 	switch protocol {
 	case "opencensus":
 		benchmarkGRPCOpenCensus(options)
@@ -84,21 +90,25 @@ func main() {
 	case "streamlbasync":
 		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit, 1)
 	case "streamlbconc":
-		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit, 10)
+		benchmarkGRPCStreamLBAsync(options, rebalancePeriod, rebalanceRequestLimit, concurrency)
 	case "streamlbsrv":
 		benchmarkGRPCStreamLBSrv(options, rebalancePeriod, rebalanceRequestLimit)
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
 		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 1)
+	case "wsasyncworker":
+		benchmarkWSAsyncWorker(options, 1)
+	case "wsasyncworkerconc":
+		benchmarkWSAsyncWorker(options, concurrency)
 	case "wsstreamasyncconc":
-		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 10)
+		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, concurrency)
 	case "wsstreamasynczlib":
 		benchmarkWSStreamAsync(options, experimental.CompressionMethod_ZLIB, 1)
 	case "http11":
 		benchmarkHttp11(options, 1)
 	case "http11conc":
-		benchmarkHttp11(options, 10)
+		benchmarkHttp11(options, concurrency)
 	case "sapm":
 		benchmarkSAPM(options, 1)
 	default:
@@ -240,6 +250,16 @@ func benchmarkWSStreamAsync(options core.Options, compression experimental.Compr
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
+	)
+}
+
+func benchmarkWSAsyncWorker(options core.Options, concurrency int) {
+	benchmarkImpl(
+		"WebSocket/AsyncWorker/"+strconv.Itoa(concurrency),
+		options,
+		func() core.Client { return &ws_async_worker.Client{Concurrency: concurrency} },
+		func() core.Server { return &ws_async_worker.Server{} },
 		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
 }
