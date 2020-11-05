@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package factp;
+package otelp2;
 
 import "common.proto";
 

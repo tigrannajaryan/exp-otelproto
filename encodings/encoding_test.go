@@ -19,7 +19,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/factp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
@@ -49,8 +49,8 @@ var tests = []struct {
 		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	{
-		name: "FactP",
-		gen:  func() core.Generator { return factp.NewGenerator() },
+		name: "OTELP2",
+		gen:  func() core.Generator { return otelp2.NewGenerator() },
 	},
 	//{
 	//	name: "MoreFieldsinAKV",
@@ -569,8 +569,8 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			translator:  func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
 		//{
-		//	name: "FactP",
-		//	gen:  func() core.SpanTranslator { return factp.NewGenerator() },
+		//	name: "OTELP2",
+		//	gen:  func() core.SpanTranslator { return otelp2.NewGenerator() },
 		//},
 		//{
 		//	name: "MoreFieldsinAKV",
@@ -776,12 +776,12 @@ func BenchmarkAttributeValueSize(b *testing.B) {
 }
 
 func TestJson(t*testing.T) {
-	g := factp.NewGenerator()
+	g := otelp2.NewGenerator()
 	b := g.GenerateSpanBatch(1,1,1)
 	// proto.Marshal(b.(*experimental2.TraceExportRequest))
 	//json := protojson.Format(b.(*experimental2.TraceExportRequest))
 	m := jsonpb.Marshaler{}
-	str, err := m.MarshalToString(b.(*factp.TraceExportRequest))
+	str, err := m.MarshalToString(b.(*otelp2.TraceExportRequest))
 	assert.NoError(t, err)
 	fmt.Printf(str)
 }

@@ -63,13 +63,13 @@ gen-experimental:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=plugins=grpc:encodings/experimental
 
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/common.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/metric_data.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/telemetry_data.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/exchange.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/logs.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/logs_service.proto --go_out=plugins=grpc:encodings/factp
-	protoc -I/usr/local/include -I encodings/factp/ encodings/factp/grpc.proto --go_out=plugins=grpc:encodings/factp
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/common.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/metric_data.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/telemetry_data.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/exchange.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs_service.proto --go_out=plugins=grpc:encodings/otelp2
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/grpc.proto --go_out=plugins=grpc:encodings/otelp2
 
 gen-baseline:
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/common.proto --go_out=plugins=grpc:encodings/baseline
