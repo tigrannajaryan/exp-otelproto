@@ -362,3 +362,11 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 		Nanos:   int32(nanoTime % 1e9),
 	}
 }
+
+type SpanTranslator struct {
+
+}
+
+func (st* SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+	return batch
+}

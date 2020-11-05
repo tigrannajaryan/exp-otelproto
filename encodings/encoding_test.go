@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"testing"
 	"unsafe"
@@ -20,6 +21,7 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/factp"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
 const spansPerBatch = 100
@@ -544,6 +546,148 @@ func TestEncodeSize(t *testing.T) {
 
 			})
 		}
+		fmt.Println("")
+	}
+}
+
+func TestEncodeSizeFromFile(t *testing.T) {
+
+	var tests = []struct {
+		name string
+		translator  func() core.SpanTranslator
+	}{
+		//{
+		//	name: "SepAnyExtValue",
+		//	gen:  func() core.Generator { return baseline2.NewGenerator() },
+		//},
+		//{
+		//	name: "OTLP 0.4",
+		//	gen:  func() core.Generator { return otlp.NewGenerator() },
+		//},
+		{
+			name: "OTLP",
+			translator:  func() core.SpanTranslator { return &otlp.SpanTranslator{} },
+		},
+		//{
+		//	name: "FactP",
+		//	gen:  func() core.SpanTranslator { return factp.NewGenerator() },
+		//},
+		//{
+		//	name: "MoreFieldsinAKV",
+		//	gen:  func() core.Generator { return experimental.NewGenerator() },
+		//},
+		//{
+		//	name: "Proposed",
+		//	gen:  func() core.Generator { return baseline.NewGenerator() },
+		//},
+		//{
+		//	name: "Alternate",
+		//	gen:  func() core.Generator { return experimental.NewGenerator() },
+		//},
+		//{
+		//	name: "Current(Gogo)",
+		//	gen:  func() core.Generator { return otlp_gogo.NewGenerator() },
+		//},
+		//{
+		//	name: "gogoCustom",
+		//	gen:  func() core.Generator { return otlp_gogo2.NewGenerator() },
+		//},
+		//{
+		//	name: "Proposed(Gogo)",
+		//	gen:  func() core.Generator { return otlp_gogo3.NewGenerator() },
+		//},
+		//{
+		//	name: "OpenCensus",
+		//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+		//},
+		//// These are historical experiments. Uncomment if interested to see results.
+		//{
+		//	name: "OC+AttrAsMap",
+		//	gen:  func() core.Generator { return traceprotobuf.NewGenerator() },
+		//},
+		//{
+		//	name: "OC+AttrAsList+TimeWrapped",
+		//	gen:  func() core.Generator { return otlptimewrapped.NewGenerator() },
+		//},
+	}
+
+	fmt.Println("===== Encoded sizes")
+
+	firstUncompessedSize := 0
+	firstZlibedSize := 0
+	firstZstdedSize := 0
+
+	for _, test := range tests {
+		fmt.Println("Encoding                       Uncompressed  Improved      Compressed  Improved      Compressed  Improved")
+			t.Run(test.name, func(t *testing.T) {
+				translator := test.translator()
+
+				f,err := os.Open("testdata/traces.protobuf")
+				assert.NoError(t, err)
+
+				uncompressedSize := 0
+				zlibedSize := 0
+				zstdedSize := 0
+
+				for {
+					msg := otlp.ReadTraceMessage(f)
+					if msg == nil {
+						break
+					}
+
+					batch := translator.TranslateSpans(msg)
+					if batch == nil {
+						// Skip this case.
+						return
+					}
+
+					bodyBytes, err := proto.Marshal(batch.(proto.Message))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					zlibedBytes := doZlib(bodyBytes)
+					zstdedBytes := doZstd(bodyBytes)
+
+					uncompressedSize += len(bodyBytes)
+					zlibedSize += len(zlibedBytes)
+					zstdedSize += len(zstdedBytes)
+				}
+
+				uncompressedRatioStr := "[1.000]"
+				zlibedRatioStr := "[1.000]"
+				zstdedRatioStr := "[1.000]"
+
+				if firstUncompessedSize == 0 {
+					firstUncompessedSize = uncompressedSize
+				} else {
+					uncompressedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstUncompessedSize)/float64(uncompressedSize))
+				}
+
+				if firstZlibedSize == 0 {
+					firstZlibedSize = zlibedSize
+				} else {
+					zlibedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstZlibedSize)/float64(zlibedSize))
+				}
+
+				if firstZstdedSize == 0 {
+					firstZstdedSize = zstdedSize
+				} else {
+					zstdedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstZstdedSize)/float64(zstdedSize))
+				}
+
+				fmt.Printf(
+					"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
+					test.name,
+					uncompressedSize,
+					uncompressedRatioStr,
+					zlibedSize,
+					zlibedRatioStr,
+					zstdedSize,
+					zstdedRatioStr,
+				)
+
+			})
 		fmt.Println("")
 	}
 }
