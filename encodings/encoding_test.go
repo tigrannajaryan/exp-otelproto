@@ -19,7 +19,6 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
@@ -45,7 +44,7 @@ var tests = []struct {
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	{
-		name: "OTLP",
+		name: "OTLP HEAD",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	//{
@@ -76,10 +75,10 @@ var tests = []struct {
 	//	name: "Proposed(Gogo)",
 	//	gen:  func() core.Generator { return otlp_gogo3.NewGenerator() },
 	//},
-	{
-		name: "OpenCensus",
-		gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
-	},
+	//{
+	//	name: "OpenCensus",
+	//	gen:  func() core.Generator { return octraceprotobuf.NewGenerator() },
+	//},
 	//// These are historical experiments. Uncomment if interested to see results.
 	//{
 	//	name: "OC+AttrAsMap",
@@ -96,8 +95,8 @@ var batchTypes = []struct {
 	batchGen func(gen core.Generator) []core.ExportRequest
 }{
 	//{name: "Logs", batchGen: generateLogBatches},
-	{name: "Trace/Attribs", batchGen: generateAttrBatches},
-	{name: "Trace/Events", batchGen: generateTimedEventBatches},
+	//{name: "Trace/Attribs", batchGen: generateAttrBatches},
+	//{name: "Trace/Events", batchGen: generateTimedEventBatches},
 	{name: "Metric/Int64", batchGen: generateMetricInt64Batches},
 	{name: "Metric/Summary", batchGen: generateMetricSummaryBatches},
 	{name: "Metric/Histogram", batchGen: generateMetricHistogramBatches},

@@ -243,9 +243,9 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
-	var timeseries2 []*DoubleHistogramDataPoint
+	var timeseries2 []*HistogramDataPoint
 	for j := 0; j < 1; j++ {
-		var points []*DoubleHistogramDataPoint
+		var points []*HistogramDataPoint
 
 		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
@@ -253,14 +253,14 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
 			val := float64(i * j * k)
-			point := DoubleHistogramDataPoint{
+			point := HistogramDataPoint{
 				TimeUnixNano: pointTs,
 				Count:        1,
 				Sum:          val,
 				BucketCounts: []uint64{12,345},
-				Exemplars: []*DoubleExemplar{
+				Exemplars: []*Exemplar{
 						{
-							Value:        val,
+							Value:        &Exemplar_AsDouble{AsDouble: val},
 							TimeUnixNano: pointTs,
 						},
 				},
@@ -285,7 +285,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 		timeseries2 = append(timeseries2, points...)
 	}
 
-	descr.Data = &Metric_DoubleHistogram{DoubleHistogram:&DoubleHistogram{DataPoints:timeseries2}}
+	descr.Data = &Metric_Histogram{Histogram:&Histogram{DataPoints:timeseries2}}
 
 	return descr
 }
@@ -294,16 +294,16 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
-	var timeseries2 []*DoubleDataPoint
+	var timeseries2 []*NumberDataPoint
 	for j := 0; j < 1; j++ {
-		var points []*DoubleDataPoint
+		var points []*NumberDataPoint
 
 		for k := 0; k < valuesPerTimeseries; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			val := float64(i * j * k)
-			point := DoubleDataPoint{
+			point := NumberDataPoint{
 				TimeUnixNano: pointTs,
-				Value:          val,
+				Value:          &NumberDataPoint_AsDouble{AsDouble: val},
 				Labels: []*StringKeyValue{
 					{
 						Key:   "label1",
@@ -324,7 +324,7 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 		timeseries2 = append(timeseries2, points...)
 	}
 
-	descr.Data = &Metric_DoubleSum{DoubleSum:&DoubleSum{DataPoints:timeseries2}}
+	descr.Data = &Metric_Sum{Sum:&Sum{DataPoints:timeseries2}}
 
 	return descr
 }
