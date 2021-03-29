@@ -19,8 +19,8 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
@@ -28,7 +28,7 @@ const spansPerBatch = 100
 const metricsPerBatch = spansPerBatch
 const logsPerBatch = spansPerBatch
 
-const attrsPerSpans = 10
+const attrsPerSpans = 3
 const eventsPerSpan = 3
 const attrsPerLog = attrsPerSpans
 
@@ -40,18 +40,18 @@ var tests = []struct {
 	//	name: "SepAnyExtValue",
 	//	gen:  func() core.Generator { return baseline2.NewGenerator() },
 	//},
-	//{
-	//	name: "OTLP 0.4",
-	//	gen:  func() core.Generator { return otlp.NewGenerator() },
-	//},
+	{
+		name: "OTLP 0.4",
+		gen:  func() core.Generator { return otlp.NewGenerator() },
+	},
 	{
 		name: "OTLP",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
-	{
-		name: "OTELP2",
-		gen:  func() core.Generator { return otelp2.NewGenerator() },
-	},
+	//{
+	//	name: "OTELP2",
+	//	gen:  func() core.Generator { return otelp2.NewGenerator() },
+	//},
 	//{
 	//	name: "MoreFieldsinAKV",
 	//	gen:  func() core.Generator { return experimental.NewGenerator() },
@@ -568,10 +568,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			name: "OTLP",
 			translator:  func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
-		//{
-		//	name: "OTELP2",
-		//	gen:  func() core.SpanTranslator { return otelp2.NewGenerator() },
-		//},
+		{
+			name: "OTELP2",
+			translator:  func() core.SpanTranslator { return &otelp2.SpanTranslator{} },
+		},
 		//{
 		//	name: "MoreFieldsinAKV",
 		//	gen:  func() core.Generator { return experimental.NewGenerator() },

@@ -74,8 +74,10 @@ message StringKeyValue {
 // InstrumentationLibrary is a message representing the instrumentation library information
 // such as the fully qualified name and version.
 message InstrumentationLibrary {
-    uint32 name_ref = 1;
-    uint32 version_ref = 2;
+    string name = 1;
+    string version = 2;
+    uint32 name_ref = 3;
+    uint32 version_ref = 4;
 }
 
 message StringDict {
