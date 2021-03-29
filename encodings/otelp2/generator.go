@@ -43,13 +43,28 @@ func GenResource(dict map[string]uint32) *Resource {
 	}
 }
 
-const FirstStringRef = 8192
+var builtInDict = createBuiltInDict()
+
+var FirstStringRef = uint32(len(builtInDict)+1)
+
+
+func createBuiltInDict() map[string]uint32 {
+	m := map[string]uint32{}
+	for _,str := range core.ExampleAttributeNames {
+		m[str] = uint32(len(m)+1)
+	}
+	return m
+}
 
 func getStringRef(dict map[string]uint32, str string) uint32 {
+	if ref, found := builtInDict[str]; found {
+		return ref
+	}
+
 	if ref, found := dict[str]; found {
 		return ref
 	}
-	ref := uint32(FirstStringRef+len(dict))
+	ref := uint32(FirstStringRef+uint32(len(dict)))
 	dict[str] = ref
 	return ref
 }
