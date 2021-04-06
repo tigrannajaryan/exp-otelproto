@@ -52,7 +52,7 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return otelp2.NewGenerator() },
 	//},
 	//{
-	//	name: "MoreFieldsinAKV",
+	//	name: "Proposed",
 	//	gen:  func() core.Generator { return experimental.NewGenerator() },
 	//},
 	//{

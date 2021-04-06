@@ -225,7 +225,7 @@ func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int
 	return &Metric_IntGauge{IntGauge: &IntGauge{DataPoints:timeseries}}
 }
 
-func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+func genInt64Gauge(startTime time.Time, i int, valuesPerTimeseries int) *Metric {
 	descr := GenMetricDescriptor(i)
 	descr.Data = GenInt64Timeseries(startTime, i, valuesPerTimeseries)
 	return descr
@@ -239,7 +239,7 @@ func GenMetricDescriptor(i int) *Metric {
 	return descr
 }
 
-func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+func genHistogram(startTime time.Time, i int, valuesPerTimeseries int) *Metric {
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
@@ -290,7 +290,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	return descr
 }
 
-func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *Metric {
+func genSummary(startTime time.Time, i int, valuesPerTimeseries int) *Metric {
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
@@ -352,19 +352,14 @@ func (g *Generator) GenerateMetricBatch(
 	for i := 0; i < metricsPerBatch; i++ {
 		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
-		labelKeys := []string{
-			"label1",
-			"label2",
-		}
-
 		if int64 {
-			il.Metrics = append(il.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genInt64Gauge(startTime, i, valuesPerTimeseries))
 		}
 		if histogram {
-			il.Metrics = append(il.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genHistogram(startTime, i, valuesPerTimeseries))
 		}
 		if summary {
-			il.Metrics = append(il.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genSummary(startTime, i, valuesPerTimeseries))
 		}
 	}
 	return batch

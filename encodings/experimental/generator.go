@@ -45,6 +45,7 @@ func GenResource() *Resource {
 
 func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timedEventsPerSpan int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
 	il := &InstrumentationLibrarySpans{
 		InstrumentationLibrary: &InstrumentationLibrary{Name: "io.opentelemetry"},
@@ -59,7 +60,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 	}
 
 	for i := 0; i < spansPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		spanID := atomic.AddUint64(&g.spansSent, 1)
 
@@ -80,12 +81,12 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-					Key: "load_generator.span_seq_num",
-					Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
+						Key: "load_generator.span_seq_num",
+						Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
 					})
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-					Key: "load_generator.trace_seq_num",
+						Key: "load_generator.trace_seq_num",
 						Value: &AnyValue{Value: &AnyValue_IntValue{IntValue:  int64(traceID)}},
 					})
 			}
@@ -242,9 +243,9 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
-	var timeseries2 []*DoubleHistogramDataPoint
+	var timeseries2 []*HistogramDataPoint
 	for j := 0; j < 1; j++ {
-		var points []*DoubleHistogramDataPoint
+		var points []*HistogramDataPoint
 
 		//prevPointTs := int64(0)
 		for k := 0; k < valuesPerTimeseries; k++ {
@@ -252,18 +253,28 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 			//diffTs := pointTs - prevPointTs
 			//prevPointTs = pointTs
 			val := float64(i * j * k)
-			point := DoubleHistogramDataPoint{
+			point := HistogramDataPoint{
 				TimeUnixNano: pointTs,
 				Count:        1,
 				Sum:          val,
 				BucketCounts: []uint64{12,345},
-				Exemplars: []*DoubleExemplar{
-						{
-							Value:        val,
-							TimeUnixNano: pointTs,
-						},
+				Exemplars: []*Exemplar{
+					{
+						Value:        &Exemplar_AsDouble{AsDouble: val},
+						TimeUnixNano: pointTs,
+					},
 				},
 				ExplicitBounds: []float64{0, 1000000},
+				Labels: []*StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 			if k == 0 {
 				point.StartTimeUnixNano = pointTs
@@ -274,7 +285,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 		timeseries2 = append(timeseries2, points...)
 	}
 
-	descr.Data = &Metric_DoubleHistogram{DoubleHistogram:&DoubleHistogram{DataPoints:timeseries2}}
+	descr.Data = &Metric_Histogram{Histogram:&Histogram{DataPoints:timeseries2}}
 
 	return descr
 }
@@ -283,16 +294,26 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 
-	var timeseries2 []*DoubleDataPoint
+	var timeseries2 []*NumberDataPoint
 	for j := 0; j < 1; j++ {
-		var points []*DoubleDataPoint
+		var points []*NumberDataPoint
 
 		for k := 0; k < valuesPerTimeseries; k++ {
 			pointTs := core.TimeToTimestamp(startTime.Add(time.Duration(j*k) * time.Millisecond))
 			val := float64(i * j * k)
-			point := DoubleDataPoint{
+			point := NumberDataPoint{
 				TimeUnixNano: pointTs,
-				Value:          val,
+				Value:          &NumberDataPoint_AsDouble{AsDouble: val},
+				Labels: []*StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 			if k == 0 {
 				point.StartTimeUnixNano = pointTs
@@ -303,7 +324,7 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 		timeseries2 = append(timeseries2, points...)
 	}
 
-	descr.Data = &Metric_DoubleSum{DoubleSum:&DoubleSum{DataPoints:timeseries2}}
+	descr.Data = &Metric_Sum{Sum:&Sum{DataPoints:timeseries2}}
 
 	return descr
 }
@@ -316,6 +337,8 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
+	batchStartTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+
 	il := &InstrumentationLibraryMetrics{}
 	batch := &MetricExportRequest{
 		ResourceMetrics: []*ResourceMetrics{
@@ -327,7 +350,7 @@ func (g *Generator) GenerateMetricBatch(
 	}
 
 	for i := 0; i < metricsPerBatch; i++ {
-		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+		startTime := batchStartTime.Add(time.Duration(i) * time.Millisecond)
 
 		labelKeys := []string{
 			"label1",

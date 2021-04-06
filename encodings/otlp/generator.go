@@ -181,6 +181,16 @@ func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int
 			point := otlpmetric.Int64DataPoint{
 				TimeUnixNano: pointTs,
 				Value:        int64(offset * j * k),
+				Labels: []*otlpcommon.StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 
 			if k == 0 {
@@ -196,7 +206,7 @@ func GenInt64Timeseries(startTime time.Time, offset int, valuesPerTimeseries int
 	return timeseries
 }
 
-func genInt64Gauge(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *otlpmetric.Metric {
+func genInt64Gauge(startTime time.Time, i int, valuesPerTimeseries int) *otlpmetric.Metric {
 	descr := GenMetricDescriptor(i)
 
 	metric1 := &otlpmetric.Metric{
@@ -212,21 +222,11 @@ func GenMetricDescriptor(i int) *otlpmetric.MetricDescriptor {
 		Name:        "metric" + strconv.Itoa(i),
 		Description: "some description: " + strconv.Itoa(i),
 		Type:        otlpmetric.MetricDescriptor_INT64,
-		//Labels: []*otlpcommon.StringKeyValue{
-		//	{
-		//		Key:   "label1",
-		//		Value: "val1",
-		//	},
-		//	{
-		//		Key:   "label2",
-		//		Value: "val2",
-		//	},
-		//},
 	}
 	return descr
 }
 
-func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *otlpmetric.Metric {
+func genHistogram(startTime time.Time, i int, valuesPerTimeseries int) *otlpmetric.Metric {
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 	descr.Type = otlpmetric.MetricDescriptor_INT64
@@ -258,6 +258,16 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 					},
 				},
 				ExplicitBounds: []float64{0, 1000000},
+				Labels: []*otlpcommon.StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
+					},
+				},
 			}
 			if k == 0 {
 				point.StartTimeUnixNano = pointTs
@@ -276,7 +286,7 @@ func genHistogram(startTime time.Time, i int, labelKeys []string, valuesPerTimes
 	return metric2
 }
 
-func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int) *otlpmetric.Metric {
+func genSummary(startTime time.Time, i int, valuesPerTimeseries int) *otlpmetric.Metric {
 	// Add Histogram
 	descr := GenMetricDescriptor(i)
 	descr.Type = otlpmetric.MetricDescriptor_SUMMARY
@@ -296,6 +306,16 @@ func genSummary(startTime time.Time, i int, labelKeys []string, valuesPerTimeser
 					{
 						Percentile: 99,
 						Value:      val / 10,
+					},
+				},
+				Labels: []*otlpcommon.StringKeyValue{
+					{
+						Key:   "label1",
+						Value: "val1",
+					},
+					{
+						Key:   "label2",
+						Value: "val2",
 					},
 				},
 			}
@@ -337,19 +357,14 @@ func (g *Generator) GenerateMetricBatch(
 	for i := 0; i < metricsPerBatch; i++ {
 		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
-		labelKeys := []string{
-			"label1",
-			"label2",
-		}
-
 		if int64 {
-			il.Metrics = append(il.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genInt64Gauge(startTime, i, valuesPerTimeseries))
 		}
 		if histogram {
-			il.Metrics = append(il.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genHistogram(startTime, i, valuesPerTimeseries))
 		}
 		if summary {
-			il.Metrics = append(il.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries))
+			il.Metrics = append(il.Metrics, genSummary(startTime, i, valuesPerTimeseries))
 		}
 	}
 	return batch
