@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 
 # Set MULTIPLIER to 1 for quick results and to 100 for more stable results.
-MULTIPLIER=1
+MULTIPLIER=5
 
 echo ====================================================================================
 echo Legend:
-echo "OTLP/GRPC-Unary/Sequential  - OTLP, Unary, sequential. One request per batch, load balancer friendly, with ack"
-echo "OTLP/GRPC-Unary/Concurrent  - OTLP, Unary, N concurrent requests, load balancer friendly, with ack"
-echo "GRPC/Stream/LBTimed/Sync    - OTLP ProtoBuf,GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
-echo "GRPC/Stream/LBTimed/Async/N - OTLP ProtoBuf,GRPC, streaming. N streams, load balancer friendly, close stream every 30 sec, with async ack"
+echo "OTLP/GRPC-Unary/Sequential  - OTLP/gRPC Official. Unary, sequential. One request per batch, load balancer friendly, with ack"
+echo "OTLP/GRPC-Unary/Concurrent  - OTLP/gRPC Official. Unary, N concurrent requests, load balancer friendly, with ack"
+echo "OTLP/HTTP1.1/N              - OTLP/HTTP Official. Using HTTP 1.1. N concurrent requests. Load balancer friendly."
+echo "GRPC/Stream/LBTimed/Sync    - OTLP ProtoBuf over GRPC, streaming, load balancer friendly, close stream every 30 sec, with ack"
+echo "GRPC/Stream/LBTimed/Async/N - OTLP ProtoBuf over GRPC, streaming. N streams, load balancer friendly, close stream every 30 sec, with async ack"
 echo "GRPC/OpenCensus             - OpenCensus protocol, streaming, not load balancer friendly, without ack"
 echo "GRPC/OpenCensusWithAck      - OpenCensus-like protocol, streaming, not load balancer friendly, with ack"
-echo "GRPC/Stream/NoLB            - OTLP ProtoBuf, GRPC, streaming, not load balancer friendly, with ack"
-echo "GRPC/Stream/LBAlways/Sync   - OTLP ProtoBuf,GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
-echo "GRPC/Stream/LBSrv/Async     - OTLP ProtoBuf,GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
-echo "WebSocket/Stream/Sync       - OTLP ProtoBuf,WebSocket, streaming, unknown load balancer friendliness, with sync ack"
-echo "WebSocket/Stream/Async/N    - OTLP ProtoBuf,WebSocket, N streams, unknown load balancer friendliness, with async ack"
-echo "WebSocket/Stream/Async/zlib - OTLP ProtoBuf,WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
-echo "OTLP/HTTP1.1/N              - OTLP ProtoBuf,HTTP 1.1, N concurrent requests. Load balancer friendly."
+echo "GRPC/Stream/NoLB            - OTLP ProtoBuf over GRPC, streaming, not load balancer friendly, with ack"
+echo "GRPC/Stream/LBAlways/Sync   - OTLP ProtoBuf over GRPC, streaming, load balancer friendly, close stream after every batch, with ack"
+echo "GRPC/Stream/LBSrv/Async     - OTLP ProtoBuf over GRPC Streaming. Load balancer friendly, server closes stream every 30 sec or 1000 batches, with async ack"
+echo "WebSocket/Stream/Sync       - OTLP ProtoBuf over WebSocket, streaming, unknown load balancer friendliness, with sync ack"
+echo "WebSocket/Stream/Async/N    - OTLP ProtoBuf over WebSocket, N streams, unknown load balancer friendliness, with async ack"
+echo "WebSocket/Stream/Async/zlib - OTLP ProtoBuf over WebSocket, streaming, unknown load balancer friendliness, with async ack, zlib compression"
 echo "SAPM/N                      - SAPM, N concurrent requests. Load balancer friendly."
 echo
 
@@ -28,18 +28,18 @@ benchmark() {
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
     #benchmark sapm
-#    benchmark http11
+    benchmark http11
 #    benchmark http11conc
 #    benchmark wsasyncworker
-    benchmark wsasyncworkerconc
-    benchmark wsstreamasync
-    benchmark wsstreamasyncconc
-    benchmark wsstreamsync
+#    benchmark wsasyncworkerconc
+#    benchmark wsstreamasync
+#    benchmark wsstreamasyncconc
+#    benchmark wsstreamsync
     #benchmark wsstreamasynczlib
     benchmark unary
-    benchmark unaryasync
-    benchmark streamlbasync
-    benchmark streamlbconc
+#    benchmark unaryasync
+#    benchmark streamlbasync
+#    benchmark streamlbconc
     #benchmark opencensus
     #benchmark ocack
     #benchmark streamsync
@@ -76,37 +76,37 @@ benchmark_some_latency() {
 }
 
 
-./beforebenchmarks.sh
+#./beforebenchmarks.sh
 
 tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 echo
 
 cd bin
 
-#let BATCHES=6400*MULTIPLIER
-#SPANSPERBATCH=1
-#ATTRPERSPAN=10
-#benchmark_all nano
-#
-#let BATCHES=1600*MULTIPLIER
-#SPANSPERBATCH=10
-#ATTRPERSPAN=10
-#benchmark_all tiny
-#
-#
-#let BATCHES=800*MULTIPLIER
-#SPANSPERBATCH=100
-#ATTRPERSPAN=10
-#benchmark_all small
-#
-#
-#let BATCHES=80*MULTIPLIER
-#SPANSPERBATCH=500
-#ATTRPERSPAN=10
-#benchmark_all large
+let BATCHES=6400*MULTIPLIER
+SPANSPERBATCH=1
+ATTRPERSPAN=10
+benchmark_all nano
+
+let BATCHES=1600*MULTIPLIER
+SPANSPERBATCH=10
+ATTRPERSPAN=10
+benchmark_all tiny
+
+
+let BATCHES=800*MULTIPLIER
+SPANSPERBATCH=100
+ATTRPERSPAN=10
+benchmark_all small
+
+
+let BATCHES=80*MULTIPLIER
+SPANSPERBATCH=500
+ATTRPERSPAN=10
+benchmark_all large
 
 let BATCHES=10*MULTIPLIER
-SPANSPERBATCH=5000
+SPANSPERBATCH=1000
 ATTRPERSPAN=10
 benchmark_all "very large"
 
@@ -136,4 +136,4 @@ echo ===========================================================================
 
 cd ..
 
-./afterbenchmarks.sh
+#./afterbenchmarks.sh
