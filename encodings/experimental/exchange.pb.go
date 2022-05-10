@@ -54,6 +54,7 @@ const (
 	CompressionMethod_NONE CompressionMethod = 0
 	CompressionMethod_LZ4  CompressionMethod = 1
 	CompressionMethod_ZLIB CompressionMethod = 2
+	CompressionMethod_ZSTD CompressionMethod = 3
 )
 
 var CompressionMethod_name = map[int32]string{

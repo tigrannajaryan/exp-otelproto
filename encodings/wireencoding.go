@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/DataDog/zstd"
 	"github.com/golang/protobuf/proto"
 	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
@@ -19,6 +20,7 @@ const (
 	RequestHeader_CompressionMethodMask  = 0x07
 	RequestHeader_CompressionMethod_NONE = 0x00
 	RequestHeader_CompressionMethod_ZLIB = 0x01
+	RequestHeader_CompressionMethod_ZSTD = 0x03
 	RequestHeader_CompressionMethod_LZ4  = 0x02
 )
 
@@ -49,6 +51,12 @@ func Encode(
 		w.Write(bodyBytes)
 		w.Close()
 		bodyBytes = b.Bytes()
+	case experimental.CompressionMethod_ZSTD:
+		header |= RequestHeader(RequestHeader_CompressionMethod_ZLIB)
+		bodyBytes, err = zstd.Compress(nil, bodyBytes)
+		if err != nil {
+			log.Fatal("cannot encode:", err)
+		}
 	}
 
 	b := bytes.NewBuffer(make([]byte, 0, RequestHeaderSize+len(bodyBytes)))
@@ -63,7 +71,6 @@ func Encode(
 func Decode(messageBytes []byte) *otlptracecol.ExportTraceServiceRequest {
 	header := RequestHeader(messageBytes[0])
 	bodyBytes := messageBytes[RequestHeaderSize:]
-
 	switch header & RequestHeader_CompressionMethodMask {
 	case RequestHeader_CompressionMethod_NONE:
 		break
@@ -76,6 +83,13 @@ func Decode(messageBytes []byte) *otlptracecol.ExportTraceServiceRequest {
 		}
 
 		bodyBytes, err = ioutil.ReadAll(r)
+		if err != nil {
+			log.Fatal("cannot decode:", err)
+		}
+
+	case RequestHeader_CompressionMethod_ZSTD:
+		var err error
+		bodyBytes, err = zstd.Decompress(nil, bodyBytes)
 		if err != nil {
 			log.Fatal("cannot decode:", err)
 		}

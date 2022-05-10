@@ -3,6 +3,7 @@ module github.com/tigrannajaryan/exp-otelproto
 go 1.15
 
 require (
+	github.com/DataDog/zstd v1.5.2
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gogo/protobuf v1.3.1

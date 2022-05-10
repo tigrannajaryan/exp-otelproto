@@ -68,8 +68,8 @@ func main() {
 	}
 
 	concurrency := 4 // runtime.GOMAXPROCS(0)
-	if concurrency<1 {
-		concurrency=1
+	if concurrency < 1 {
+		concurrency = 1
 	}
 
 	switch protocol {
@@ -94,7 +94,11 @@ func main() {
 	case "streamlbsrv":
 		benchmarkGRPCStreamLBSrv(options, rebalancePeriod, rebalanceRequestLimit)
 	case "wsstreamsync":
-		benchmarkWSStreamSync(options)
+		benchmarkWSStreamSync(options, experimental.CompressionMethod_NONE)
+	case "wsstreamsynczlib":
+		benchmarkWSStreamSync(options, experimental.CompressionMethod_ZLIB)
+	case "wsstreamsynczstd":
+		benchmarkWSStreamSync(options, experimental.CompressionMethod_ZSTD)
 	case "wsstreamasync":
 		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 1)
 	case "wsasyncworker":
@@ -224,17 +228,7 @@ func benchmarkGRPCStreamNoLB(options core.Options) {
 	)
 }
 
-func benchmarkWSStreamSync(options core.Options) {
-	benchmarkImpl(
-		"WebSocket/Stream/Sync",
-		options,
-		func() core.Client { return &ws_stream_sync.Client{} },
-		func() core.Server { return &ws_stream_sync.Server{} },
-		func() core.SpanGenerator { return otlp.NewGenerator() },
-	)
-}
-
-func benchmarkWSStreamAsync(options core.Options, compression experimental.CompressionMethod, concurrency int) {
+func getCompSuffix(compression experimental.CompressionMethod) string {
 	var suffix string
 	switch compression {
 	case experimental.CompressionMethod_NONE:
@@ -243,10 +237,25 @@ func benchmarkWSStreamAsync(options core.Options, compression experimental.Compr
 		suffix = "/zlib"
 	case experimental.CompressionMethod_LZ4:
 		suffix = "/lz4"
+	case experimental.CompressionMethod_ZSTD:
+		suffix = "/zstd"
 	}
+	return suffix
+}
 
+func benchmarkWSStreamSync(options core.Options, compression experimental.CompressionMethod) {
 	benchmarkImpl(
-		"WebSocket/Stream/Async/"+strconv.Itoa(concurrency)+suffix,
+		"WebSocket/Stream/Sync"+getCompSuffix(compression),
+		options,
+		func() core.Client { return &ws_stream_sync.Client{} },
+		func() core.Server { return &ws_stream_sync.Server{} },
+		func() core.SpanGenerator { return otlp.NewGenerator() },
+	)
+}
+
+func benchmarkWSStreamAsync(options core.Options, compression experimental.CompressionMethod, concurrency int) {
+	benchmarkImpl(
+		"WebSocket/Stream/Async/"+strconv.Itoa(concurrency)+getCompSuffix(compression),
 		options,
 		func() core.Client { return &ws_stream_async.Client{Compression: compression, Concurrency: concurrency} },
 		func() core.Server { return &ws_stream_async.Server{} },
