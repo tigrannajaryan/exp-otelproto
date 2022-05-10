@@ -59,6 +59,9 @@ func BenchmarkLocalDelivery(
 		wg.Done()
 	})
 
+	// sleep until server listen
+	time.Sleep(time.Second)
+
 	// Client connect to the server.
 	if err := clnt.Connect(endpoint); err != nil {
 		log.Fatalf("cannot connect: %v", err)
