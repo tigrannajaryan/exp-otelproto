@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 )
 
 type RequestHeader byte
@@ -43,7 +43,7 @@ func Encode(
 		header |= RequestHeader(RequestHeader_CompressionMethod_NONE)
 		break
 	case experimental.CompressionMethod_ZLIB:
-		header |= RequestHeader(RequestHeader_CompressionMethod_NONE)
+		header |= RequestHeader(RequestHeader_CompressionMethod_ZLIB)
 		var b bytes.Buffer
 		w := zlib.NewWriter(&b)
 		w.Write(bodyBytes)
