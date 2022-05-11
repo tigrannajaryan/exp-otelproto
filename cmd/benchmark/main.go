@@ -247,7 +247,7 @@ func benchmarkWSStreamSync(options core.Options, compression experimental.Compre
 	benchmarkImpl(
 		"WebSocket/Stream/Sync"+getCompSuffix(compression),
 		options,
-		func() core.Client { return &ws_stream_sync.Client{} },
+		func() core.Client { return &ws_stream_sync.Client{Compression: compression} },
 		func() core.Server { return &ws_stream_sync.Server{} },
 		func() core.SpanGenerator { return otlp.NewGenerator() },
 	)
