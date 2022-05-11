@@ -52,7 +52,7 @@ func Encode(
 		w.Close()
 		bodyBytes = b.Bytes()
 	case experimental.CompressionMethod_ZSTD:
-		header |= RequestHeader(RequestHeader_CompressionMethod_ZLIB)
+		header |= RequestHeader(RequestHeader_CompressionMethod_ZSTD)
 		bodyBytes, err = zstd.Compress(nil, bodyBytes)
 		if err != nil {
 			log.Fatal("cannot encode:", err)
