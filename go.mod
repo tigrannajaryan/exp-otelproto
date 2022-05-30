@@ -18,6 +18,7 @@ require (
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
 	github.com/signalfx/sapm-proto v0.5.1
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
 	google.golang.org/grpc v1.32.0
 	google.golang.org/protobuf v1.24.0 // indirect

@@ -11,20 +11,19 @@ import (
 type SpanTranslator struct {
 }
 
-func (st* SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+func (st *SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 
 	res := &TraceExportRequest{}
 	dict := map[string]uint32{}
 
-	for _,rssi := range batch.ResourceSpans {
+	for _, rssi := range batch.ResourceSpans {
 		rsso := &ResourceSpans{
-			Resource:                    &Resource{
-				Attributes:             translateAttrs(dict, rssi.Resource.Attributes),
+			Resource: &Resource{
+				Attributes: translateAttrs(dict, rssi.Resource.Attributes),
 			},
 			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(dict, rssi.InstrumentationLibrarySpans),
 		}
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
-
 
 	}
 
@@ -33,25 +32,24 @@ func (st* SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	return res
 }
 
-
 func translateAttrs(dict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
 	for _, attr := range attrs {
 		kv := &KeyValue{
-			Key:               attr.Key,
-			//KeyRef:               getStringRef(dict, attr.Key),
+			//Key:               attr.Key,
+			KeyRef: getStringRef(dict, attr.Key),
 		}
 
 		var v *AnyValue
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
-			//kv.ValueRef = getStringRef(dict, iv.StringValue)
-			v = &AnyValue{Value:&AnyValue_StringValue{StringValue:iv.StringValue}}
+			kv.ValueRef = getStringRef(dict, iv.StringValue)
+			//v = &AnyValue{Value:&AnyValue_StringValue{StringValue:iv.StringValue}}
 		case *v1.AnyValue_BoolValue:
-			v = &AnyValue{Value:&AnyValue_BoolValue{BoolValue:iv.BoolValue}}
+			v = &AnyValue{Value: &AnyValue_BoolValue{BoolValue: iv.BoolValue}}
 		case *v1.AnyValue_IntValue:
-			v = &AnyValue{Value:&AnyValue_IntValue{IntValue:iv.IntValue}}
+			v = &AnyValue{Value: &AnyValue_IntValue{IntValue: iv.IntValue}}
 		case *v1.AnyValue_DoubleValue:
-			v = &AnyValue{Value:&AnyValue_DoubleValue{DoubleValue:iv.DoubleValue}}
+			v = &AnyValue{Value: &AnyValue_DoubleValue{DoubleValue: iv.DoubleValue}}
 		default:
 			panic("not implemented")
 		}
@@ -66,14 +64,14 @@ func translateAttrs(dict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue
 func translateInstrumentationLibrarySpans(
 	dict map[string]uint32,
 	in []*v12.InstrumentationLibrarySpans,
-) (r[]*InstrumentationLibrarySpans) {
+) (r []*InstrumentationLibrarySpans) {
 
 	for _, ils := range in {
 		out := &InstrumentationLibrarySpans{
 			InstrumentationLibrary: translateInstrumentationLibrary(dict, ils.InstrumentationLibrary),
 		}
 
-		for _,span := range ils.Spans {
+		for _, span := range ils.Spans {
 			outSpan := translateSpan(dict, span)
 			out.Spans = append(out.Spans, outSpan)
 		}
@@ -85,7 +83,7 @@ func translateInstrumentationLibrarySpans(
 }
 
 func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
-	if span==nil {
+	if span == nil {
 		return nil
 	}
 
@@ -109,11 +107,11 @@ func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
 }
 
 func translateInstrumentationLibrary(dict map[string]uint32, in *v1.InstrumentationLibrary) *InstrumentationLibrary {
-	if in==nil {
+	if in == nil {
 		return nil
 	}
 	return &InstrumentationLibrary{
-		NameRef:              getStringRef(dict, in.Name),
-		VersionRef:           getStringRef(dict, in.Version),
+		NameRef:    getStringRef(dict, in.Name),
+		VersionRef: getStringRef(dict, in.Version),
 	}
 }

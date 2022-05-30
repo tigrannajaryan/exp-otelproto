@@ -6,11 +6,7 @@ import "telemetry_data.proto";
 import "metric_data.proto";
 import "common.proto";
 
-option java_multiple_files = true;
-option java_package = "io.opencensus.proto.trace.v1";
-option java_outer_classname = "TraceProto";
-
-option ruby_package = "OpenCensus.Proto.Trace.V1";
+option go_package = "encodings/otelp2";
 
 enum Capabilities {
     SKIP = 0;

@@ -63,13 +63,14 @@ gen-experimental:
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
 	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=plugins=grpc:encodings/experimental
 
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/common.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/metric_data.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/telemetry_data.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/exchange.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs_service.proto --go_out=plugins=grpc:encodings/otelp2
-	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/grpc.proto --go_out=plugins=grpc:encodings/otelp2
+gen-otelp2:
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/common.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/metric_data.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/telemetry_data.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/exchange.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/logs_service.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/grpc.proto --go_out=.
 
 gen-baseline:
 	protoc -I/usr/local/include -I encodings/baseline/ encodings/baseline/common.proto --go_out=plugins=grpc:encodings/baseline
@@ -109,9 +110,9 @@ benchmark:
 	./runbenchmarks.sh
 
 benchmark-encoding:
-	sudo ./beforebenchmarks.sh
+	#sudo ./beforebenchmarks.sh
 	sudo nice -n -5 ${GO} test -bench . ./encodings -benchtime 5s -benchmem
-	sudo ./afterbenchmarks.sh
+	#sudo ./afterbenchmarks.sh
 
 run:
 	go run cmd/grpc-protobuf.go

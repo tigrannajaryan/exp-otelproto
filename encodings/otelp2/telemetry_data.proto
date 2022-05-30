@@ -4,11 +4,8 @@ package otelp2;
 
 import "common.proto";
 
-option java_multiple_files = true;
-option java_package = "io.opencensus.proto.trace.v1";
-option java_outer_classname = "TraceProto";
+option go_package = "encodings/otelp2";
 
-option ruby_package = "OpenCensus.Proto.Trace.V1";
 
 // A collection of InstrumentationLibrarySpans from a Resource.
 message ResourceSpans {
@@ -28,6 +25,8 @@ message InstrumentationLibrarySpans {
 
   // A list of Spans that originate from an instrumentation library.
   repeated Span spans = 2;
+
+  bytes compressed = 3;
 }
 
 // Span represents a single operation within a trace. Spans can be

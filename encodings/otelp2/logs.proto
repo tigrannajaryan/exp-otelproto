@@ -18,9 +18,8 @@ package otelp2;
 
 import "common.proto";
 
-option java_multiple_files = true;
-option java_package = "io.opentelemetry.proto.logs.v1";
-option java_outer_classname = "LogsProto";
+option go_package = "encodings/otelp2";
+
 
 // A collection of InstrumentationLibraryLogs from a Resource.
 message ResourceLogs {
