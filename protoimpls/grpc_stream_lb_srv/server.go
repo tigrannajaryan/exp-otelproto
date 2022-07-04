@@ -20,6 +20,7 @@ import (
 )
 
 type GrpcServer struct {
+	experimental.UnimplementedStreamExporterServer
 	srv       *Server
 	onReceive func(batch core.ExportRequest, spanCount int)
 }
@@ -72,13 +73,15 @@ type Server struct {
 	StreamReopenRequestCount uint
 }
 
-func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportRequest, spanCount int)) error {
+func (srv *Server) Listen(
+	endpoint string, onReceive func(batch core.ExportRequest, spanCount int),
+) error {
 	lis, err := net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	experimental.RegisterStreamExporterServer(srv.s, &GrpcServer{srv, onReceive})
+	experimental.RegisterStreamExporterServer(srv.s, &GrpcServer{srv: srv, onReceive: onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

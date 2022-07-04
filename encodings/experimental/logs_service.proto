@@ -24,6 +24,7 @@ import "logs.proto";
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.collector.logs.v1";
 option java_outer_classname = "LogsServiceProto";
+option go_package = "encodings/experimental";
 
 // Service that can be used to push spans between one Application instrumented with
 // OpenTelemetry and an collector, or between an collector and a central collector (in this
@@ -40,7 +41,7 @@ message ExportLogsServiceRequest {
     // element. Intermediary nodes (such as OpenTelemetry Collector) that receive
     // data from multiple origins typically batch the data before forwarding further and
     // in that case this array will contain multiple elements.
-    repeated ResourceLogs resource_logs = 1;
+    repeated ResourceLogs resource_logs = 1 [json_name="r"];
 }
 
 message ExportLogsServiceResponse {

@@ -10,15 +10,16 @@ option java_package = "io.opencensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
+option go_package = "encodings/experimental";
 
 // A collection of InstrumentationLibraryMetrics from a Resource.
 message ResourceMetrics {
   // The resource for the metrics in this message.
   // If this field is not set then no resource info is known.
-  Resource resource = 1;
+  Resource resource = 1 [json_name="r"];
 
   // A list of metrics that originate from a resource.
-  repeated InstrumentationLibraryMetrics instrumentation_library_metrics = 2;
+  repeated InstrumentationLibraryMetrics instrumentation_library_metrics = 2 [json_name="i"];
 }
 
 // A collection of Metrics produced by an InstrumentationLibrary.
@@ -26,10 +27,10 @@ message InstrumentationLibraryMetrics {
   // The instrumentation library information for the metrics in this message.
   // Semantically when InstrumentationLibrary isn't set, it is equivalent with
   // an empty instrumentation library name (unknown).
-  InstrumentationLibrary instrumentation_library = 1;
+  InstrumentationLibrary instrumentation_library = 1 [json_name="i"];
 
   // A list of metrics that originate from an instrumentation library.
-  repeated Metric metrics = 2;
+  repeated Metric metrics = 2 [json_name="m"];
 }
 
 // Defines a Metric which has one or more timeseries.
@@ -92,14 +93,14 @@ message InstrumentationLibraryMetrics {
 //   - the instantaneous time of the event.
 message Metric {
   // name of the metric, including its DNS name prefix. It must be unique.
-  string name = 1;
+  string name = 1 [json_name="n"];
 
   // description of the metric, which can be used in documentation.
-  string description = 2;
+  string description = 2 [json_name="d"];
 
   // unit in which the metric value is reported. Follows the format
   // described by http://unitsofmeasure.org/ucum.html.
-  string unit = 3;
+  string unit = 3 [json_name="u"];
 
   // TODO: Decide if support for RawMeasurements (measurements recorded using
   // the synchronous instruments) is necessary. It can be used to delegate the
@@ -118,11 +119,11 @@ message Metric {
     // 3. New receivers, which are aware of this change MUST convert these into
     // `gauge` and `sum` by using the provided as_int field in the oneof values.
     // This field will be removed in ~3 months, on July 1, 2021.
-    IntGauge int_gauge = 4 [deprecated = true];
-    Gauge gauge = 5;
+    IntGauge int_gauge = 4 [deprecated = true, json_name="ig"];
+    Gauge gauge = 5 [json_name="g"];
     // This field will be removed in ~3 months, on July 1, 2021.
-    IntSum int_sum = 6 [deprecated = true];
-    Sum sum = 7;
+    IntSum int_sum = 6 [deprecated = true, json_name="is"];
+    Sum sum = 7 [json_name="s"];
 
     // IntHistogram is deprecated and will be removed soon.
     // 1. Old senders and receivers that are not aware of this change will
@@ -131,9 +132,9 @@ message Metric {
     // 3. New receivers, which are aware of this change MUST convert this into
     // `histogram` by simply converting all int64 values into float.
     // This field will be removed in ~3 months, on July 1, 2021.
-    IntHistogram int_histogram = 8 [deprecated = true];
-    Histogram histogram = 9;
-    Summary summary = 11;
+    IntHistogram int_histogram = 8 [deprecated = true, json_name="ih"];
+    Histogram histogram = 9 [json_name="h"];
+    Summary summary = 11 [json_name="sm"];
   }
 }
 
@@ -151,7 +152,7 @@ message Metric {
 message IntGauge {
   option deprecated = true;
 
-  repeated IntDataPoint data_points = 1;
+  repeated IntDataPoint data_points = 1 [json_name="d"];
 }
 
 // Gauge represents the type of a double scalar metric that always exports the
@@ -164,7 +165,7 @@ message IntGauge {
 // AggregationTemporality is not included. Consequently, this also means
 // "StartTimeUnixNano" is ignored for all data points.
 message Gauge {
-  repeated NumberDataPoint data_points = 1;
+  repeated NumberDataPoint data_points = 1 [json_name="d"];
 }
 
 // IntSum is deprecated.  Use Sum with an integer value in NumberDataPoint.
@@ -174,27 +175,27 @@ message Gauge {
 message IntSum {
   option deprecated = true;
 
-  repeated IntDataPoint data_points = 1;
+  repeated IntDataPoint data_points = 1 [json_name="d"];
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2;
+  AggregationTemporality aggregation_temporality = 2 [json_name="t"];
 
   // If "true" means that the sum is monotonic.
-  bool is_monotonic = 3;
+  bool is_monotonic = 3 [json_name="m"];
 }
 
 // Sum represents the type of a numeric double scalar metric that is calculated
 // as a sum of all reported measurements over a time interval.
 message Sum {
-  repeated NumberDataPoint data_points = 1;
+  repeated NumberDataPoint data_points = 1 [json_name="d"];
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2;
+  AggregationTemporality aggregation_temporality = 2 [json_name="t"];
 
   // If "true" means that the sum is monotonic.
-  bool is_monotonic = 3;
+  bool is_monotonic = 3 [json_name="m"];
 }
 
 // IntHistogram is deprecated, replaced by Histogram points using double-
@@ -205,21 +206,21 @@ message Sum {
 message IntHistogram {
   option deprecated = true;
 
-  repeated IntHistogramDataPoint data_points = 1;
+  repeated IntHistogramDataPoint data_points = 1 [json_name="d"];
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2;
+  AggregationTemporality aggregation_temporality = 2 [json_name="t"];
 }
 
 // Histogram represents the type of a metric that is calculated by aggregating as a
 // Histogram of all reported double measurements over a time interval.
 message Histogram {
-  repeated HistogramDataPoint data_points = 1;
+  repeated HistogramDataPoint data_points = 1 [json_name="d"];
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2;
+  AggregationTemporality aggregation_temporality = 2 [json_name="t"];
 }
 
 // Summary metric data are used to convey quantile summaries,
@@ -229,7 +230,7 @@ message Histogram {
 // While they can be useful in some applications, histogram data points are
 // recommended for new applications.
 message Summary {
-  repeated SummaryDataPoint data_points = 1;
+  repeated SummaryDataPoint data_points = 1 [json_name="d"];
 }
 
 // AggregationTemporality defines how a metric aggregator reports aggregated
@@ -309,7 +310,7 @@ message IntDataPoint {
   option deprecated = true;
 
   // The set of labels that uniquely identify this timeseries.
-  repeated StringKeyValue labels = 1;
+  repeated StringKeyValue labels = 1 [json_name="l"];
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -323,27 +324,27 @@ message IntDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  fixed64 start_time_unix_nano = 2 [json_name="s"];
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  fixed64 time_unix_nano = 3 [json_name="t"];
 
   // value itself.
-  sfixed64 value = 4;
+  sfixed64 value = 4 [json_name="v"];
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated IntExemplar exemplars = 5;
+  repeated IntExemplar exemplars = 5 [json_name="e"];
 }
 
 // NumberDataPoint is a single data point in a timeseries that describes the
 // time-varying value of a double metric.
 message NumberDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated StringKeyValue labels = 1;
+  repeated StringKeyValue labels = 1 [json_name="l"];
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -357,24 +358,24 @@ message NumberDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  fixed64 start_time_unix_nano = 2 [json_name="s"];
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  fixed64 time_unix_nano = 3 [json_name="t"];
 
   // The value itself.  A point is considered invalid when one of the recognized
   // value fields is not present inside this oneof.
   oneof value {
-    double as_double = 4;
-    sfixed64 as_int = 6;
+    double as_double = 4 [json_name="d"];
+    sfixed64 as_int = 6 [json_name="i"];
   }
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated Exemplar exemplars = 5;
+  repeated Exemplar exemplars = 5 [json_name="e"];
 }
 
 // IntHistogramDataPoint is deprecated; use HistogramDataPoint.
@@ -387,7 +388,7 @@ message IntHistogramDataPoint {
   option deprecated = true;
 
   // The set of labels that uniquely identify this timeseries.
-  repeated StringKeyValue labels = 1;
+  repeated StringKeyValue labels = 1 [json_name="l"];
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -401,23 +402,23 @@ message IntHistogramDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  fixed64 start_time_unix_nano = 2 [json_name="s"];
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  fixed64 time_unix_nano = 3 [json_name="t"];
 
   // count is the number of values in the population. Must be non-negative. This
   // value must be equal to the sum of the "count" fields in buckets if a
   // histogram is provided.
-  fixed64 count = 4;
+  fixed64 count = 4 [json_name="c"];
 
   // sum of the values in the population. If count is zero then this field
   // must be zero. This value must be equal to the sum of the "sum" fields in
   // buckets if a histogram is provided.
-  sfixed64 sum = 5;
+  sfixed64 sum = 5 [json_name="su"];
 
   // bucket_counts is an optional field contains the count values of histogram
   // for each bucket.
@@ -426,7 +427,7 @@ message IntHistogramDataPoint {
   //
   // The number of elements in bucket_counts array must be by one greater than
   // the number of elements in explicit_bounds array.
-  repeated fixed64 bucket_counts = 6;
+  repeated fixed64 bucket_counts = 6 [json_name="b"];
 
   // A histogram may optionally contain the distribution of the values in the population.
   // In that case one of the option fields below and "buckets" field both must be defined.
@@ -450,11 +451,11 @@ message IntHistogramDataPoint {
   // Histogram buckets are inclusive of their upper boundary, except the last
   // bucket where the boundary is at infinity. This format is intentionally
   // compatible with the OpenMetrics histogram definition.
-  repeated double explicit_bounds = 7;
+  repeated double explicit_bounds = 7 [json_name="eb"];
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated IntExemplar exemplars = 8;
+  repeated IntExemplar exemplars = 8 [json_name="e"];
 }
 
 // HistogramDataPoint is a single data point in a timeseries that describes the
@@ -463,7 +464,7 @@ message IntHistogramDataPoint {
 // distribution of those values across a set of buckets.
 message HistogramDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated StringKeyValue labels = 1;
+  repeated StringKeyValue labels = 1 [json_name="l"];
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -477,23 +478,23 @@ message HistogramDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  fixed64 start_time_unix_nano = 2 [json_name="s"];
 
   // time_unix_nano is the moment when this aggregation value was reported.
   // 
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  fixed64 time_unix_nano = 3 [json_name="t"];
 
   // count is the number of values in the population. Must be non-negative. This
   // value must be equal to the sum of the "count" fields in buckets if a
   // histogram is provided.
-  fixed64 count = 4;
+  fixed64 count = 4 [json_name="c"];
 
   // sum of the values in the population. If count is zero then this field
   // must be zero. This value must be equal to the sum of the "sum" fields in
   // buckets if a histogram is provided.
-  double sum = 5;
+  double sum = 5 [json_name="su"];
 
   // bucket_counts is an optional field contains the count values of histogram
   // for each bucket.
@@ -502,7 +503,7 @@ message HistogramDataPoint {
   //
   // The number of elements in bucket_counts array must be by one greater than
   // the number of elements in explicit_bounds array.
-  repeated fixed64 bucket_counts = 6;
+  repeated fixed64 bucket_counts = 6 [json_name="b"];
 
   // A histogram may optionally contain the distribution of the values in the population.
   // In that case one of the option fields below and "buckets" field both must be defined.
@@ -526,18 +527,18 @@ message HistogramDataPoint {
   // Histogram buckets are inclusive of their upper boundary, except the last
   // bucket where the boundary is at infinity. This format is intentionally
   // compatible with the OpenMetrics histogram definition.
-  repeated double explicit_bounds = 7;
+  repeated double explicit_bounds = 7 [json_name="eb"];
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated Exemplar exemplars = 8;
+  repeated Exemplar exemplars = 8 [json_name="e"];
 }
 
 // SummaryDataPoint is a single data point in a timeseries that describes the
 // time-varying values of a Summary metric.
 message SummaryDataPoint {
   // The set of labels that uniquely identify this timeseries.
-  repeated StringKeyValue labels = 1;
+  repeated StringKeyValue labels = 1 [json_name="l"];
 
   // start_time_unix_nano is the last time when the aggregation value was reset
   // to "zero". For some metric types this is ignored, see data types for more
@@ -551,20 +552,20 @@ message SummaryDataPoint {
   //
   // Value of 0 indicates that the timestamp is unspecified. In that case the
   // timestamp may be decided by the backend.
-  fixed64 start_time_unix_nano = 2;
+  fixed64 start_time_unix_nano = 2 [json_name="s"];
 
   // time_unix_nano is the moment when this aggregation value was reported.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3;
+  fixed64 time_unix_nano = 3 [json_name="t"];
 
   // count is the number of values in the population. Must be non-negative.
-  fixed64 count = 4;
+  fixed64 count = 4 [json_name="c"];
 
   // sum of the values in the population. If count is zero then this field
   // must be zero.
-  double sum = 5;
+  double sum = 5 [json_name="su"];
 
   // Represents the value at a given quantile of a distribution.
   //
@@ -577,15 +578,15 @@ message SummaryDataPoint {
   message ValueAtQuantile {
     // The quantile of a distribution. Must be in the interval
     // [0.0, 1.0].
-    double quantile = 1;
+    double quantile = 1 [json_name="q"];
 
     // The value at the given quantile of a distribution.
-    double value = 2;
+    double value = 2 [json_name="v"];
   }
 
   // (Optional) list of values at different quantiles of the distribution calculated
   // from the current snapshot. The quantiles must be strictly increasing.
-  repeated ValueAtQuantile quantile_values = 6;
+  repeated ValueAtQuantile quantile_values = 6 [json_name="q"];
 }
 
 // A representation of an exemplar, which is a sample input int measurement.
@@ -598,26 +599,26 @@ message IntExemplar {
   // The set of labels that were filtered out by the aggregator, but recorded
   // alongside the original measurement. Only labels that were filtered out
   // by the aggregator should be included
-  repeated StringKeyValue filtered_labels = 1;
+  repeated StringKeyValue filtered_labels = 1 [json_name="l"];
 
   // time_unix_nano is the exact time when this exemplar was recorded
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 2;
+  fixed64 time_unix_nano = 2 [json_name="t"];
 
   // Numerical int value of the measurement that was recorded.
-  sfixed64 value = 3;
+  sfixed64 value = 3 [json_name="v"];
 
   // (Optional) Span ID of the exemplar trace.
   // span_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes span_id = 4;
+  bytes span_id = 4 [json_name="si"];
 
   // (Optional) Trace ID of the exemplar trace.
   // trace_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes trace_id = 5;
+  bytes trace_id = 5 [json_name="ti"];
 }
 
 // A representation of an exemplar, which is a sample input measurement.
@@ -628,29 +629,29 @@ message Exemplar {
   // The set of labels that were filtered out by the aggregator, but recorded
   // alongside the original measurement. Only labels that were filtered out
   // by the aggregator should be included
-  repeated StringKeyValue filtered_labels = 1;
+  repeated StringKeyValue filtered_labels = 1 [json_name="l"];
 
   // time_unix_nano is the exact time when this exemplar was recorded
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 2;
+  fixed64 time_unix_nano = 2 [json_name="t"];
 
   // Numerical value of the measurement that was recorded. An exemplar is
   // considered invalid when one of the recognized value fields is not present
   // inside this oneof.
   oneof value {
-    double as_double = 3;
-    sfixed64 as_int = 6;
+    double as_double = 3 [json_name="d"];
+    sfixed64 as_int = 6 [json_name="i"];
   }
 
   // (Optional) Span ID of the exemplar trace.
   // span_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes span_id = 4;
+  bytes span_id = 4 [json_name="si"];
 
   // (Optional) Trace ID of the exemplar trace.
   // trace_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes trace_id = 5;
+  bytes trace_id = 5 [json_name="ti"];
 }

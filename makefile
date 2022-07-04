@@ -55,13 +55,13 @@ gen-traceprotobuf:
 #	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
 
 gen-experimental:
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/common.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=plugins=grpc:encodings/experimental
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=plugins=grpc:encodings/experimental
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/common.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_data.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_data.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchange.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_service.proto --go_out=.
+	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpc.proto --go_out=. --go-grpc_out=.
 
 gen-otelp2:
 	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/common.proto --go_out=.

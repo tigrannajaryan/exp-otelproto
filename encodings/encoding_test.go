@@ -44,17 +44,17 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return otlp.NewGenerator() },
 	//},
 	{
-		name: "OTLP HEAD",
+		name: "OTLP",
 		gen:  func() core.Generator { return baseline.NewGenerator() },
 	},
 	//{
 	//	name: "OTELP2",
 	//	gen:  func() core.Generator { return otelp2.NewGenerator() },
 	//},
-	//{
-	//	name: "Proposed",
-	//	gen:  func() core.Generator { return experimental.NewGenerator() },
-	//},
+	{
+		name: "ShortKeys",
+		gen:  func() core.Generator { return experimental.NewGenerator() },
+	},
 	//{
 	//	name: "Proposed",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
@@ -112,17 +112,19 @@ func BenchmarkGenerate(b *testing.B) {
 
 	for _, batchType := range batchTypes {
 		for _, test := range tests {
-			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
-				gen := test.gen()
-				for i := 0; i < b.N; i++ {
-					batches := batchType.batchGen(gen)
-					if batches == nil {
-						// Unsupported test type and batch type combination.
-						b.SkipNow()
-						return
+			b.Run(
+				test.name+"/"+batchType.name, func(b *testing.B) {
+					gen := test.gen()
+					for i := 0; i < b.N; i++ {
+						batches := batchType.batchGen(gen)
+						if batches == nil {
+							// Unsupported test type and batch type combination.
+							b.SkipNow()
+							return
+						}
 					}
-				}
-			})
+				},
+			)
 		}
 		fmt.Println("")
 	}
@@ -132,24 +134,26 @@ func BenchmarkEncode(b *testing.B) {
 
 	for _, batchType := range batchTypes {
 		for _, test := range tests {
-			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
-				b.StopTimer()
-				gen := test.gen()
-				batches := batchType.batchGen(gen)
-				if batches == nil {
-					// Unsupported test type and batch type combination.
-					b.SkipNow()
-					return
-				}
-
-				runtime.GC()
-				b.StartTimer()
-				for i := 0; i < b.N; i++ {
-					for _, batch := range batches {
-						encode(batch)
+			b.Run(
+				test.name+"/"+batchType.name, func(b *testing.B) {
+					b.StopTimer()
+					gen := test.gen()
+					batches := batchType.batchGen(gen)
+					if batches == nil {
+						// Unsupported test type and batch type combination.
+						b.SkipNow()
+						return
 					}
-				}
-			})
+
+					runtime.GC()
+					b.StartTimer()
+					for i := 0; i < b.N; i++ {
+						for _, batch := range batches {
+							encode(batch)
+						}
+					}
+				},
+			)
 		}
 		fmt.Println("")
 	}
@@ -158,28 +162,30 @@ func BenchmarkEncode(b *testing.B) {
 func BenchmarkDecode(b *testing.B) {
 	for _, batchType := range batchTypes {
 		for _, test := range tests {
-			b.Run(test.name+"/"+batchType.name, func(b *testing.B) {
-				b.StopTimer()
-				batches := batchType.batchGen(test.gen())
-				if batches == nil {
-					// Unsupported test type and batch type combination.
-					b.SkipNow()
-					return
-				}
-
-				var encodedBytes [][]byte
-				for _, batch := range batches {
-					encodedBytes = append(encodedBytes, encode(batch))
-				}
-
-				runtime.GC()
-				b.StartTimer()
-				for i := 0; i < b.N; i++ {
-					for j, bytes := range encodedBytes {
-						decode(bytes, batches[j].(proto.Message))
+			b.Run(
+				test.name+"/"+batchType.name, func(b *testing.B) {
+					b.StopTimer()
+					batches := batchType.batchGen(test.gen())
+					if batches == nil {
+						// Unsupported test type and batch type combination.
+						b.SkipNow()
+						return
 					}
-				}
-			})
+
+					var encodedBytes [][]byte
+					for _, batch := range batches {
+						encodedBytes = append(encodedBytes, encode(batch))
+					}
+
+					runtime.GC()
+					b.StartTimer()
+					for i := 0; i < b.N; i++ {
+						for j, bytes := range encodedBytes {
+							decode(bytes, batches[j].(proto.Message))
+						}
+					}
+				},
+			)
 		}
 		fmt.Println("")
 	}
@@ -440,11 +446,13 @@ func TestEncodeSize(t *testing.T) {
 	const batchSize = spansPerBatch
 
 	variation := []struct {
-		name                 string
-		genFunc              func(gen core.Generator) core.ExportRequest
-		firstUncompessedSize int
-		firstZlibedSize      int
-		firstZstdedSize      int
+		name                     string
+		genFunc                  func(gen core.Generator) core.ExportRequest
+		firstUncompessedSize     int
+		firstUncompessedJSONSize int
+		firstZlibedSize          int
+		firstZlibedJSONSize      int
+		firstZstdedSize          int
 	}{
 		{
 			name: "Logs",
@@ -487,63 +495,102 @@ func TestEncodeSize(t *testing.T) {
 	fmt.Println("===== Encoded sizes")
 
 	for _, v := range variation {
-		fmt.Println("Encoding                       Uncompressed  Improved      Compressed  Improved      Compressed  Improved")
+		fmt.Println("Encoding                       Uncomp/bin[Improved] Uncomp/json[Improved]  zlib/bin[Improved]  zlib/json[Improved] zstd/bin[Improved]")
 		for _, test := range tests {
-			t.Run(test.name, func(t *testing.T) {
-				gen := test.gen()
+			t.Run(
+				test.name, func(t *testing.T) {
+					gen := test.gen()
 
-				batch := v.genFunc(gen)
-				if batch == nil {
-					// Skip this case.
-					return
-				}
+					batch := v.genFunc(gen)
+					if batch == nil {
+						// Skip this case.
+						return
+					}
 
-				bodyBytes, err := proto.Marshal(batch.(proto.Message))
-				if err != nil {
-					log.Fatal(err)
-				}
+					bodyBytes, err := proto.Marshal(batch.(proto.Message))
+					if err != nil {
+						log.Fatal(err)
+					}
 
-				zlibedBytes := doZlib(bodyBytes)
-				zstdedBytes := doZstd(bodyBytes)
+					zlibedBytes := doZlib(bodyBytes)
+					zstdedBytes := doZstd(bodyBytes)
 
-				uncompressedSize := len(bodyBytes)
-				zlibedSize := len(zlibedBytes)
-				zstdedSize := len(zstdedBytes)
+					uncompressedSize := len(bodyBytes)
+					zlibedSize := len(zlibedBytes)
+					zstdedSize := len(zstdedBytes)
 
-				uncompressedRatioStr := "[1.000]"
-				zlibedRatioStr := "[1.000]"
-				zstdedRatioStr := "[1.000]"
+					uncompressedRatioStr := "[1.000]"
+					zlibedRatioStr := "[1.000]"
+					zstdedRatioStr := "[1.000]"
 
-				if v.firstUncompessedSize == 0 {
-					v.firstUncompessedSize = uncompressedSize
-				} else {
-					uncompressedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstUncompessedSize)/float64(uncompressedSize))
-				}
+					if v.firstUncompessedSize == 0 {
+						v.firstUncompessedSize = uncompressedSize
+					} else {
+						uncompressedRatioStr = fmt.Sprintf(
+							"[%1.3f]", float64(v.firstUncompessedSize)/float64(uncompressedSize),
+						)
+					}
 
-				if v.firstZlibedSize == 0 {
-					v.firstZlibedSize = zlibedSize
-				} else {
-					zlibedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstZlibedSize)/float64(zlibedSize))
-				}
+					if v.firstZlibedSize == 0 {
+						v.firstZlibedSize = zlibedSize
+					} else {
+						zlibedRatioStr = fmt.Sprintf(
+							"[%1.3f]", float64(v.firstZlibedSize)/float64(zlibedSize),
+						)
+					}
 
-				if v.firstZstdedSize == 0 {
-					v.firstZstdedSize = zstdedSize
-				} else {
-					zstdedRatioStr = fmt.Sprintf("[%1.3f]", float64(v.firstZstdedSize)/float64(zstdedSize))
-				}
+					if v.firstZstdedSize == 0 {
+						v.firstZstdedSize = zstdedSize
+					} else {
+						zstdedRatioStr = fmt.Sprintf(
+							"[%1.3f]", float64(v.firstZstdedSize)/float64(zstdedSize),
+						)
+					}
 
-				fmt.Printf(
-					"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
-					test.name+"/"+v.name,
-					uncompressedSize,
-					uncompressedRatioStr,
-					zlibedSize,
-					zlibedRatioStr,
-					zstdedSize,
-					zstdedRatioStr,
-				)
+					m := jsonpb.Marshaler{}
+					str, err := m.MarshalToString(batch.(proto.Message))
 
-			})
+					uncompressedJSONSize := len(str)
+
+					uncompressedJSONRatioStr := "[1.000]"
+
+					if v.firstUncompessedJSONSize == 0 {
+						v.firstUncompessedJSONSize = uncompressedJSONSize
+					} else {
+						uncompressedJSONRatioStr = fmt.Sprintf(
+							"[%1.3f]",
+							float64(v.firstUncompessedJSONSize)/float64(uncompressedJSONSize),
+						)
+					}
+
+					zlibedJSON := doZlib([]byte(str))
+					zlibedJSONSize := len(zlibedJSON)
+					zlibedJSONRatioStr := "[1.000]"
+					if v.firstZlibedJSONSize == 0 {
+						v.firstZlibedJSONSize = zlibedJSONSize
+					} else {
+						zlibedJSONRatioStr = fmt.Sprintf(
+							"[%1.3f]", float64(v.firstZlibedJSONSize)/float64(zlibedJSONSize),
+						)
+					}
+
+					fmt.Printf(
+						"%-31v%6d by%8s  %7d by  %8s    %5d by%8s    %5d by%8s    %5d by%8s\n",
+						test.name+"/"+v.name,
+						uncompressedSize,
+						uncompressedRatioStr,
+						uncompressedJSONSize,
+						uncompressedJSONRatioStr,
+						zlibedSize,
+						zlibedRatioStr,
+						zlibedJSONSize,
+						zlibedJSONRatioStr,
+						zstdedSize,
+						zstdedRatioStr,
+					)
+
+				},
+			)
 		}
 		fmt.Println("")
 	}
@@ -618,75 +665,83 @@ func TestEncodeSizeFromFile(t *testing.T) {
 
 	for _, test := range tests {
 		fmt.Println("Encoding                       Uncompressed  Improved      Compressed  Improved      Compressed  Improved")
-		t.Run(test.name, func(t *testing.T) {
-			translator := test.translator()
+		t.Run(
+			test.name, func(t *testing.T) {
+				translator := test.translator()
 
-			f, err := os.Open("testdata/traces.protobuf")
-			assert.NoError(t, err)
+				f, err := os.Open("testdata/traces.protobuf")
+				assert.NoError(t, err)
 
-			uncompressedSize := 0
-			zlibedSize := 0
-			zstdedSize := 0
+				uncompressedSize := 0
+				zlibedSize := 0
+				zstdedSize := 0
 
-			for {
-				msg := otlp.ReadTraceMessage(f)
-				if msg == nil {
-					break
+				for {
+					msg := otlp.ReadTraceMessage(f)
+					if msg == nil {
+						break
+					}
+
+					batch := translator.TranslateSpans(msg)
+					if batch == nil {
+						// Skip this case.
+						return
+					}
+
+					bodyBytes, err := proto.Marshal(batch.(proto.Message))
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					zlibedBytes := doZlib(bodyBytes)
+					zstdedBytes := doZstd(bodyBytes)
+
+					uncompressedSize += len(bodyBytes)
+					zlibedSize += len(zlibedBytes)
+					zstdedSize += len(zstdedBytes)
 				}
 
-				batch := translator.TranslateSpans(msg)
-				if batch == nil {
-					// Skip this case.
-					return
+				uncompressedRatioStr := "[1.000]"
+				zlibedRatioStr := "[1.000]"
+				zstdedRatioStr := "[1.000]"
+
+				if firstUncompessedSize == 0 {
+					firstUncompessedSize = uncompressedSize
+				} else {
+					uncompressedRatioStr = fmt.Sprintf(
+						"[%1.3f]", float64(firstUncompessedSize)/float64(uncompressedSize),
+					)
 				}
 
-				bodyBytes, err := proto.Marshal(batch.(proto.Message))
-				if err != nil {
-					log.Fatal(err)
+				if firstZlibedSize == 0 {
+					firstZlibedSize = zlibedSize
+				} else {
+					zlibedRatioStr = fmt.Sprintf(
+						"[%1.3f]", float64(firstZlibedSize)/float64(zlibedSize),
+					)
 				}
 
-				zlibedBytes := doZlib(bodyBytes)
-				zstdedBytes := doZstd(bodyBytes)
+				if firstZstdedSize == 0 {
+					firstZstdedSize = zstdedSize
+				} else {
+					zstdedRatioStr = fmt.Sprintf(
+						"[%1.3f]", float64(firstZstdedSize)/float64(zstdedSize),
+					)
+				}
 
-				uncompressedSize += len(bodyBytes)
-				zlibedSize += len(zlibedBytes)
-				zstdedSize += len(zstdedBytes)
-			}
+				fmt.Printf(
+					"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
+					test.name,
+					uncompressedSize,
+					uncompressedRatioStr,
+					zlibedSize,
+					zlibedRatioStr,
+					zstdedSize,
+					zstdedRatioStr,
+				)
 
-			uncompressedRatioStr := "[1.000]"
-			zlibedRatioStr := "[1.000]"
-			zstdedRatioStr := "[1.000]"
-
-			if firstUncompessedSize == 0 {
-				firstUncompessedSize = uncompressedSize
-			} else {
-				uncompressedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstUncompessedSize)/float64(uncompressedSize))
-			}
-
-			if firstZlibedSize == 0 {
-				firstZlibedSize = zlibedSize
-			} else {
-				zlibedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstZlibedSize)/float64(zlibedSize))
-			}
-
-			if firstZstdedSize == 0 {
-				firstZstdedSize = zstdedSize
-			} else {
-				zstdedRatioStr = fmt.Sprintf("[%1.3f]", float64(firstZstdedSize)/float64(zstdedSize))
-			}
-
-			fmt.Printf(
-				"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
-				test.name,
-				uncompressedSize,
-				uncompressedRatioStr,
-				zlibedSize,
-				zlibedRatioStr,
-				zstdedSize,
-				zstdedRatioStr,
-			)
-
-		})
+			},
+		)
 		fmt.Println("")
 	}
 }
@@ -729,13 +784,15 @@ func BenchmarkEndianness(b *testing.B) {
 	}
 
 	for _, test := range tests {
-		b.Run(test.name, func(b *testing.B) {
-			b.StartTimer()
-			var spanID [8]byte
-			for i := 0; i < b.N; i++ {
-				test.order.PutUint64(spanID[:], uint64(i))
-			}
-		})
+		b.Run(
+			test.name, func(b *testing.B) {
+				b.StartTimer()
+				var spanID [8]byte
+				for i := 0; i < b.N; i++ {
+					test.order.PutUint64(spanID[:], uint64(i))
+				}
+			},
+		)
 	}
 }
 
@@ -777,10 +834,13 @@ func BenchmarkAttributeValueSize(b *testing.B) {
 func TestJson(t *testing.T) {
 	g := baseline.NewGenerator()
 	b := g.GenerateSpanBatch(1, 1, 1)
-	// proto.Marshal(b.(*experimental2.TraceExportRequest))
-	//json := protojson.Format(b.(*experimental2.TraceExportRequest))
+
 	m := jsonpb.Marshaler{}
+	//m := jsonpb.Marshaler{OrigName: true}
 	str, err := m.MarshalToString(b.(*baseline.TraceExportRequest))
 	assert.NoError(t, err)
 	fmt.Printf(str)
+
+	err = jsonpb.UnmarshalString(str, b.(proto.Message))
+	assert.NoError(t, err)
 }

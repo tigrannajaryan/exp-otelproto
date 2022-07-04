@@ -7,15 +7,16 @@ option java_package = "io.opencensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
+option go_package = "encodings/experimental";
 
 // Resource information.
 message Resource {
     // Set of labels that describe the resource.
-    repeated KeyValue attributes = 1;
+    repeated KeyValue attributes = 1 [json_name="a"];
 
     // dropped_attributes_count is the number of dropped attributes. If the value is 0, then
     // no attributes were dropped.
-    uint32 dropped_attributes_count = 2;
+    uint32 dropped_attributes_count = 2 [json_name="da"];
 }
 
 
@@ -26,12 +27,12 @@ message AnyValue {
     // The value is one of the listed fields. It is valid for all values to be unspecified
     // in which case this AnyValue is considered to be "null".
     oneof value {
-        string string_value = 1;
-        bool bool_value = 2;
-        int64 int_value = 3;
-        double double_value = 4;
-        ArrayValue array_value = 5;
-        KeyValueList kvlist_value = 6;
+        string string_value = 1 [json_name="s"];
+        bool bool_value = 2 [json_name="b"];
+        int64 int_value = 3 [json_name="i"];
+        double double_value = 4 [json_name="d"];
+        ArrayValue array_value = 5 [json_name="a"];
+        KeyValueList kvlist_value = 6 [json_name="l"];
     }
 }
 
@@ -39,7 +40,7 @@ message AnyValue {
 // since oneof in AnyValue does not allow repeated fields.
 message ArrayValue {
     // Array of values. The array may be empty (contain 0 elements).
-    repeated AnyValue values = 1;
+    repeated AnyValue values = 1 [json_name="v"];
 }
 
 // KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
@@ -50,26 +51,26 @@ message ArrayValue {
 message KeyValueList {
     // A collection of key/value pairs of key-value pairs. The list may be empty (may
     // contain 0 elements).
-    repeated KeyValue values = 1;
+    repeated KeyValue values = 1 [json_name="l"];
 }
 
 // KeyValue is a key-value pair that is used to store Span attributes, Link
 // attributes, etc.
 message KeyValue {
-    string key = 1;
-    AnyValue value = 2;
+    string key = 1 [json_name="k"];
+    AnyValue value = 2 [json_name="v"];
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
 // of KeyValue that only supports string values.
 message StringKeyValue {
-    string key = 1;
-    string value = 2;
+    string key = 1 [json_name="k"];
+    string value = 2 [json_name="v"];
 }
 
 // InstrumentationLibrary is a message representing the instrumentation library information
 // such as the fully qualified name and version.
 message InstrumentationLibrary {
-    string name = 1;
-    string version = 2;
+    string name = 1 [json_name="n"];
+    string version = 2 [json_name="v"];
 }
