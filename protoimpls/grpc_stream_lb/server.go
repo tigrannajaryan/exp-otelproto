@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 )
 
 type GrpcServer struct {
@@ -32,7 +32,7 @@ func (s *GrpcServer) ExportTraces(stream experimental.StreamExporter_ExportTrace
 		}
 
 		// Process received batch.
-		s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		s.onReceive(batch, len(batch.ResourceSpans[0].ScopeSpans[0].Spans))
 
 		// Send response to client.
 		stream.Send(&experimental.ExportResponse{Id: batch.Id})

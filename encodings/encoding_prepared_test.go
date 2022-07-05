@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 )
 
 /*
@@ -64,7 +64,7 @@ func TestPreparedTrace(t *testing.T) {
 
 func encodeUnpreparedTraces(spanCount int) proto.Message {
 	g := experimental.NewGenerator()
-	request := g.GenerateSpanBatch(spanCount, 5, 0).(*experimental.TraceExportRequest)
+	request := g.GenerateSpanBatch(spanCount, 5, 0).(*v1.ExportTraceServiceRequest)
 	return request
 }
 
@@ -104,7 +104,7 @@ func BenchmarkDecodeEncodeTraces(b *testing.B) {
 	}{
 		{
 			name:            "Full",
-			emptyMsgCreator: func() proto.Message { return &experimental.TraceExportRequest{} },
+			emptyMsgCreator: func() proto.Message { return &v1.TraceExportRequest{} },
 		},
 	}
 

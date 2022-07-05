@@ -25,6 +25,7 @@ endef
 OTLP_PROTO_FILES := $(wildcard encodings/otlp_gogo/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo/opentelemetry/proto/collector/*/v1/*.proto)
 OTLP_PROTO_FILES2 := $(wildcard encodings/otlp_gogo2/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo2/opentelemetry/proto/collector/*/v1/*.proto)
 OTLP_PROTO_FILES3 := $(wildcard encodings/otlp_gogo3/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo3/opentelemetry/proto/collector/*/v1/*.proto)
+EXP_PROTO_FILES := $(wildcard encodings/experimental/proto/*/v1/*.proto encodings/experimental/proto/collector/*/v1/*.proto)
 
 
 all: build test
@@ -55,13 +56,19 @@ gen-traceprotobuf:
 #	protoc -I/usr/local/include -I encodings/otlp/ encodings/otlp/logs.proto --go_out=plugins=grpc:encodings/otlp
 
 gen-experimental:
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/commone.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metric_datae.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/telemetry_datae.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchangee.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logse.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_servicee.proto --go_out=.
-	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/grpce.proto --go_out=. --go-grpc_out=.
+	$(foreach file,$(EXP_PROTO_FILES),$(call exec-command,protoc -I/usr/local/include -I encodings/experimental/proto/ $(file) --go_out=encodings/experimental/ --go-grpc_out=encodings/experimental/ ))
+	cp -R encodings/experimental/github.com/tigrannajaryan/exp-otelproto/encodings/experimental/* encodings/experimental/
+	rm -rf encodings/experimental/github.com/
+
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/commone.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchangee.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/resourcee.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metricse.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/metrics_servicee.proto --go_out=. --go-grpc_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/tracee.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/trace_service.proto --go_out=. --go-grpc_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logse.proto --go_out=.
+#	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/logs_servicee.proto --go_out=. --go-grpc_out=.
 
 gen-otelp2:
 	protoc -I/usr/local/include -I encodings/otelp2/ encodings/otelp2/common.proto --go_out=.

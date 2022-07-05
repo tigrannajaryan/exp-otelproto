@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"

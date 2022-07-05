@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 )
 
 // Client can connect to a server and send a batch of spans.

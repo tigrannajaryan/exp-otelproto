@@ -68,14 +68,14 @@ func (g *Generator) GenerateSpanBatch(
 ) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	il := &otlptrace.InstrumentationLibrarySpans{
-		InstrumentationLibrary: &otlpcommon.InstrumentationLibrary{Name: "io.opentelemetry"},
+	il := &otlptrace.ScopeSpans{
+		Scope: &otlpcommon.InstrumentationScope{Name: "io.opentelemetry"},
 	}
 	batch := &otlptracecol.ExportTraceServiceRequest{
 		ResourceSpans: []*otlptrace.ResourceSpans{
 			{
-				Resource:                    GenResource(),
-				InstrumentationLibrarySpans: []*otlptrace.InstrumentationLibrarySpans{il},
+				Resource:   GenResource(),
+				ScopeSpans: []*otlptrace.ScopeSpans{il},
 			},
 		},
 	}
@@ -153,14 +153,14 @@ func (g *Generator) GenerateSpanBatch(
 func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
 	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-	il := &otlplogs.InstrumentationLibraryLogs{
-		InstrumentationLibrary: &otlpcommon.InstrumentationLibrary{Name: "io.opentelemetry"},
+	il := &otlplogs.ScopeLogs{
+		Scope: &otlpcommon.InstrumentationScope{Name: "io.opentelemetry"},
 	}
 	batch := &otlplogcol.ExportLogsServiceRequest{
 		ResourceLogs: []*otlplogs.ResourceLogs{
 			{
-				Resource:                   GenResource(),
-				InstrumentationLibraryLogs: []*otlplogs.InstrumentationLibraryLogs{il},
+				Resource:  GenResource(),
+				ScopeLogs: []*otlplogs.ScopeLogs{il},
 			},
 		},
 	}
@@ -436,12 +436,12 @@ func (g *Generator) GenerateMetricBatch(
 	summary bool,
 ) core.ExportRequest {
 
-	il := &otlpmetric.InstrumentationLibraryMetrics{}
+	il := &otlpmetric.ScopeMetrics{}
 	batch := &otlpmetriccol.ExportMetricsServiceRequest{
 		ResourceMetrics: []*otlpmetric.ResourceMetrics{
 			{
-				Resource:                      GenResource(),
-				InstrumentationLibraryMetrics: []*otlpmetric.InstrumentationLibraryMetrics{il},
+				Resource:     GenResource(),
+				ScopeMetrics: []*otlpmetric.ScopeMetrics{il},
 			},
 		},
 	}

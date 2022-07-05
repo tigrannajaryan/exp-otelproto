@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	ws_async_worker "github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_async_workers"
 	"log"
 	"os"
 	"runtime"
@@ -11,7 +10,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
+	ws_async_worker "github.com/tigrannajaryan/exp-otelproto/protoimpls/ws_async_workers"
+
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	sapmenc "github.com/tigrannajaryan/exp-otelproto/encodings/sapm"
 
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/sapm"
@@ -68,8 +70,8 @@ func main() {
 	}
 
 	concurrency := 4 // runtime.GOMAXPROCS(0)
-	if concurrency<1 {
-		concurrency=1
+	if concurrency < 1 {
+		concurrency = 1
 	}
 
 	switch protocol {
@@ -96,15 +98,15 @@ func main() {
 	case "wsstreamsync":
 		benchmarkWSStreamSync(options)
 	case "wsstreamasync":
-		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, 1)
+		benchmarkWSStreamAsync(options, v1.CompressionMethod_NONE, 1)
 	case "wsasyncworker":
 		benchmarkWSAsyncWorker(options, 1)
 	case "wsasyncworkerconc":
 		benchmarkWSAsyncWorker(options, concurrency)
 	case "wsstreamasyncconc":
-		benchmarkWSStreamAsync(options, experimental.CompressionMethod_NONE, concurrency)
+		benchmarkWSStreamAsync(options, v1.CompressionMethod_NONE, concurrency)
 	case "wsstreamasynczlib":
-		benchmarkWSStreamAsync(options, experimental.CompressionMethod_ZLIB, 1)
+		benchmarkWSStreamAsync(options, v1.CompressionMethod_ZLIB, 1)
 	case "http11":
 		benchmarkHttp11(options, 1)
 	case "http11conc":
@@ -234,14 +236,16 @@ func benchmarkWSStreamSync(options core.Options) {
 	)
 }
 
-func benchmarkWSStreamAsync(options core.Options, compression experimental.CompressionMethod, concurrency int) {
+func benchmarkWSStreamAsync(
+	options core.Options, compression v1.CompressionMethod, concurrency int,
+) {
 	var suffix string
 	switch compression {
-	case experimental.CompressionMethod_NONE:
+	case v1.CompressionMethod_NONE:
 		suffix = ""
-	case experimental.CompressionMethod_ZLIB:
+	case v1.CompressionMethod_ZLIB:
 		suffix = "/zlib"
-	case experimental.CompressionMethod_LZ4:
+	case v1.CompressionMethod_LZ4:
 		suffix = "/lz4"
 	}
 

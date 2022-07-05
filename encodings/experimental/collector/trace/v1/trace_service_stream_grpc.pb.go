@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.1
-// source: grpce.proto
+// source: collector/trace/v1/trace_service_stream.proto
 
-package experimental
+package v1
 
 import (
 	context "context"
@@ -17,92 +17,6 @@ import (
 // is compatible with the grpc package it is being compiled against.
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
-
-// UnaryExporterClient is the client API for UnaryExporter service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type UnaryExporterClient interface {
-	ExportTraces(ctx context.Context, in *TraceExportRequest, opts ...grpc.CallOption) (*ExportResponse, error)
-}
-
-type unaryExporterClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewUnaryExporterClient(cc grpc.ClientConnInterface) UnaryExporterClient {
-	return &unaryExporterClient{cc}
-}
-
-func (c *unaryExporterClient) ExportTraces(ctx context.Context, in *TraceExportRequest, opts ...grpc.CallOption) (*ExportResponse, error) {
-	out := new(ExportResponse)
-	err := c.cc.Invoke(ctx, "/experimental.UnaryExporter/ExportTraces", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// UnaryExporterServer is the server API for UnaryExporter service.
-// All implementations must embed UnimplementedUnaryExporterServer
-// for forward compatibility
-type UnaryExporterServer interface {
-	ExportTraces(context.Context, *TraceExportRequest) (*ExportResponse, error)
-	mustEmbedUnimplementedUnaryExporterServer()
-}
-
-// UnimplementedUnaryExporterServer must be embedded to have forward compatible implementations.
-type UnimplementedUnaryExporterServer struct {
-}
-
-func (UnimplementedUnaryExporterServer) ExportTraces(context.Context, *TraceExportRequest) (*ExportResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExportTraces not implemented")
-}
-func (UnimplementedUnaryExporterServer) mustEmbedUnimplementedUnaryExporterServer() {}
-
-// UnsafeUnaryExporterServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to UnaryExporterServer will
-// result in compilation errors.
-type UnsafeUnaryExporterServer interface {
-	mustEmbedUnimplementedUnaryExporterServer()
-}
-
-func RegisterUnaryExporterServer(s grpc.ServiceRegistrar, srv UnaryExporterServer) {
-	s.RegisterService(&UnaryExporter_ServiceDesc, srv)
-}
-
-func _UnaryExporter_ExportTraces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TraceExportRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UnaryExporterServer).ExportTraces(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/experimental.UnaryExporter/ExportTraces",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UnaryExporterServer).ExportTraces(ctx, req.(*TraceExportRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// UnaryExporter_ServiceDesc is the grpc.ServiceDesc for UnaryExporter service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var UnaryExporter_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "experimental.UnaryExporter",
-	HandlerType: (*UnaryExporterServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ExportTraces",
-			Handler:    _UnaryExporter_ExportTraces_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "grpce.proto",
-}
 
 // StreamExporterClient is the client API for StreamExporter service.
 //
@@ -120,7 +34,7 @@ func NewStreamExporterClient(cc grpc.ClientConnInterface) StreamExporterClient {
 }
 
 func (c *streamExporterClient) ExportTraces(ctx context.Context, opts ...grpc.CallOption) (StreamExporter_ExportTracesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StreamExporter_ServiceDesc.Streams[0], "/experimental.StreamExporter/ExportTraces", opts...)
+	stream, err := c.cc.NewStream(ctx, &StreamExporter_ServiceDesc.Streams[0], "/experimental.collector.trace.v1.StreamExporter/ExportTraces", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +122,7 @@ func (x *streamExporterExportTracesServer) Recv() (*TraceExportRequest, error) {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var StreamExporter_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "experimental.StreamExporter",
+	ServiceName: "experimental.collector.trace.v1.StreamExporter",
 	HandlerType: (*StreamExporterServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
@@ -219,5 +133,5 @@ var StreamExporter_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "grpce.proto",
+	Metadata: "collector/trace/v1/trace_service_stream.proto",
 }

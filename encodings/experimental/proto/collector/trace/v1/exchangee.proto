@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package experimental;
+package experimental.collector.trace.v1;
 
-import "telemetry_datae.proto";
-import "metric_datae.proto";
+import "trace/v1/trace.proto";
+import "metrics/v1/metrics.proto";
 
 option java_multiple_files = true;
 option java_package = "io.opencensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
-option go_package = "encodings/experimental";
+option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1";
 
 enum Capabilities {
     SKIP = 0;
@@ -24,7 +24,7 @@ message TraceExportRequest {
     uint64 id = 1 [json_name="i"];
 
     // Telemetry data. An array of ResourceSpans.
-    repeated ResourceSpans resourceSpans = 2 [json_name="r"];
+    repeated experimental.trace.v1.ResourceSpans resourceSpans = 2 [json_name="r"];
 }
 
 // A request from client to server containing metric data to export.
@@ -33,7 +33,7 @@ message MetricExportRequest {
     uint64 id = 1 [json_name="i"];
 
     // Telemetry data. An array of ResourceMetrics.
-    repeated ResourceMetrics resourceMetrics = 2 [json_name="r"];
+    repeated experimental.metrics.v1.ResourceMetrics resourceMetrics = 2 [json_name="r"];
 }
 
 // A response to ExportRequest.
@@ -44,15 +44,15 @@ message ExportResponse {
   enum ResultCode {
     // Telemetry data is successfully processed by the server.
     Success = 0;
-    
-    // processing of telemetry data failed. The client MUST NOT retry 
-    // sending the same telemetry data. The telemetry data MUST be dropped. 
-    // This for example can happen when the request contains bad data and 
+
+    // processing of telemetry data failed. The client MUST NOT retry
+    // sending the same telemetry data. The telemetry data MUST be dropped.
+    // This for example can happen when the request contains bad data and
     // cannot be deserialized or otherwise processed by the server.
     FailedNoneRetryable = 1;
-    
-    // Processing of telemetry data failed. The client SHOULD record the 
-    // error and MAY retry exporting the same data after some time. This 
+
+    // Processing of telemetry data failed. The client SHOULD record the
+    // error and MAY retry exporting the same data after some time. This
     // for example can happen when the server is overloaded.
     FailedRetryable = 2;
   }

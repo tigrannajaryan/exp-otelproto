@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/octraceprotobuf"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_oc"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream"
 	"github.com/tigrannajaryan/exp-otelproto/protoimpls/grpc_stream_lb"
@@ -128,7 +128,7 @@ func main() {
 
 	case "wsstreamasync":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: experimental.CompressionMethod_NONE} },
+			func() core.Client { return &ws_stream_async.Client{Compression: v1.CompressionMethod_NONE} },
 			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,
@@ -136,7 +136,7 @@ func main() {
 
 	case "wsstreamasynczlib":
 		core.LoadGenerator(
-			func() core.Client { return &ws_stream_async.Client{Compression: experimental.CompressionMethod_ZLIB} },
+			func() core.Client { return &ws_stream_async.Client{Compression: v1.CompressionMethod_ZLIB} },
 			func() core.SpanGenerator { return otlp.NewGenerator() },
 			destination,
 			spansPerSecond,

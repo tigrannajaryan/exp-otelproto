@@ -15,10 +15,14 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/assert"
+	v15 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
+	v12 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/common/v1"
+	v14 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/logs/v1"
+	v13 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/trace/v1"
+	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
@@ -796,24 +800,24 @@ func BenchmarkEndianness(b *testing.B) {
 }
 
 func TestSizes(t *testing.T) {
-	akv := experimental.KeyValue{}
+	akv := v12.KeyValue{}
 	log.Printf("AttributeKeyValue is %d bytes", unsafe.Sizeof(akv))
 	log.Printf("AttributeKeyValue.Key is %d bytes", unsafe.Sizeof(akv.Key))
 
-	log.Printf("Span is %d bytes", unsafe.Sizeof(experimental.Span{}))
-	log.Printf("LogRecord is %d bytes", unsafe.Sizeof(experimental.LogRecord{}))
+	log.Printf("Span is %d bytes", unsafe.Sizeof(v13.Span{}))
+	log.Printf("LogRecord is %d bytes", unsafe.Sizeof(v14.LogRecord{}))
 }
 
-func createAKV() *experimental.KeyValue {
+func createAKV() *v12.KeyValue {
 	for i := 0; i < 1; i++ {
-		return &experimental.KeyValue{}
+		return &v12.KeyValue{}
 	}
 	return nil
 }
 
-func createAV() *experimental.KeyValue {
+func createAV() *v12.KeyValue {
 	for i := 0; i < 1; i++ {
-		return &experimental.KeyValue{}
+		return &v12.KeyValue{}
 	}
 	return nil
 }
@@ -831,15 +835,45 @@ func BenchmarkAttributeValueSize(b *testing.B) {
 }
 
 func TestJson(t *testing.T) {
-	g := baseline.NewGenerator()
+	g := experimental.NewGenerator()
 	b := g.GenerateSpanBatch(1, 1, 1)
 
 	m := jsonpb.Marshaler{}
-	//m := jsonpb.Marshaler{OrigName: true}
-	str, err := m.MarshalToString(b.(*baseline.TraceExportRequest))
+	str, err := m.MarshalToString(b.(*v15.ExportTraceServiceRequest))
 	assert.NoError(t, err)
-	fmt.Printf(str)
+	fmt.Println("ShortKeys, OrigName=false")
+	fmt.Println(str)
 
 	err = jsonpb.UnmarshalString(str, b.(proto.Message))
+	assert.NoError(t, err)
+
+	m.OrigName = true
+	str, err = m.MarshalToString(b.(*v15.ExportTraceServiceRequest))
+	assert.NoError(t, err)
+	fmt.Println("ShortKeys, OrigName=true")
+	fmt.Println(str)
+
+	err = jsonpb.UnmarshalString(str, b.(proto.Message))
+	assert.NoError(t, err)
+
+	g2 := otlp.NewGenerator()
+	b2 := g2.GenerateSpanBatch(1, 1, 1)
+
+	m2 := jsonpb.Marshaler{}
+	str, err = m2.MarshalToString(b2.(*v1.ExportTraceServiceRequest))
+	assert.NoError(t, err)
+	fmt.Println("OTLP, OrigName=false")
+	fmt.Println(str)
+
+	err = jsonpb.UnmarshalString(str, b2.(proto.Message))
+	assert.NoError(t, err)
+
+	m2.OrigName = true
+	str, err = m2.MarshalToString(b2.(*v1.ExportTraceServiceRequest))
+	assert.NoError(t, err)
+	fmt.Println("OTLP, OrigName=true")
+	fmt.Println(str)
+
+	err = jsonpb.UnmarshalString(str, b2.(proto.Message))
 	assert.NoError(t, err)
 }

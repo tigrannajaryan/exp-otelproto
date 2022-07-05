@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
