@@ -38,14 +38,14 @@ var tests = []struct {
 	//	name: "SepAnyExtValue",
 	//	gen:  func() core.Generator { return baseline2.NewGenerator() },
 	//},
-	//{
-	//	name: "OTLP 0.4",
-	//	gen:  func() core.Generator { return otlp.NewGenerator() },
-	//},
 	{
-		name: "OTLP",
-		gen:  func() core.Generator { return baseline.NewGenerator() },
+		name: "OTLP 0.18",
+		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
+	//{
+	//	name: "OTLP",
+	//	gen:  func() core.Generator { return baseline.NewGenerator() },
+	//},
 	//{
 	//	name: "OTELP2",
 	//	gen:  func() core.Generator { return otelp2.NewGenerator() },

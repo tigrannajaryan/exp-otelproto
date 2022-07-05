@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
+	otlplogcol "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	otlpmetriccol "go.opentelemetry.io/proto/otlp/collector/metrics/v1"
 	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	otlpcommon "go.opentelemetry.io/proto/otlp/common/v1"
+	otlplogs "go.opentelemetry.io/proto/otlp/logs/v1"
 	otlpmetric "go.opentelemetry.io/proto/otlp/metrics/v1"
 	otlpresource "go.opentelemetry.io/proto/otlp/resource/v1"
 	otlptrace "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -149,50 +151,95 @@ func (g *Generator) GenerateSpanBatch(
 }
 
 func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.ExportRequest {
-	/*
-		traceID := atomic.AddUint64(&g.tracesSent, 1)
+	traceID := atomic.AddUint64(&g.tracesSent, 1)
 
-		batch := &ExportLogsServiceRequest{ResourceLogs: []*ResourceLogs{{Resource: GenResource()}}}
-		for i := 0; i < logsPerBatch; i++ {
-			startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
+	il := &otlplogs.InstrumentationLibraryLogs{
+		InstrumentationLibrary: &otlpcommon.InstrumentationLibrary{Name: "io.opentelemetry"},
+	}
+	batch := &otlplogcol.ExportLogsServiceRequest{
+		ResourceLogs: []*otlplogs.ResourceLogs{
+			{
+				Resource:                   GenResource(),
+				InstrumentationLibraryLogs: []*otlplogs.InstrumentationLibraryLogs{il},
+			},
+		},
+	}
 
-			spanID := atomic.AddUint64(&g.spansSent, 1)
+	logs := []*otlplogs.LogRecord{}
+	for i := 0; i < logsPerBatch; i++ {
+		startTime := time.Date(2019, 10, 31, 10, 11, 12, 13, time.UTC)
 
-			// Create a log.
-			log := &Log{
-				TraceId:      core.GenerateTraceID(traceID),
-				SpanId:       core.GenerateSpanID(spanID),
-				TimeUnixnano: core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
-				EventType:    "auto_generated_event",
-				Body: &AttributeValue{
-					Type:        AttributeValueType_STRING,
-					StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
-				},
-			}
+		spanID := atomic.AddUint64(&g.spansSent, 1)
 
-			if attrsPerLog >= 0 {
-				// Append attributes.
-				log.Attributes = []*KeyValue{}
-
-				if attrsPerLog >= 2 {
-					log.Attributes = append(log.Attributes,
-						&KeyValue{Key: "load_generator.span_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(spanID)})
-					log.Attributes = append(log.Attributes,
-						&KeyValue{Key: "load_generator.trace_seq_num", Type: AttributeKeyValue_INT, IntValue: int64(traceID)})
-				}
-
-				for j := len(log.Attributes); j < attrsPerLog; j++ {
-					attrName := core.GenRandAttrName(g.random)
-					log.Attributes = append(log.Attributes,
-						&KeyValue{Key: attrName, Type: AttributeKeyValue_STRING, StringValue: g.genRandByteString(g.random.Intn(20) + 1)})
-				}
-			}
-
-			batch.ResourceLogs[0].Logs = append(batch.ResourceLogs[0].Logs, log)
+		// Create a log.
+		log := &otlplogs.LogRecord{
+			TimeUnixNano:   core.TimeToTimestamp(startTime.Add(time.Duration(i) * time.Millisecond)),
+			TraceId:        core.GenerateTraceID(traceID),
+			SpanId:         core.GenerateSpanID(spanID),
+			SeverityNumber: otlplogs.SeverityNumber_SEVERITY_NUMBER_INFO,
+			SeverityText:   "info",
+			Body:           &otlpcommon.AnyValue{
+				//Type: ValueType_KVLIST,
+				//ListValues: &ValueList{
+				//	ListValues: []*KeyValue{
+				//		{
+				//			Key:         "bodykey",
+				//			Type:        ValueType_STRING,
+				//			StringValue: fmt.Sprintf("Log message %d of %d, traceid=%q, spanid=%q", i, logsPerBatch, traceID, spanID),
+				//		},
+				//	},
+				//},
+			},
 		}
-		return batch
-	*/
-	return nil
+
+		if attrsPerLog >= 0 {
+			// Append attributes.
+			log.Attributes = []*otlpcommon.KeyValue{}
+
+			if attrsPerLog >= 2 {
+				log.Attributes = append(
+					log.Attributes,
+					&otlpcommon.KeyValue{
+						Key:   "load_generator.span_seq_num",
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: int64(spanID)}},
+					},
+				)
+				log.Attributes = append(
+					log.Attributes,
+					&otlpcommon.KeyValue{
+						Key:   "load_generator.trace_seq_num",
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_IntValue{IntValue: int64(traceID)}},
+					},
+				)
+			}
+
+			for j := len(log.Attributes); j < attrsPerLog; j++ {
+				attrName := core.GenRandAttrName(g.random)
+				log.Attributes = append(
+					log.Attributes,
+					&otlpcommon.KeyValue{
+						Key:   attrName,
+						Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}},
+					},
+				)
+			}
+
+			log.Attributes = append(
+				log.Attributes,
+				&otlpcommon.KeyValue{
+					Key:   "event_type",
+					Value: &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: "auto_generated_event"}},
+				},
+			)
+
+		}
+
+		logs = append(logs, log)
+	}
+
+	il.LogRecords = logs
+
+	return batch
 }
 
 func GenInt64Timeseries(
