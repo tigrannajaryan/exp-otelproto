@@ -9,6 +9,7 @@ option java_package = "io.opencensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
 
 option ruby_package = "OpenCensus.Proto.Trace.V1";
+option go_package = "encodings/baseline";
 
 // Unary exporter service definition.
 service UnaryExporter {

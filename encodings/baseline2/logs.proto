@@ -21,6 +21,7 @@ import "common.proto";
 option java_multiple_files = true;
 option java_package = "io.opentelemetry.proto.logs.v1";
 option java_outer_classname = "LogsProto";
+option go_package = "encodings/baseline2";
 
 // A collection of logs from a Resource.
 message ResourceLogs {

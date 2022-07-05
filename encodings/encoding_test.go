@@ -19,7 +19,6 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/baseline"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
@@ -614,10 +613,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			name:       "OTLP",
 			translator: func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
-		{
-			name:       "OTELP2",
-			translator: func() core.SpanTranslator { return &otelp2.SpanTranslator{} },
-		},
+		//{
+		//	name:       "OTELP2",
+		//	translator: func() core.SpanTranslator { return &otelp2.SpanTranslator{} },
+		//},
 		//{
 		//	name: "MoreFieldsinAKV",
 		//	gen:  func() core.Generator { return experimental.NewGenerator() },

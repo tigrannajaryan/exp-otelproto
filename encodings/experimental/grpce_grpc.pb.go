@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.1
-// source: grpc.proto
+// source: grpce.proto
 
 package experimental
 
@@ -101,7 +101,7 @@ var UnaryExporter_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "grpc.proto",
+	Metadata: "grpce.proto",
 }
 
 // StreamExporterClient is the client API for StreamExporter service.
@@ -219,5 +219,5 @@ var StreamExporter_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "grpc.proto",
+	Metadata: "grpce.proto",
 }
