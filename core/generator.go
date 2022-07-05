@@ -1,8 +1,8 @@
 package core
 
 import (
-	otlpmetriccol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/metrics/v1"
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlpmetriccol "go.opentelemetry.io/proto/otlp/collector/metrics/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 // SpanGenerator allows to generate a ExportRequest containing a batch of spans.

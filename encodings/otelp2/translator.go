@@ -1,9 +1,9 @@
 package otelp2
 
 import (
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
-	v1 "github.com/open-telemetry/opentelemetry-proto/gen/go/common/v1"
-	v12 "github.com/open-telemetry/opentelemetry-proto/gen/go/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	v1 "go.opentelemetry.io/proto/otlp/common/v1"
+	v12 "go.opentelemetry.io/proto/otlp/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )

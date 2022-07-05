@@ -7,9 +7,9 @@ import (
 
 	gogoproto "github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/proto"
-	otlptrace "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	otlptrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 func TestCompatibility(t *testing.T) {

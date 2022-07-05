@@ -5,8 +5,8 @@ import (
 	"log"
 	"sync/atomic"
 
-	otlp "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 	"google.golang.org/grpc"
 )
 

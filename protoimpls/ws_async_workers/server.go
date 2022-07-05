@@ -1,15 +1,16 @@
 package ws_async_worker
 
 import (
-	"github.com/tigrannajaryan/exp-otelproto/encodings"
 	"log"
 	"net/http"
+
+	"github.com/tigrannajaryan/exp-otelproto/encodings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 type Server struct {
@@ -18,17 +19,17 @@ type Server struct {
 var upgrader = websocket.Upgrader{} // use default options
 
 type ConnectionHandler struct {
-	conn* websocket.Conn
+	conn             *websocket.Conn
 	requestsToDecode chan RequestToDecode
-	onReceive func(batch core.ExportRequest, spanCount int)
-	responsesToSend chan []byte
+	onReceive        func(batch core.ExportRequest, spanCount int)
+	responsesToSend  chan []byte
 }
 
 type RequestToDecode struct {
 	bytes []byte
 }
 
-func (ch* ConnectionHandler) requestDecoder() {
+func (ch *ConnectionHandler) requestDecoder() {
 	for toDecode := range ch.requestsToDecode {
 		request := encodings.Decode(toDecode.bytes)
 
@@ -57,7 +58,7 @@ func (ch* ConnectionHandler) requestDecoder() {
 	}
 }
 
-func (ch* ConnectionHandler) responseSender() {
+func (ch *ConnectionHandler) responseSender() {
 	for responseBytes := range ch.responsesToSend {
 		err := ch.conn.WriteMessage(websocket.BinaryMessage, responseBytes)
 		if err != nil {
@@ -79,16 +80,16 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 	decoderCount := 1 // runtime.GOMAXPROCS(0)
 
 	ch := ConnectionHandler{
-		conn:      conn,
-		onReceive: onReceive,
+		conn:             conn,
+		onReceive:        onReceive,
 		requestsToDecode: make(chan RequestToDecode, decoderCount),
-		responsesToSend: make(chan []byte, decoderCount),
+		responsesToSend:  make(chan []byte, decoderCount),
 	}
 
 	go ch.responseSender()
 	defer close(ch.responsesToSend)
 
-	for i:=0; i<decoderCount; i++ {
+	for i := 0; i < decoderCount; i++ {
 		go ch.requestDecoder()
 	}
 	defer close(ch.requestsToDecode)

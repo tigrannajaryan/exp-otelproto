@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 type Server struct {

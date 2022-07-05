@@ -1,9 +1,10 @@
 package ws_stream_sync
 
 import (
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	"log"
 	"net/url"
+
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings"
 
@@ -12,7 +13,7 @@ import (
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 // Client can connect to a server and send a batch of spans.
@@ -28,7 +29,7 @@ func (c *Client) Connect(server string) error {
 
 	var err error
 	dialer := *websocket.DefaultDialer
-	dialer.WriteBufferSize = 256*1024
+	dialer.WriteBufferSize = 256 * 1024
 	c.conn, _, err = dialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 

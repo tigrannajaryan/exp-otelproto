@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	otlp "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 // Client can connect to a server and send a batch of spans.

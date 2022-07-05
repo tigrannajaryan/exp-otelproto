@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 type Server struct {
@@ -40,8 +40,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 
 		onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
 
-		response := &otlptracecol.ExportTraceServiceResponse{
-		}
+		response := &otlptracecol.ExportTraceServiceResponse{}
 		responseBytes, err := proto.Marshal(response)
 		if err != nil {
 			log.Fatal("cannot encode:", err)

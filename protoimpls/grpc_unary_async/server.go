@@ -7,11 +7,12 @@ import (
 
 	"google.golang.org/grpc"
 
-	otlp "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
 	"github.com/tigrannajaryan/exp-otelproto/core"
+	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 type GrpcServer struct {
+	otlp.UnimplementedTraceServiceServer
 	onReceive func(batch core.ExportRequest, spanCount int)
 }
 
@@ -32,7 +33,7 @@ func (srv *Server) Listen(endpoint string, onReceive func(batch core.ExportReque
 		log.Fatalf("failed to listen: %v", err)
 	}
 	srv.s = grpc.NewServer()
-	otlp.RegisterTraceServiceServer(srv.s, &GrpcServer{onReceive})
+	otlp.RegisterTraceServiceServer(srv.s, &GrpcServer{onReceive: onReceive})
 	if err := srv.s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

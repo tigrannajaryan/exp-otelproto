@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
-	otlptracecol "github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1"
+	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
 type Client struct {
@@ -27,13 +27,13 @@ type Client struct {
 // clientStream can connect to a server and send a batch of spans.
 type clientStream struct {
 	conn            *websocket.Conn
-	encoderCount int
+	encoderCount    int
 	pendingAck      map[uint64]core.ExportRequest
 	pendingAckMutex sync.Mutex
 	nextId          uint64
 	Compression     experimental.CompressionMethod
 	requestsCh      chan *otlptracecol.ExportTraceServiceRequest
-	bytesCh chan []byte
+	bytesCh         chan []byte
 }
 
 func (c *Client) Connect(server string) error {
@@ -62,7 +62,7 @@ func newClientStream(client *Client) *clientStream {
 	//c.sentCh = client.sentCh
 	// c.pendingAckList = list.New()
 	// go c.processTimeouts()
-	for i:=0; i<c.encoderCount; i++ {
+	for i := 0; i < c.encoderCount; i++ {
 		go c.processEncodeRequests()
 	}
 
@@ -103,7 +103,7 @@ func (c *clientStream) Connect(server string) error {
 
 	var err error
 	dialer := *websocket.DefaultDialer
-	dialer.WriteBufferSize = 256*1024
+	dialer.WriteBufferSize = 256 * 1024
 	c.conn, _, err = dialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
