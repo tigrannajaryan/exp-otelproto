@@ -9,11 +9,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
-	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
-
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo"
+	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/collector/trace/v1"
 )
 
 var gzipWriter = gzip.NewWriter(nil)
@@ -78,7 +77,7 @@ func TestOTLPCompression(t *testing.T) {
 				compressedSize := 0
 
 				for {
-					msg := otlp.ReadTraceMessage(f)
+					msg := otlp_gogo.ReadTraceMessage(f)
 					if msg == nil {
 						break
 					}
@@ -139,7 +138,7 @@ func BenchmarkOTLPCompression(b *testing.B) {
 	var msgs []proto.Message
 
 	for {
-		msg := otlp.ReadTraceMessage(f)
+		msg := otlp_gogo.ReadTraceMessage(f)
 		if msg == nil {
 			break
 		}
