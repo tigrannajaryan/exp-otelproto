@@ -948,10 +948,7 @@ func (m *TraceConfig) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTraceConfig
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1020,10 +1017,7 @@ func (m *ConstantSampler) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTraceConfig
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1084,10 +1078,7 @@ func (m *ProbabilitySampler) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTraceConfig
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceConfig
 			}
 			if (iNdEx + skippy) > l {
@@ -1156,10 +1147,7 @@ func (m *RateLimitingSampler) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTraceConfig
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceConfig
 			}
 			if (iNdEx + skippy) > l {

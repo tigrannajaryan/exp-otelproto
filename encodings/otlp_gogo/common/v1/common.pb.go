@@ -6,7 +6,6 @@ package v1
 import (
 	encoding_binary "encoding/binary"
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -24,48 +23,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// ValueType is the enumeration of possible types that value can have.
-type ValueType int32
-
-const (
-	ValueType_STRING ValueType = 0
-	ValueType_INT    ValueType = 1
-	ValueType_DOUBLE ValueType = 2
-	ValueType_BOOL   ValueType = 3
-)
-
-var ValueType_name = map[int32]string{
-	0: "STRING",
-	1: "INT",
-	2: "DOUBLE",
-	3: "BOOL",
-}
-
-var ValueType_value = map[string]int32{
-	"STRING": 0,
-	"INT":    1,
-	"DOUBLE": 2,
-	"BOOL":   3,
-}
-
-func (x ValueType) String() string {
-	return proto.EnumName(ValueType_name, int32(x))
-}
-
-func (ValueType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_62ba46dcb97aa817, []int{0}
-}
-
+// AnyValue is used to represent any type of attribute value. AnyValue may contain a
+// primitive value such as a string or integer or it may contain an arbitrary nested
+// object containing arrays, key-value lists and primitives.
 type AnyValue struct {
-	// type of the value.
-	Type         ValueType            `protobuf:"varint,1,opt,name=type,proto3,enum=opentelemetrygogo.proto.common.v1.ValueType" json:"type,omitempty"`
-	BoolValue    bool                 `protobuf:"varint,2,opt,name=bool_value,json=boolValue,proto3" json:"bool_value,omitempty"`
-	StringValue  string               `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
-	IntValue     int64                `protobuf:"varint,4,opt,name=int_value,json=intValue,proto3" json:"int_value,omitempty"`
-	DoubleValue  float64              `protobuf:"fixed64,5,opt,name=double_value,json=doubleValue,proto3" json:"double_value,omitempty"`
-	ListValues   []*AnyValue          `protobuf:"bytes,6,rep,name=list_values,json=listValues,proto3" json:"list_values,omitempty"`
-	KvlistValues []*AttributeKeyValue `protobuf:"bytes,7,rep,name=kvlist_values,json=kvlistValues,proto3" json:"kvlist_values,omitempty"`
-	BytesValue   []byte               `protobuf:"bytes,8,opt,name=bytes_value,json=bytesValue,proto3" json:"bytes_value,omitempty"`
+	// The value is one of the listed fields. It is valid for all values to be unspecified
+	// in which case this AnyValue is considered to be "empty".
+	//
+	// Types that are valid to be assigned to Value:
+	//	*AnyValue_StringValue
+	//	*AnyValue_BoolValue
+	//	*AnyValue_IntValue
+	//	*AnyValue_DoubleValue
+	//	*AnyValue_ArrayValue
+	//	*AnyValue_KvlistValue
+	//	*AnyValue_BytesValue
+	Value isAnyValue_Value `protobuf_oneof:"value"`
 }
 
 func (m *AnyValue) Reset()         { *m = AnyValue{} }
@@ -101,86 +74,130 @@ func (m *AnyValue) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AnyValue proto.InternalMessageInfo
 
-func (m *AnyValue) GetType() ValueType {
-	if m != nil {
-		return m.Type
-	}
-	return ValueType_STRING
+type isAnyValue_Value interface {
+	isAnyValue_Value()
+	MarshalTo([]byte) (int, error)
+	Size() int
 }
 
-func (m *AnyValue) GetBoolValue() bool {
+type AnyValue_StringValue struct {
+	StringValue string `protobuf:"bytes,1,opt,name=string_value,json=stringValue,proto3,oneof" json:"string_value,omitempty"`
+}
+type AnyValue_BoolValue struct {
+	BoolValue bool `protobuf:"varint,2,opt,name=bool_value,json=boolValue,proto3,oneof" json:"bool_value,omitempty"`
+}
+type AnyValue_IntValue struct {
+	IntValue int64 `protobuf:"varint,3,opt,name=int_value,json=intValue,proto3,oneof" json:"int_value,omitempty"`
+}
+type AnyValue_DoubleValue struct {
+	DoubleValue float64 `protobuf:"fixed64,4,opt,name=double_value,json=doubleValue,proto3,oneof" json:"double_value,omitempty"`
+}
+type AnyValue_ArrayValue struct {
+	ArrayValue *ArrayValue `protobuf:"bytes,5,opt,name=array_value,json=arrayValue,proto3,oneof" json:"array_value,omitempty"`
+}
+type AnyValue_KvlistValue struct {
+	KvlistValue *KeyValueList `protobuf:"bytes,6,opt,name=kvlist_value,json=kvlistValue,proto3,oneof" json:"kvlist_value,omitempty"`
+}
+type AnyValue_BytesValue struct {
+	BytesValue []byte `protobuf:"bytes,7,opt,name=bytes_value,json=bytesValue,proto3,oneof" json:"bytes_value,omitempty"`
+}
+
+func (*AnyValue_StringValue) isAnyValue_Value() {}
+func (*AnyValue_BoolValue) isAnyValue_Value()   {}
+func (*AnyValue_IntValue) isAnyValue_Value()    {}
+func (*AnyValue_DoubleValue) isAnyValue_Value() {}
+func (*AnyValue_ArrayValue) isAnyValue_Value()  {}
+func (*AnyValue_KvlistValue) isAnyValue_Value() {}
+func (*AnyValue_BytesValue) isAnyValue_Value()  {}
+
+func (m *AnyValue) GetValue() isAnyValue_Value {
 	if m != nil {
-		return m.BoolValue
+		return m.Value
 	}
-	return false
+	return nil
 }
 
 func (m *AnyValue) GetStringValue() string {
-	if m != nil {
-		return m.StringValue
+	if x, ok := m.GetValue().(*AnyValue_StringValue); ok {
+		return x.StringValue
 	}
 	return ""
 }
 
+func (m *AnyValue) GetBoolValue() bool {
+	if x, ok := m.GetValue().(*AnyValue_BoolValue); ok {
+		return x.BoolValue
+	}
+	return false
+}
+
 func (m *AnyValue) GetIntValue() int64 {
-	if m != nil {
-		return m.IntValue
+	if x, ok := m.GetValue().(*AnyValue_IntValue); ok {
+		return x.IntValue
 	}
 	return 0
 }
 
 func (m *AnyValue) GetDoubleValue() float64 {
-	if m != nil {
-		return m.DoubleValue
+	if x, ok := m.GetValue().(*AnyValue_DoubleValue); ok {
+		return x.DoubleValue
 	}
 	return 0
 }
 
-func (m *AnyValue) GetListValues() []*AnyValue {
-	if m != nil {
-		return m.ListValues
+func (m *AnyValue) GetArrayValue() *ArrayValue {
+	if x, ok := m.GetValue().(*AnyValue_ArrayValue); ok {
+		return x.ArrayValue
 	}
 	return nil
 }
 
-func (m *AnyValue) GetKvlistValues() []*AttributeKeyValue {
-	if m != nil {
-		return m.KvlistValues
+func (m *AnyValue) GetKvlistValue() *KeyValueList {
+	if x, ok := m.GetValue().(*AnyValue_KvlistValue); ok {
+		return x.KvlistValue
 	}
 	return nil
 }
 
 func (m *AnyValue) GetBytesValue() []byte {
-	if m != nil {
-		return m.BytesValue
+	if x, ok := m.GetValue().(*AnyValue_BytesValue); ok {
+		return x.BytesValue
 	}
 	return nil
 }
 
-// AttributeKeyValue is a key-value pair that is used to store Span attributes, Link
-// attributes, etc.
-type AttributeKeyValue struct {
-	// key part of the key-value pair.
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	//  string string_value = 3;
-	//  int64 int_value = 4;
-	//  double double_value = 5;
-	//  bool bool_value = 6;
-	Value AnyValue `protobuf:"bytes,2,opt,name=value,proto3" json:"value"`
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*AnyValue) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*AnyValue_StringValue)(nil),
+		(*AnyValue_BoolValue)(nil),
+		(*AnyValue_IntValue)(nil),
+		(*AnyValue_DoubleValue)(nil),
+		(*AnyValue_ArrayValue)(nil),
+		(*AnyValue_KvlistValue)(nil),
+		(*AnyValue_BytesValue)(nil),
+	}
 }
 
-func (m *AttributeKeyValue) Reset()         { *m = AttributeKeyValue{} }
-func (m *AttributeKeyValue) String() string { return proto.CompactTextString(m) }
-func (*AttributeKeyValue) ProtoMessage()    {}
-func (*AttributeKeyValue) Descriptor() ([]byte, []int) {
+// ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
+// since oneof in AnyValue does not allow repeated fields.
+type ArrayValue struct {
+	// Array of values. The array may be empty (contain 0 elements).
+	Values []*AnyValue `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
+}
+
+func (m *ArrayValue) Reset()         { *m = ArrayValue{} }
+func (m *ArrayValue) String() string { return proto.CompactTextString(m) }
+func (*ArrayValue) ProtoMessage()    {}
+func (*ArrayValue) Descriptor() ([]byte, []int) {
 	return fileDescriptor_62ba46dcb97aa817, []int{1}
 }
-func (m *AttributeKeyValue) XXX_Unmarshal(b []byte) error {
+func (m *ArrayValue) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *AttributeKeyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ArrayValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_AttributeKeyValue.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ArrayValue.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -190,51 +207,50 @@ func (m *AttributeKeyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *AttributeKeyValue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AttributeKeyValue.Merge(m, src)
+func (m *ArrayValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ArrayValue.Merge(m, src)
 }
-func (m *AttributeKeyValue) XXX_Size() int {
+func (m *ArrayValue) XXX_Size() int {
 	return m.Size()
 }
-func (m *AttributeKeyValue) XXX_DiscardUnknown() {
-	xxx_messageInfo_AttributeKeyValue.DiscardUnknown(m)
+func (m *ArrayValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_ArrayValue.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AttributeKeyValue proto.InternalMessageInfo
+var xxx_messageInfo_ArrayValue proto.InternalMessageInfo
 
-func (m *AttributeKeyValue) GetKey() string {
+func (m *ArrayValue) GetValues() []*AnyValue {
 	if m != nil {
-		return m.Key
+		return m.Values
 	}
-	return ""
+	return nil
 }
 
-func (m *AttributeKeyValue) GetValue() AnyValue {
-	if m != nil {
-		return m.Value
-	}
-	return AnyValue{}
+// KeyValueList is a list of KeyValue messages. We need KeyValueList as a message
+// since `oneof` in AnyValue does not allow repeated fields. Everywhere else where we need
+// a list of KeyValue messages (e.g. in Span) we use `repeated KeyValue` directly to
+// avoid unnecessary extra wrapping (which slows down the protocol). The 2 approaches
+// are semantically equivalent.
+type KeyValueList struct {
+	// A collection of key/value pairs of key-value pairs. The list may be empty (may
+	// contain 0 elements).
+	// The keys MUST be unique (it is not allowed to have more than one
+	// value with the same key).
+	Values []*KeyValue `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
 }
 
-// StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version
-// of AttributeKeyValue that only supports string values.
-type StringKeyValue struct {
-	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-}
-
-func (m *StringKeyValue) Reset()         { *m = StringKeyValue{} }
-func (m *StringKeyValue) String() string { return proto.CompactTextString(m) }
-func (*StringKeyValue) ProtoMessage()    {}
-func (*StringKeyValue) Descriptor() ([]byte, []int) {
+func (m *KeyValueList) Reset()         { *m = KeyValueList{} }
+func (m *KeyValueList) String() string { return proto.CompactTextString(m) }
+func (*KeyValueList) ProtoMessage()    {}
+func (*KeyValueList) Descriptor() ([]byte, []int) {
 	return fileDescriptor_62ba46dcb97aa817, []int{2}
 }
-func (m *StringKeyValue) XXX_Unmarshal(b []byte) error {
+func (m *KeyValueList) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *StringKeyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *KeyValueList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_StringKeyValue.Marshal(b, m, deterministic)
+		return xxx_messageInfo_KeyValueList.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -244,51 +260,101 @@ func (m *StringKeyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *StringKeyValue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StringKeyValue.Merge(m, src)
+func (m *KeyValueList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_KeyValueList.Merge(m, src)
 }
-func (m *StringKeyValue) XXX_Size() int {
+func (m *KeyValueList) XXX_Size() int {
 	return m.Size()
 }
-func (m *StringKeyValue) XXX_DiscardUnknown() {
-	xxx_messageInfo_StringKeyValue.DiscardUnknown(m)
+func (m *KeyValueList) XXX_DiscardUnknown() {
+	xxx_messageInfo_KeyValueList.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_StringKeyValue proto.InternalMessageInfo
+var xxx_messageInfo_KeyValueList proto.InternalMessageInfo
 
-func (m *StringKeyValue) GetKey() string {
+func (m *KeyValueList) GetValues() []*KeyValue {
+	if m != nil {
+		return m.Values
+	}
+	return nil
+}
+
+// KeyValue is a key-value pair that is used to store Span attributes, Link
+// attributes, etc.
+type KeyValue struct {
+	Key   string    `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value *AnyValue `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (m *KeyValue) Reset()         { *m = KeyValue{} }
+func (m *KeyValue) String() string { return proto.CompactTextString(m) }
+func (*KeyValue) ProtoMessage()    {}
+func (*KeyValue) Descriptor() ([]byte, []int) {
+	return fileDescriptor_62ba46dcb97aa817, []int{3}
+}
+func (m *KeyValue) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *KeyValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_KeyValue.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *KeyValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_KeyValue.Merge(m, src)
+}
+func (m *KeyValue) XXX_Size() int {
+	return m.Size()
+}
+func (m *KeyValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_KeyValue.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_KeyValue proto.InternalMessageInfo
+
+func (m *KeyValue) GetKey() string {
 	if m != nil {
 		return m.Key
 	}
 	return ""
 }
 
-func (m *StringKeyValue) GetValue() string {
+func (m *KeyValue) GetValue() *AnyValue {
 	if m != nil {
 		return m.Value
 	}
-	return ""
+	return nil
 }
 
-// InstrumentationLibrary is a message representing the instrumentation library information
+// InstrumentationScope is a message representing the instrumentation scope information
 // such as the fully qualified name and version.
-type InstrumentationLibrary struct {
-	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+type InstrumentationScope struct {
+	// An empty instrumentation scope name means the name is unknown.
+	Name                   string      `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Version                string      `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	Attributes             []*KeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	DroppedAttributesCount uint32      `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
 }
 
-func (m *InstrumentationLibrary) Reset()         { *m = InstrumentationLibrary{} }
-func (m *InstrumentationLibrary) String() string { return proto.CompactTextString(m) }
-func (*InstrumentationLibrary) ProtoMessage()    {}
-func (*InstrumentationLibrary) Descriptor() ([]byte, []int) {
-	return fileDescriptor_62ba46dcb97aa817, []int{3}
+func (m *InstrumentationScope) Reset()         { *m = InstrumentationScope{} }
+func (m *InstrumentationScope) String() string { return proto.CompactTextString(m) }
+func (*InstrumentationScope) ProtoMessage()    {}
+func (*InstrumentationScope) Descriptor() ([]byte, []int) {
+	return fileDescriptor_62ba46dcb97aa817, []int{4}
 }
-func (m *InstrumentationLibrary) XXX_Unmarshal(b []byte) error {
+func (m *InstrumentationScope) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *InstrumentationLibrary) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InstrumentationScope) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_InstrumentationLibrary.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InstrumentationScope.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -298,38 +364,52 @@ func (m *InstrumentationLibrary) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *InstrumentationLibrary) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InstrumentationLibrary.Merge(m, src)
+func (m *InstrumentationScope) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InstrumentationScope.Merge(m, src)
 }
-func (m *InstrumentationLibrary) XXX_Size() int {
+func (m *InstrumentationScope) XXX_Size() int {
 	return m.Size()
 }
-func (m *InstrumentationLibrary) XXX_DiscardUnknown() {
-	xxx_messageInfo_InstrumentationLibrary.DiscardUnknown(m)
+func (m *InstrumentationScope) XXX_DiscardUnknown() {
+	xxx_messageInfo_InstrumentationScope.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_InstrumentationLibrary proto.InternalMessageInfo
+var xxx_messageInfo_InstrumentationScope proto.InternalMessageInfo
 
-func (m *InstrumentationLibrary) GetName() string {
+func (m *InstrumentationScope) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *InstrumentationLibrary) GetVersion() string {
+func (m *InstrumentationScope) GetVersion() string {
 	if m != nil {
 		return m.Version
 	}
 	return ""
 }
 
+func (m *InstrumentationScope) GetAttributes() []*KeyValue {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *InstrumentationScope) GetDroppedAttributesCount() uint32 {
+	if m != nil {
+		return m.DroppedAttributesCount
+	}
+	return 0
+}
+
 func init() {
-	proto.RegisterEnum("opentelemetrygogo.proto.common.v1.ValueType", ValueType_name, ValueType_value)
-	proto.RegisterType((*AnyValue)(nil), "opentelemetrygogo.proto.common.v1.AnyValue")
-	proto.RegisterType((*AttributeKeyValue)(nil), "opentelemetrygogo.proto.common.v1.AttributeKeyValue")
-	proto.RegisterType((*StringKeyValue)(nil), "opentelemetrygogo.proto.common.v1.StringKeyValue")
-	proto.RegisterType((*InstrumentationLibrary)(nil), "opentelemetrygogo.proto.common.v1.InstrumentationLibrary")
+	proto.RegisterType((*AnyValue)(nil), "opentelemetry.proto.common.v1.AnyValue")
+	proto.RegisterType((*ArrayValue)(nil), "opentelemetry.proto.common.v1.ArrayValue")
+	proto.RegisterType((*KeyValueList)(nil), "opentelemetry.proto.common.v1.KeyValueList")
+	proto.RegisterType((*KeyValue)(nil), "opentelemetry.proto.common.v1.KeyValue")
+	proto.RegisterType((*InstrumentationScope)(nil), "opentelemetry.proto.common.v1.InstrumentationScope")
 }
 
 func init() {
@@ -337,40 +417,41 @@ func init() {
 }
 
 var fileDescriptor_62ba46dcb97aa817 = []byte{
-	// 528 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xc1, 0x6e, 0xd3, 0x4c,
-	0x14, 0x85, 0x33, 0x75, 0x9a, 0xc4, 0xd7, 0xf9, 0xab, 0xfc, 0x23, 0x84, 0x22, 0x10, 0xae, 0x9b,
-	0x95, 0x55, 0x68, 0xac, 0x16, 0x84, 0x58, 0x42, 0xa0, 0x54, 0x11, 0x51, 0x53, 0xb9, 0x01, 0x09,
-	0x36, 0x95, 0xdd, 0x0e, 0x66, 0xa8, 0x33, 0x63, 0xd9, 0x63, 0x0b, 0xbf, 0x45, 0x97, 0x3c, 0x52,
-	0x97, 0x5d, 0xb2, 0x42, 0x28, 0x79, 0x11, 0xe4, 0x99, 0x49, 0x9a, 0x82, 0x04, 0x65, 0x77, 0x7d,
-	0xe6, 0x9c, 0xef, 0x6a, 0xee, 0xf8, 0xc2, 0x36, 0x4f, 0x08, 0x13, 0x24, 0x26, 0x53, 0x22, 0xd2,
-	0xd2, 0x4b, 0x52, 0x2e, 0xb8, 0x77, 0xca, 0xa7, 0x53, 0xce, 0xbc, 0x62, 0x57, 0x57, 0x7d, 0x29,
-	0xe3, 0xad, 0x1b, 0xde, 0x88, 0x47, 0x5c, 0x1d, 0xf4, 0xb5, 0xab, 0xd8, 0xbd, 0xb7, 0x13, 0x51,
-	0xf1, 0x29, 0x0f, 0x2b, 0xc5, 0xab, 0x0c, 0x0a, 0x18, 0xe6, 0x1f, 0xe5, 0x97, 0xa2, 0x5f, 0x07,
-	0x7b, 0x5f, 0x0d, 0x68, 0xbd, 0x60, 0xe5, 0xbb, 0x20, 0xce, 0x09, 0x7e, 0x0e, 0x75, 0x51, 0x26,
-	0xa4, 0x8b, 0x1c, 0xe4, 0x6e, 0xec, 0x3d, 0xea, 0xff, 0xb5, 0x5b, 0x5f, 0xe6, 0x26, 0x65, 0x42,
-	0x7c, 0x99, 0xc4, 0x0f, 0x00, 0x42, 0xce, 0xe3, 0x93, 0xa2, 0xd2, 0xbb, 0x6b, 0x0e, 0x72, 0x5b,
-	0xbe, 0x59, 0x29, 0xaa, 0xc1, 0x16, 0xb4, 0x33, 0x91, 0x52, 0x16, 0x69, 0x83, 0xe1, 0x20, 0xd7,
-	0xf4, 0x2d, 0xa5, 0x29, 0xcb, 0x7d, 0x30, 0x29, 0x13, 0xfa, 0xbc, 0xee, 0x20, 0xd7, 0xf0, 0x5b,
-	0x94, 0x89, 0x65, 0xfe, 0x8c, 0xe7, 0x61, 0x4c, 0xf4, 0xf9, 0xba, 0x83, 0x5c, 0xe4, 0x5b, 0x4a,
-	0x53, 0x96, 0x11, 0x58, 0x31, 0xcd, 0x34, 0x20, 0xeb, 0x36, 0x1c, 0xc3, 0xb5, 0xf6, 0x1e, 0xde,
-	0xe2, 0x2a, 0x8b, 0x29, 0xf8, 0x50, 0xe5, 0x65, 0x99, 0xe1, 0xf7, 0xf0, 0xdf, 0x79, 0xb1, 0xca,
-	0x6b, 0x4a, 0xde, 0x93, 0xdb, 0xf0, 0x84, 0x48, 0x69, 0x98, 0x0b, 0xf2, 0x86, 0x68, 0x70, 0x5b,
-	0xa1, 0x34, 0x7a, 0x13, 0xac, 0xb0, 0x14, 0x24, 0xd3, 0x57, 0x69, 0x39, 0xc8, 0x6d, 0xfb, 0x20,
-	0x25, 0xe9, 0xe8, 0x31, 0xf8, 0xff, 0x37, 0x06, 0xee, 0x80, 0x71, 0x4e, 0x4a, 0xf9, 0x42, 0xa6,
-	0x5f, 0x95, 0xf8, 0x00, 0xd6, 0xaf, 0xa7, 0xfd, 0x6f, 0x57, 0x1d, 0xd4, 0x2f, 0xbf, 0x6f, 0xd6,
-	0x7c, 0x95, 0xef, 0x3d, 0x83, 0x8d, 0x63, 0xf9, 0x10, 0x7f, 0x68, 0x76, 0x67, 0xb5, 0x99, 0xb9,
-	0x48, 0xbe, 0x86, 0xbb, 0x43, 0x96, 0x89, 0x34, 0x9f, 0x12, 0x26, 0x02, 0x41, 0x39, 0x1b, 0xd1,
-	0x30, 0x0d, 0xd2, 0x12, 0x63, 0xa8, 0xb3, 0x60, 0x4a, 0x34, 0x42, 0xd6, 0xb8, 0x0b, 0xcd, 0x82,
-	0xa4, 0x19, 0xe5, 0x4c, 0x53, 0x16, 0x9f, 0xdb, 0x4f, 0xc1, 0x5c, 0xfe, 0x50, 0x18, 0xa0, 0x71,
-	0x3c, 0xf1, 0x87, 0x87, 0x07, 0x9d, 0x1a, 0x6e, 0x82, 0x31, 0x3c, 0x9c, 0x74, 0x50, 0x25, 0xbe,
-	0x1a, 0xbf, 0x1d, 0x8c, 0xf6, 0x3b, 0x6b, 0xb8, 0x05, 0xf5, 0xc1, 0x78, 0x3c, 0xea, 0x18, 0x83,
-	0x0b, 0x74, 0x39, 0xb3, 0xd1, 0xd5, 0xcc, 0x46, 0x3f, 0x66, 0x36, 0xba, 0x98, 0xdb, 0xb5, 0xab,
-	0xb9, 0x5d, 0xfb, 0x36, 0xb7, 0x6b, 0xe0, 0x50, 0x7e, 0x73, 0x20, 0xbf, 0x0e, 0x63, 0x60, 0xbd,
-	0x94, 0xe5, 0x51, 0x25, 0x1f, 0xa1, 0x0f, 0xfb, 0x2b, 0xfb, 0x23, 0x68, 0x94, 0x06, 0x8c, 0x05,
-	0x9f, 0x83, 0xb4, 0x0c, 0x98, 0x47, 0xbe, 0x24, 0x3b, 0x5c, 0x90, 0x58, 0x2d, 0x11, 0x61, 0xa7,
-	0xfc, 0x8c, 0xb2, 0x28, 0xf3, 0xb8, 0x88, 0x93, 0x13, 0xb9, 0x6b, 0xcb, 0xb5, 0x0d, 0x1b, 0xd2,
-	0xf4, 0xf8, 0x67, 0x00, 0x00, 0x00, 0xff, 0xff, 0x5a, 0xa6, 0x04, 0xb7, 0xde, 0x03, 0x00, 0x00,
+	// 529 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0x4d, 0x8f, 0xd3, 0x30,
+	0x10, 0x8d, 0xb7, 0xfb, 0xd1, 0x4e, 0x8a, 0x84, 0x2c, 0x84, 0x7a, 0x69, 0x08, 0xe5, 0x40, 0x00,
+	0x91, 0xa8, 0xcb, 0x85, 0x0b, 0x42, 0xed, 0x0a, 0x51, 0xc4, 0xa2, 0xad, 0x02, 0xda, 0x03, 0x1c,
+	0x2a, 0xa7, 0xb5, 0x82, 0xd9, 0xd4, 0x8e, 0x1c, 0xa7, 0x22, 0xff, 0x82, 0xdf, 0xc1, 0x89, 0x7f,
+	0x01, 0xc7, 0x3d, 0x72, 0x5c, 0xb5, 0x7f, 0x04, 0xc5, 0x76, 0xbb, 0xe5, 0xb2, 0xab, 0xde, 0xc6,
+	0x6f, 0xde, 0xbc, 0xf7, 0x46, 0xb6, 0xe1, 0xa9, 0xc8, 0x29, 0x57, 0x34, 0xa3, 0x73, 0xaa, 0x64,
+	0x15, 0xe5, 0x52, 0x28, 0x11, 0x4d, 0xc5, 0x7c, 0x2e, 0x78, 0xb4, 0xe8, 0xdb, 0x2a, 0xd4, 0x30,
+	0xee, 0xfe, 0xc7, 0x35, 0x60, 0x68, 0x19, 0x8b, 0x7e, 0xef, 0x6a, 0x0f, 0x9a, 0x03, 0x5e, 0x9d,
+	0x93, 0xac, 0xa4, 0xf8, 0x11, 0xb4, 0x0b, 0x25, 0x19, 0x4f, 0x27, 0x8b, 0xfa, 0xdc, 0x41, 0x3e,
+	0x0a, 0x5a, 0x23, 0x27, 0x76, 0x0d, 0x6a, 0x48, 0x0f, 0x00, 0x12, 0x21, 0x32, 0x4b, 0xd9, 0xf3,
+	0x51, 0xd0, 0x1c, 0x39, 0x71, 0xab, 0xc6, 0x0c, 0xa1, 0x0b, 0x2d, 0xc6, 0x95, 0xed, 0x37, 0x7c,
+	0x14, 0x34, 0x46, 0x4e, 0xdc, 0x64, 0x5c, 0x6d, 0x4c, 0x66, 0xa2, 0x4c, 0x32, 0x6a, 0x19, 0xfb,
+	0x3e, 0x0a, 0x50, 0x6d, 0x62, 0x50, 0x43, 0x3a, 0x05, 0x97, 0x48, 0x49, 0x2a, 0xcb, 0x39, 0xf0,
+	0x51, 0xe0, 0x1e, 0x3f, 0x09, 0x6f, 0xdc, 0x25, 0x1c, 0xd4, 0x13, 0x7a, 0x7e, 0xe4, 0xc4, 0x40,
+	0x36, 0x27, 0x3c, 0x86, 0xf6, 0xc5, 0x22, 0x63, 0xc5, 0x3a, 0xd4, 0xa1, 0x96, 0x7b, 0x76, 0x8b,
+	0xdc, 0x7b, 0x6a, 0xc6, 0x4f, 0x59, 0xa1, 0xea, 0x7c, 0x46, 0xc2, 0x28, 0x3e, 0x04, 0x37, 0xa9,
+	0x14, 0x2d, 0xac, 0xe0, 0x91, 0x8f, 0x82, 0x76, 0x6d, 0xaa, 0x41, 0x4d, 0x19, 0x1e, 0xc1, 0x81,
+	0x6e, 0xf6, 0x3e, 0x00, 0x5c, 0x27, 0xc3, 0xaf, 0xe1, 0x50, 0xc3, 0x45, 0x07, 0xf9, 0x8d, 0xc0,
+	0x3d, 0x7e, 0x7c, 0xdb, 0x52, 0xf6, 0x72, 0x62, 0x3b, 0xd6, 0x3b, 0x83, 0xf6, 0x76, 0xb2, 0x9d,
+	0x05, 0xd7, 0xc3, 0x1b, 0xc1, 0x2f, 0xd0, 0x5c, 0x63, 0xf8, 0x2e, 0x34, 0x2e, 0x68, 0x65, 0x2e,
+	0x3e, 0xae, 0x4b, 0xfc, 0xca, 0xae, 0xa1, 0x6f, 0x7a, 0x87, 0xb8, 0x76, 0xf9, 0xdf, 0x08, 0xee,
+	0xbd, 0xe3, 0x85, 0x92, 0xe5, 0x9c, 0x72, 0x45, 0x14, 0x13, 0xfc, 0xe3, 0x54, 0xe4, 0x14, 0x63,
+	0xd8, 0xe7, 0x64, 0x6e, 0xdf, 0x58, 0xac, 0x6b, 0xdc, 0x81, 0xa3, 0x05, 0x95, 0x05, 0x13, 0x5c,
+	0xbb, 0xb5, 0xe2, 0xf5, 0x11, 0xbf, 0x05, 0x20, 0x4a, 0x49, 0x96, 0x94, 0x8a, 0x16, 0x9d, 0xc6,
+	0x6e, 0x8b, 0x6e, 0x8d, 0xe2, 0x97, 0xd0, 0x99, 0x49, 0x91, 0xe7, 0x74, 0x36, 0xb9, 0x46, 0x27,
+	0x53, 0x51, 0x72, 0xa5, 0x5f, 0xe2, 0x9d, 0xf8, 0xbe, 0xed, 0x0f, 0x36, 0xed, 0x93, 0xba, 0x3b,
+	0xfc, 0x85, 0xfe, 0x2c, 0x3d, 0x74, 0xb9, 0xf4, 0xd0, 0xd5, 0xd2, 0x43, 0x3f, 0x56, 0x9e, 0x73,
+	0xb9, 0xf2, 0x9c, 0xbf, 0x2b, 0xcf, 0x01, 0x9f, 0x89, 0x9b, 0xb3, 0x0c, 0xdd, 0x13, 0x5d, 0x8e,
+	0x6b, 0x78, 0x8c, 0x3e, 0xbf, 0x49, 0x99, 0xfa, 0x5a, 0x26, 0x35, 0x21, 0x52, 0x2c, 0x95, 0x84,
+	0x73, 0xf2, 0x8d, 0xc8, 0x8a, 0xf0, 0x88, 0x7e, 0xcf, 0x9f, 0x0b, 0x45, 0x33, 0xf3, 0xa9, 0x29,
+	0x9f, 0x8a, 0x19, 0xe3, 0x69, 0x11, 0x09, 0x95, 0xe5, 0x93, 0x54, 0xa4, 0x5b, 0x1f, 0xfd, 0xe7,
+	0x5e, 0xf7, 0x2c, 0xa7, 0xfc, 0xd3, 0xc6, 0x55, 0xcb, 0x87, 0xc6, 0x2a, 0x3c, 0xef, 0x27, 0x87,
+	0x5a, 0xe4, 0xc5, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xc9, 0xf2, 0x75, 0x06, 0x30, 0x04, 0x00,
+	0x00,
 }
 
 func (m *AnyValue) Marshal() (dAtA []byte, err error) {
@@ -393,78 +474,133 @@ func (m *AnyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.BytesValue) > 0 {
+	if m.Value != nil {
+		{
+			size := m.Value.Size()
+			i -= size
+			if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *AnyValue_StringValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_StringValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	i -= len(m.StringValue)
+	copy(dAtA[i:], m.StringValue)
+	i = encodeVarintCommon(dAtA, i, uint64(len(m.StringValue)))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_BoolValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_BoolValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	i--
+	if m.BoolValue {
+		dAtA[i] = 1
+	} else {
+		dAtA[i] = 0
+	}
+	i--
+	dAtA[i] = 0x10
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_IntValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_IntValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	i = encodeVarintCommon(dAtA, i, uint64(m.IntValue))
+	i--
+	dAtA[i] = 0x18
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_DoubleValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_DoubleValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	i -= 8
+	encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.DoubleValue))))
+	i--
+	dAtA[i] = 0x21
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_ArrayValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.ArrayValue != nil {
+		{
+			size, err := m.ArrayValue.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintCommon(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_KvlistValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_KvlistValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.KvlistValue != nil {
+		{
+			size, err := m.KvlistValue.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintCommon(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x32
+	}
+	return len(dAtA) - i, nil
+}
+func (m *AnyValue_BytesValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AnyValue_BytesValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.BytesValue != nil {
 		i -= len(m.BytesValue)
 		copy(dAtA[i:], m.BytesValue)
 		i = encodeVarintCommon(dAtA, i, uint64(len(m.BytesValue)))
 		i--
-		dAtA[i] = 0x42
-	}
-	if len(m.KvlistValues) > 0 {
-		for iNdEx := len(m.KvlistValues) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.KvlistValues[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintCommon(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x3a
-		}
-	}
-	if len(m.ListValues) > 0 {
-		for iNdEx := len(m.ListValues) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.ListValues[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintCommon(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if m.DoubleValue != 0 {
-		i -= 8
-		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.DoubleValue))))
-		i--
-		dAtA[i] = 0x29
-	}
-	if m.IntValue != 0 {
-		i = encodeVarintCommon(dAtA, i, uint64(m.IntValue))
-		i--
-		dAtA[i] = 0x20
-	}
-	if len(m.StringValue) > 0 {
-		i -= len(m.StringValue)
-		copy(dAtA[i:], m.StringValue)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.StringValue)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.BoolValue {
-		i--
-		if m.BoolValue {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Type != 0 {
-		i = encodeVarintCommon(dAtA, i, uint64(m.Type))
-		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0x3a
 	}
 	return len(dAtA) - i, nil
 }
-
-func (m *AttributeKeyValue) Marshal() (dAtA []byte, err error) {
+func (m *ArrayValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -474,37 +610,34 @@ func (m *AttributeKeyValue) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *AttributeKeyValue) MarshalTo(dAtA []byte) (int, error) {
+func (m *ArrayValue) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *AttributeKeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ArrayValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	{
-		size, err := m.Value.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintCommon(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
 		}
-		i -= size
-		i = encodeVarintCommon(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.Key) > 0 {
-		i -= len(m.Key)
-		copy(dAtA[i:], m.Key)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.Key)))
-		i--
-		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *StringKeyValue) Marshal() (dAtA []byte, err error) {
+func (m *KeyValueList) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -514,20 +647,62 @@ func (m *StringKeyValue) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *StringKeyValue) MarshalTo(dAtA []byte) (int, error) {
+func (m *KeyValueList) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *StringKeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *KeyValueList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Value) > 0 {
-		i -= len(m.Value)
-		copy(dAtA[i:], m.Value)
-		i = encodeVarintCommon(dAtA, i, uint64(len(m.Value)))
+	if len(m.Values) > 0 {
+		for iNdEx := len(m.Values) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Values[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintCommon(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *KeyValue) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *KeyValue) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *KeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Value != nil {
+		{
+			size, err := m.Value.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintCommon(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x12
 	}
@@ -541,7 +716,7 @@ func (m *StringKeyValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *InstrumentationLibrary) Marshal() (dAtA []byte, err error) {
+func (m *InstrumentationScope) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -551,16 +726,35 @@ func (m *InstrumentationLibrary) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *InstrumentationLibrary) MarshalTo(dAtA []byte) (int, error) {
+func (m *InstrumentationScope) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *InstrumentationLibrary) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InstrumentationScope) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.DroppedAttributesCount != 0 {
+		i = encodeVarintCommon(dAtA, i, uint64(m.DroppedAttributesCount))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Attributes) > 0 {
+		for iNdEx := len(m.Attributes) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Attributes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintCommon(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
 	if len(m.Version) > 0 {
 		i -= len(m.Version)
 		copy(dAtA[i:], m.Version)
@@ -595,57 +789,116 @@ func (m *AnyValue) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.Type != 0 {
-		n += 1 + sovCommon(uint64(m.Type))
-	}
-	if m.BoolValue {
-		n += 2
-	}
-	l = len(m.StringValue)
-	if l > 0 {
-		n += 1 + l + sovCommon(uint64(l))
-	}
-	if m.IntValue != 0 {
-		n += 1 + sovCommon(uint64(m.IntValue))
-	}
-	if m.DoubleValue != 0 {
-		n += 9
-	}
-	if len(m.ListValues) > 0 {
-		for _, e := range m.ListValues {
-			l = e.Size()
-			n += 1 + l + sovCommon(uint64(l))
-		}
-	}
-	if len(m.KvlistValues) > 0 {
-		for _, e := range m.KvlistValues {
-			l = e.Size()
-			n += 1 + l + sovCommon(uint64(l))
-		}
-	}
-	l = len(m.BytesValue)
-	if l > 0 {
-		n += 1 + l + sovCommon(uint64(l))
+	if m.Value != nil {
+		n += m.Value.Size()
 	}
 	return n
 }
 
-func (m *AttributeKeyValue) Size() (n int) {
+func (m *AnyValue_StringValue) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Key)
-	if l > 0 {
-		n += 1 + l + sovCommon(uint64(l))
-	}
-	l = m.Value.Size()
+	l = len(m.StringValue)
 	n += 1 + l + sovCommon(uint64(l))
 	return n
 }
+func (m *AnyValue_BoolValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += 2
+	return n
+}
+func (m *AnyValue_IntValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += 1 + sovCommon(uint64(m.IntValue))
+	return n
+}
+func (m *AnyValue_DoubleValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	n += 9
+	return n
+}
+func (m *AnyValue_ArrayValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ArrayValue != nil {
+		l = m.ArrayValue.Size()
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	return n
+}
+func (m *AnyValue_KvlistValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.KvlistValue != nil {
+		l = m.KvlistValue.Size()
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	return n
+}
+func (m *AnyValue_BytesValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BytesValue != nil {
+		l = len(m.BytesValue)
+		n += 1 + l + sovCommon(uint64(l))
+	}
+	return n
+}
+func (m *ArrayValue) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Values) > 0 {
+		for _, e := range m.Values {
+			l = e.Size()
+			n += 1 + l + sovCommon(uint64(l))
+		}
+	}
+	return n
+}
 
-func (m *StringKeyValue) Size() (n int) {
+func (m *KeyValueList) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Values) > 0 {
+		for _, e := range m.Values {
+			l = e.Size()
+			n += 1 + l + sovCommon(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *KeyValue) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -655,14 +908,14 @@ func (m *StringKeyValue) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovCommon(uint64(l))
 	}
-	l = len(m.Value)
-	if l > 0 {
+	if m.Value != nil {
+		l = m.Value.Size()
 		n += 1 + l + sovCommon(uint64(l))
 	}
 	return n
 }
 
-func (m *InstrumentationLibrary) Size() (n int) {
+func (m *InstrumentationScope) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -675,6 +928,15 @@ func (m *InstrumentationLibrary) Size() (n int) {
 	l = len(m.Version)
 	if l > 0 {
 		n += 1 + l + sovCommon(uint64(l))
+	}
+	if len(m.Attributes) > 0 {
+		for _, e := range m.Attributes {
+			l = e.Size()
+			n += 1 + l + sovCommon(uint64(l))
+		}
+	}
+	if m.DroppedAttributesCount != 0 {
+		n += 1 + sovCommon(uint64(m.DroppedAttributesCount))
 	}
 	return n
 }
@@ -715,45 +977,6 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
-			}
-			m.Type = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCommon
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Type |= ValueType(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BoolValue", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCommon
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.BoolValue = bool(v != 0)
-		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field StringValue", wireType)
 			}
@@ -783,13 +1006,13 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.StringValue = string(dAtA[iNdEx:postIndex])
+			m.Value = &AnyValue_StringValue{string(dAtA[iNdEx:postIndex])}
 			iNdEx = postIndex
-		case 4:
+		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IntValue", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BoolValue", wireType)
 			}
-			m.IntValue = 0
+			var v int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -799,12 +1022,34 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.IntValue |= int64(b&0x7F) << shift
+				v |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-		case 5:
+			b := bool(v != 0)
+			m.Value = &AnyValue_BoolValue{b}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IntValue", wireType)
+			}
+			var v int64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Value = &AnyValue_IntValue{v}
+		case 4:
 			if wireType != 1 {
 				return fmt.Errorf("proto: wrong wireType = %d for field DoubleValue", wireType)
 			}
@@ -814,10 +1059,45 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 			}
 			v = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 			iNdEx += 8
-			m.DoubleValue = float64(math.Float64frombits(v))
+			m.Value = &AnyValue_DoubleValue{float64(math.Float64frombits(v))}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ArrayValue", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &ArrayValue{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.Value = &AnyValue_ArrayValue{v}
+			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ListValues", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field KvlistValue", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -844,46 +1124,13 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ListValues = append(m.ListValues, &AnyValue{})
-			if err := m.ListValues[len(m.ListValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			v := &KeyValueList{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			m.Value = &AnyValue_KvlistValue{v}
 			iNdEx = postIndex
 		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KvlistValues", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCommon
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthCommon
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.KvlistValues = append(m.KvlistValues, &AttributeKeyValue{})
-			if err := m.KvlistValues[len(m.KvlistValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BytesValue", wireType)
 			}
@@ -912,10 +1159,9 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BytesValue = append(m.BytesValue[:0], dAtA[iNdEx:postIndex]...)
-			if m.BytesValue == nil {
-				m.BytesValue = []byte{}
-			}
+			v := make([]byte, postIndex-iNdEx)
+			copy(v, dAtA[iNdEx:postIndex])
+			m.Value = &AnyValue_BytesValue{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -923,10 +1169,7 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if (iNdEx + skippy) > l {
@@ -941,7 +1184,7 @@ func (m *AnyValue) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *AttributeKeyValue) Unmarshal(dAtA []byte) error {
+func (m *ArrayValue) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -964,10 +1207,178 @@ func (m *AttributeKeyValue) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: AttributeKeyValue: wiretype end group for non-group")
+			return fmt.Errorf("proto: ArrayValue: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AttributeKeyValue: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ArrayValue: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Values = append(m.Values, &AnyValue{})
+			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *KeyValueList) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: KeyValueList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: KeyValueList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Values = append(m.Values, &KeyValue{})
+			if err := m.Values[len(m.Values)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCommon(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *KeyValue) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCommon
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: KeyValue: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: KeyValue: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1031,6 +1442,9 @@ func (m *AttributeKeyValue) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			if m.Value == nil {
+				m.Value = &AnyValue{}
+			}
 			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1041,10 +1455,7 @@ func (m *AttributeKeyValue) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if (iNdEx + skippy) > l {
@@ -1059,7 +1470,7 @@ func (m *AttributeKeyValue) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *StringKeyValue) Unmarshal(dAtA []byte) error {
+func (m *InstrumentationScope) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1082,127 +1493,10 @@ func (m *StringKeyValue) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: StringKeyValue: wiretype end group for non-group")
+			return fmt.Errorf("proto: InstrumentationScope: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: StringKeyValue: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCommon
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthCommon
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Key = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCommon
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthCommon
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Value = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipCommon(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *InstrumentationLibrary) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowCommon
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: InstrumentationLibrary: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: InstrumentationLibrary: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InstrumentationScope: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1269,16 +1563,66 @@ func (m *InstrumentationLibrary) Unmarshal(dAtA []byte) error {
 			}
 			m.Version = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Attributes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCommon
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCommon
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Attributes = append(m.Attributes, &KeyValue{})
+			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DroppedAttributesCount", wireType)
+			}
+			m.DroppedAttributesCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCommon
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DroppedAttributesCount |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipCommon(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthCommon
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if (iNdEx + skippy) > l {

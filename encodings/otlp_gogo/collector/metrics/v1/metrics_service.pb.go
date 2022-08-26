@@ -77,6 +77,22 @@ func (m *ExportMetricsServiceRequest) GetResourceMetrics() []*v1.ResourceMetrics
 }
 
 type ExportMetricsServiceResponse struct {
+	// The details of a partially successful export request.
+	//
+	// If the request is only partially accepted
+	// (i.e. when the server accepts only parts of the data and rejects the rest)
+	// the server MUST initialize the `partial_success` field and MUST
+	// set the `rejected_<signal>` with the number of items it rejected.
+	//
+	// Servers MAY also make use of the `partial_success` field to convey
+	// warnings/suggestions to senders even when the request was fully accepted.
+	// In such cases, the `rejected_<signal>` MUST have a value of `0` and
+	// the `error_message` MUST be non-empty.
+	//
+	// A `partial_success` message with an empty value (rejected_<signal> = 0 and
+	// `error_message` = "") is equivalent to it not being set/present. Senders
+	// SHOULD interpret it the same way as in the full success case.
+	PartialSuccess *ExportMetricsPartialSuccess `protobuf:"bytes,1,opt,name=partial_success,json=partialSuccess,proto3" json:"partial_success,omitempty"`
 }
 
 func (m *ExportMetricsServiceResponse) Reset()         { *m = ExportMetricsServiceResponse{} }
@@ -112,9 +128,80 @@ func (m *ExportMetricsServiceResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ExportMetricsServiceResponse proto.InternalMessageInfo
 
+func (m *ExportMetricsServiceResponse) GetPartialSuccess() *ExportMetricsPartialSuccess {
+	if m != nil {
+		return m.PartialSuccess
+	}
+	return nil
+}
+
+type ExportMetricsPartialSuccess struct {
+	// The number of rejected data points.
+	//
+	// A `rejected_<signal>` field holding a `0` value indicates that the
+	// request was fully accepted.
+	RejectedDataPoints int64 `protobuf:"varint,1,opt,name=rejected_data_points,json=rejectedDataPoints,proto3" json:"rejected_data_points,omitempty"`
+	// A developer-facing human-readable message in English. It should be used
+	// either to explain why the server rejected parts of the data during a partial
+	// success or to convey warnings/suggestions during a full success. The message
+	// should offer guidance on how users can address such issues.
+	//
+	// error_message is an optional field. An error_message with an empty value
+	// is equivalent to it not being set.
+	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+}
+
+func (m *ExportMetricsPartialSuccess) Reset()         { *m = ExportMetricsPartialSuccess{} }
+func (m *ExportMetricsPartialSuccess) String() string { return proto.CompactTextString(m) }
+func (*ExportMetricsPartialSuccess) ProtoMessage()    {}
+func (*ExportMetricsPartialSuccess) Descriptor() ([]byte, []int) {
+	return fileDescriptor_75fb6015e6e64798, []int{2}
+}
+func (m *ExportMetricsPartialSuccess) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ExportMetricsPartialSuccess) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ExportMetricsPartialSuccess.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ExportMetricsPartialSuccess) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExportMetricsPartialSuccess.Merge(m, src)
+}
+func (m *ExportMetricsPartialSuccess) XXX_Size() int {
+	return m.Size()
+}
+func (m *ExportMetricsPartialSuccess) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExportMetricsPartialSuccess.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExportMetricsPartialSuccess proto.InternalMessageInfo
+
+func (m *ExportMetricsPartialSuccess) GetRejectedDataPoints() int64 {
+	if m != nil {
+		return m.RejectedDataPoints
+	}
+	return 0
+}
+
+func (m *ExportMetricsPartialSuccess) GetErrorMessage() string {
+	if m != nil {
+		return m.ErrorMessage
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*ExportMetricsServiceRequest)(nil), "opentelemetrygogo.proto.collector.metrics.v1.ExportMetricsServiceRequest")
-	proto.RegisterType((*ExportMetricsServiceResponse)(nil), "opentelemetrygogo.proto.collector.metrics.v1.ExportMetricsServiceResponse")
+	proto.RegisterType((*ExportMetricsServiceRequest)(nil), "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest")
+	proto.RegisterType((*ExportMetricsServiceResponse)(nil), "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse")
+	proto.RegisterType((*ExportMetricsPartialSuccess)(nil), "opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess")
 }
 
 func init() {
@@ -122,27 +209,34 @@ func init() {
 }
 
 var fileDescriptor_75fb6015e6e64798 = []byte{
-	// 319 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x92, 0xb1, 0x4a, 0x03, 0x31,
-	0x18, 0xc7, 0x2f, 0x08, 0x1d, 0x22, 0xa8, 0x9c, 0x8b, 0x54, 0x09, 0xd2, 0xc9, 0xa1, 0x26, 0xb4,
-	0xdd, 0x1d, 0x0a, 0x0e, 0x0a, 0x42, 0xa9, 0x9b, 0x83, 0xe5, 0x1a, 0x3f, 0xce, 0xc8, 0x35, 0x5f,
-	0x4c, 0xd2, 0xd2, 0x0e, 0xbe, 0x83, 0xaf, 0xe0, 0x2b, 0x88, 0x0f, 0xe1, 0xd8, 0xd1, 0x51, 0xda,
-	0x17, 0x91, 0x6b, 0x4e, 0xe5, 0xf0, 0x14, 0x0a, 0x6e, 0xc7, 0xf7, 0xfd, 0xff, 0xff, 0xdf, 0xff,
-	0x92, 0xd0, 0x13, 0x34, 0xa0, 0x3d, 0x64, 0x30, 0x02, 0x6f, 0x67, 0xc2, 0x58, 0xf4, 0x28, 0x24,
-	0x66, 0x19, 0x48, 0x8f, 0x56, 0xe4, 0x53, 0x25, 0x9d, 0x98, 0xb4, 0x3e, 0x3f, 0x07, 0x0e, 0xec,
-	0x44, 0x49, 0xe0, 0x2b, 0x69, 0xdc, 0x2c, 0xf9, 0x53, 0x4c, 0x31, 0x2c, 0xf8, 0x57, 0x06, 0x2f,
-	0x8c, 0x7c, 0xd2, 0xaa, 0x37, 0xab, 0x68, 0x3f, 0x19, 0x21, 0xa2, 0xf1, 0x40, 0xf7, 0x4f, 0xa7,
-	0x06, 0xad, 0xbf, 0x08, 0xe3, 0xcb, 0x40, 0xee, 0xc3, 0xfd, 0x18, 0x9c, 0x8f, 0xaf, 0xe9, 0x8e,
-	0x05, 0x87, 0x63, 0x2b, 0x61, 0x50, 0x18, 0xf7, 0xc8, 0xe1, 0xc6, 0xd1, 0x66, 0xbb, 0xc3, 0x7f,
-	0x6b, 0xf5, 0xdd, 0x85, 0xf7, 0x0b, 0x6f, 0x11, 0xde, 0xdf, 0xb6, 0xe5, 0x41, 0x83, 0xd1, 0x83,
-	0x6a, 0xbc, 0x33, 0xa8, 0x1d, 0xb4, 0x5f, 0x08, 0xdd, 0x2a, 0xaf, 0xe2, 0x27, 0x42, 0x6b, 0xc1,
-	0x13, 0x9f, 0xf1, 0x75, 0x4e, 0x86, 0xff, 0xf1, 0xa3, 0xf5, 0xf3, 0xff, 0x88, 0x0a, 0xa5, 0x1b,
-	0x51, 0xf7, 0x99, 0xbc, 0x2e, 0x18, 0x99, 0x2f, 0x18, 0x79, 0x5f, 0x30, 0xf2, 0xb8, 0x64, 0xd1,
-	0x7c, 0xc9, 0xa2, 0xb7, 0x25, 0x8b, 0xa8, 0x50, 0xb8, 0x16, 0xaa, 0xbb, 0x5b, 0xa6, 0xf4, 0x72,
-	0x65, 0x8f, 0x5c, 0xf5, 0x52, 0xe5, 0x6f, 0xc7, 0x43, 0x2e, 0x71, 0x24, 0xbc, 0x4a, 0x6d, 0xa2,
-	0x75, 0x72, 0x97, 0xd8, 0x59, 0xa2, 0x05, 0x4c, 0xcd, 0x31, 0x7a, 0xc8, 0xc2, 0xd5, 0x83, 0x96,
-	0x78, 0xa3, 0x74, 0xea, 0x04, 0xfa, 0xcc, 0x0c, 0x72, 0x5c, 0xe5, 0xe3, 0x1b, 0xd6, 0x56, 0xfa,
-	0xce, 0x47, 0x00, 0x00, 0x00, 0xff, 0xff, 0x8d, 0x07, 0xe7, 0x41, 0xaf, 0x02, 0x00, 0x00,
+	// 430 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0xcd, 0x6e, 0x13, 0x31,
+	0x10, 0x8e, 0x5b, 0xa9, 0x12, 0x2e, 0xb4, 0x68, 0xe1, 0x50, 0x15, 0xb4, 0xaa, 0xc2, 0x65, 0x25,
+	0xc0, 0x4b, 0xc2, 0x9d, 0x43, 0xa1, 0xdc, 0x2a, 0x56, 0x5b, 0xc4, 0xa1, 0x97, 0x95, 0xeb, 0x8c,
+	0x16, 0x57, 0x1b, 0x8f, 0xb1, 0x27, 0x51, 0xf3, 0x12, 0x88, 0x2b, 0xaf, 0x80, 0x78, 0x10, 0x8e,
+	0x3d, 0xc2, 0x0d, 0x25, 0x2f, 0x82, 0xb2, 0xde, 0x06, 0x19, 0x72, 0x88, 0xe0, 0xb6, 0xfb, 0xcd,
+	0x7c, 0x3f, 0x9e, 0xb1, 0xf9, 0x0b, 0xb4, 0x60, 0x08, 0x1a, 0x18, 0x03, 0xb9, 0x59, 0x6e, 0x1d,
+	0x12, 0xe6, 0x0a, 0x9b, 0x06, 0x14, 0xa1, 0xcb, 0x97, 0xa8, 0x56, 0x3e, 0x9f, 0x0e, 0x6e, 0x3e,
+	0x2b, 0x0f, 0x6e, 0xaa, 0x15, 0x88, 0xb6, 0x35, 0xc9, 0x22, 0x7e, 0x00, 0xc5, 0x8a, 0x2f, 0x3a,
+	0x92, 0x98, 0x0e, 0x0e, 0x9f, 0xac, 0x73, 0xfa, 0x5b, 0x3f, 0x48, 0xf4, 0x67, 0xfc, 0xc1, 0xc9,
+	0x95, 0x45, 0x47, 0xa7, 0x01, 0x3e, 0x0b, 0xae, 0x25, 0x7c, 0x98, 0x80, 0xa7, 0xe4, 0x9c, 0xdf,
+	0x75, 0xe0, 0x71, 0xe2, 0x14, 0x54, 0x1d, 0xf1, 0x80, 0x1d, 0x6d, 0x67, 0xbb, 0xc3, 0x5c, 0xac,
+	0x4b, 0xf4, 0x3b, 0x87, 0x28, 0x3b, 0x5e, 0x27, 0x5c, 0xee, 0xbb, 0x18, 0xe8, 0x7f, 0x64, 0xfc,
+	0xe1, 0x7a, 0x6f, 0x6f, 0xd1, 0x78, 0x48, 0x0c, 0xdf, 0xb7, 0xd2, 0x91, 0x96, 0x4d, 0xe5, 0x27,
+	0x4a, 0x81, 0x5f, 0x7a, 0xb3, 0x6c, 0x77, 0x78, 0x22, 0x36, 0x9d, 0x86, 0x88, 0x0c, 0x8a, 0xa0,
+	0x76, 0x16, 0xc4, 0xca, 0x3d, 0x1b, 0xfd, 0xf7, 0xe9, 0x8f, 0x59, 0xc4, 0xed, 0xc9, 0x33, 0x7e,
+	0xdf, 0xc1, 0x25, 0x28, 0x82, 0x51, 0x35, 0x92, 0x24, 0x2b, 0x8b, 0xda, 0x50, 0xc8, 0xb4, 0x5d,
+	0x26, 0x37, 0xb5, 0x57, 0x92, 0x64, 0xd1, 0x56, 0x92, 0x47, 0xfc, 0x0e, 0x38, 0x87, 0xae, 0x1a,
+	0x83, 0xf7, 0xb2, 0x86, 0x83, 0xad, 0x23, 0x96, 0xdd, 0x2a, 0x6f, 0xb7, 0xe0, 0x69, 0xc0, 0x86,
+	0x5f, 0x19, 0xdf, 0x8b, 0x07, 0x90, 0x7c, 0x66, 0x7c, 0x27, 0x24, 0x49, 0xfe, 0xf5, 0xa8, 0xf1,
+	0x1e, 0x0f, 0x5f, 0xff, 0xaf, 0x4c, 0x58, 0x49, 0xbf, 0x77, 0xfc, 0x83, 0x7d, 0x9b, 0xa7, 0xec,
+	0x7a, 0x9e, 0xb2, 0x9f, 0xf3, 0x94, 0x7d, 0x5a, 0xa4, 0xbd, 0xeb, 0x45, 0xda, 0xfb, 0xbe, 0x48,
+	0x7b, 0xfc, 0xb1, 0xc6, 0x8d, 0x6d, 0x8e, 0xef, 0xc5, 0x0e, 0xc5, 0xb2, 0xb3, 0x60, 0xe7, 0x45,
+	0xad, 0xe9, 0xfd, 0xe4, 0x42, 0x28, 0x1c, 0xe7, 0xa4, 0x6b, 0x27, 0x8d, 0x91, 0x97, 0xd2, 0xcd,
+	0xa4, 0xc9, 0xe1, 0xca, 0x3e, 0x45, 0x82, 0x26, 0xdc, 0x68, 0x30, 0x0a, 0x47, 0xda, 0xd4, 0x3e,
+	0x47, 0x6a, 0x6c, 0x55, 0x63, 0xbd, 0xfe, 0x3d, 0x7d, 0xd9, 0xca, 0xde, 0x58, 0x30, 0x6f, 0x57,
+	0x99, 0x5a, 0x27, 0xf1, 0x72, 0x95, 0xa9, 0xcb, 0x21, 0xde, 0x0d, 0x2e, 0x76, 0x5a, 0xe9, 0xe7,
+	0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0x2e, 0x8b, 0x82, 0x4e, 0xad, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -172,7 +266,7 @@ func NewMetricsServiceClient(cc *grpc.ClientConn) MetricsServiceClient {
 
 func (c *metricsServiceClient) Export(ctx context.Context, in *ExportMetricsServiceRequest, opts ...grpc.CallOption) (*ExportMetricsServiceResponse, error) {
 	out := new(ExportMetricsServiceResponse)
-	err := c.cc.Invoke(ctx, "/opentelemetrygogo.proto.collector.metrics.v1.MetricsService/Export", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +302,7 @@ func _MetricsService_Export_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/opentelemetrygogo.proto.collector.metrics.v1.MetricsService/Export",
+		FullMethod: "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MetricsServiceServer).Export(ctx, req.(*ExportMetricsServiceRequest))
@@ -217,7 +311,7 @@ func _MetricsService_Export_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 var _MetricsService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "opentelemetrygogo.proto.collector.metrics.v1.MetricsService",
+	ServiceName: "opentelemetry.proto.collector.metrics.v1.MetricsService",
 	HandlerType: (*MetricsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -286,6 +380,53 @@ func (m *ExportMetricsServiceResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	_ = i
 	var l int
 	_ = l
+	if m.PartialSuccess != nil {
+		{
+			size, err := m.PartialSuccess.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetricsService(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExportMetricsPartialSuccess) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ExportMetricsPartialSuccess) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExportMetricsPartialSuccess) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ErrorMessage) > 0 {
+		i -= len(m.ErrorMessage)
+		copy(dAtA[i:], m.ErrorMessage)
+		i = encodeVarintMetricsService(dAtA, i, uint64(len(m.ErrorMessage)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.RejectedDataPoints != 0 {
+		i = encodeVarintMetricsService(dAtA, i, uint64(m.RejectedDataPoints))
+		i--
+		dAtA[i] = 0x8
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -321,6 +462,26 @@ func (m *ExportMetricsServiceResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.PartialSuccess != nil {
+		l = m.PartialSuccess.Size()
+		n += 1 + l + sovMetricsService(uint64(l))
+	}
+	return n
+}
+
+func (m *ExportMetricsPartialSuccess) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.RejectedDataPoints != 0 {
+		n += 1 + sovMetricsService(uint64(m.RejectedDataPoints))
+	}
+	l = len(m.ErrorMessage)
+	if l > 0 {
+		n += 1 + l + sovMetricsService(uint64(l))
+	}
 	return n
 }
 
@@ -399,10 +560,7 @@ func (m *ExportMetricsServiceRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsService
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsService
 			}
 			if (iNdEx + skippy) > l {
@@ -446,16 +604,150 @@ func (m *ExportMetricsServiceResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: ExportMetricsServiceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PartialSuccess", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetricsService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetricsService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetricsService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.PartialSuccess == nil {
+				m.PartialSuccess = &ExportMetricsPartialSuccess{}
+			}
+			if err := m.PartialSuccess.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMetricsService(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsService
 			}
-			if (iNdEx + skippy) < 0 {
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ExportMetricsPartialSuccess) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetricsService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExportMetricsPartialSuccess: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExportMetricsPartialSuccess: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RejectedDataPoints", wireType)
+			}
+			m.RejectedDataPoints = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetricsService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RejectedDataPoints |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ErrorMessage", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetricsService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMetricsService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetricsService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ErrorMessage = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetricsService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsService
 			}
 			if (iNdEx + skippy) > l {

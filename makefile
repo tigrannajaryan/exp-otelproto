@@ -37,14 +37,6 @@ gen-gogo:
 	cp -R encodings/otlp_gogo/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/* encodings/otlp_gogo/
 	rm -rf encodings/otlp_gogo/github.com/
 
-	$(foreach file,$(OTLP_PROTO_FILES2),$(call exec-command,protoc -Iencodings/otlp_gogo2/ -Ivendor --gogofaster_out=plugins=grpc:encodings/otlp_gogo2 $(file)))
-	cp -R encodings/otlp_gogo2/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo2/* encodings/otlp_gogo2/
-	rm -rf encodings/otlp_gogo2/github.com/
-
-	$(foreach file,$(OTLP_PROTO_FILES3),$(call exec-command,protoc -Iencodings/otlp_gogo3/ -Ivendor --gogofaster_out=plugins=grpc:encodings/otlp_gogo3 $(file)))
-	cp -R encodings/otlp_gogo3/github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo3/* encodings/otlp_gogo3/
-	rm -rf encodings/otlp_gogo3/github.com/
-
 gen-traceprotobuf:
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/telemetry_data.proto --go_out=plugins=grpc:encodings/traceprotobuf
 	protoc -I/usr/local/include -I encodings/traceprotobuf/ encodings/traceprotobuf/resource.proto --go_out=plugins=grpc:encodings/traceprotobuf

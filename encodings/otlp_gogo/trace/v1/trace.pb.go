@@ -34,40 +34,40 @@ const (
 	// Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
 	Span_SPAN_KIND_UNSPECIFIED Span_SpanKind = 0
 	// Indicates that the span represents an internal operation within an application,
-	// as opposed to an operations happening at the boundaries. Default value.
-	Span_INTERNAL Span_SpanKind = 1
+	// as opposed to an operation happening at the boundaries. Default value.
+	Span_SPAN_KIND_INTERNAL Span_SpanKind = 1
 	// Indicates that the span covers server-side handling of an RPC or other
 	// remote network request.
-	Span_SERVER Span_SpanKind = 2
+	Span_SPAN_KIND_SERVER Span_SpanKind = 2
 	// Indicates that the span describes a request to some remote service.
-	Span_CLIENT Span_SpanKind = 3
+	Span_SPAN_KIND_CLIENT Span_SpanKind = 3
 	// Indicates that the span describes a producer sending a message to a broker.
 	// Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
 	// between producer and consumer spans. A PRODUCER span ends when the message was accepted
 	// by the broker while the logical processing of the message might span a much longer time.
-	Span_PRODUCER Span_SpanKind = 4
+	Span_SPAN_KIND_PRODUCER Span_SpanKind = 4
 	// Indicates that the span describes consumer receiving a message from a broker.
 	// Like the PRODUCER kind, there is often no direct critical path latency relationship
 	// between producer and consumer spans.
-	Span_CONSUMER Span_SpanKind = 5
+	Span_SPAN_KIND_CONSUMER Span_SpanKind = 5
 )
 
 var Span_SpanKind_name = map[int32]string{
 	0: "SPAN_KIND_UNSPECIFIED",
-	1: "INTERNAL",
-	2: "SERVER",
-	3: "CLIENT",
-	4: "PRODUCER",
-	5: "CONSUMER",
+	1: "SPAN_KIND_INTERNAL",
+	2: "SPAN_KIND_SERVER",
+	3: "SPAN_KIND_CLIENT",
+	4: "SPAN_KIND_PRODUCER",
+	5: "SPAN_KIND_CONSUMER",
 }
 
 var Span_SpanKind_value = map[string]int32{
 	"SPAN_KIND_UNSPECIFIED": 0,
-	"INTERNAL":              1,
-	"SERVER":                2,
-	"CLIENT":                3,
-	"PRODUCER":              4,
-	"CONSUMER":              5,
+	"SPAN_KIND_INTERNAL":    1,
+	"SPAN_KIND_SERVER":      2,
+	"SPAN_KIND_CLIENT":      3,
+	"SPAN_KIND_PRODUCER":    4,
+	"SPAN_KIND_CONSUMER":    5,
 }
 
 func (x Span_SpanKind) String() string {
@@ -75,71 +75,33 @@ func (x Span_SpanKind) String() string {
 }
 
 func (Span_SpanKind) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{2, 0}
+	return fileDescriptor_5c407ac9c675a601, []int{3, 0}
 }
 
-// StatusCode mirrors the codes defined at
-// https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/api-tracing.md#statuscanonicalcode
+// For the semantics of status codes see
+// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status
 type Status_StatusCode int32
 
 const (
-	Status_Ok                 Status_StatusCode = 0
-	Status_Cancelled          Status_StatusCode = 1
-	Status_UnknownError       Status_StatusCode = 2
-	Status_InvalidArgument    Status_StatusCode = 3
-	Status_DeadlineExceeded   Status_StatusCode = 4
-	Status_NotFound           Status_StatusCode = 5
-	Status_AlreadyExists      Status_StatusCode = 6
-	Status_PermissionDenied   Status_StatusCode = 7
-	Status_ResourceExhausted  Status_StatusCode = 8
-	Status_FailedPrecondition Status_StatusCode = 9
-	Status_Aborted            Status_StatusCode = 10
-	Status_OutOfRange         Status_StatusCode = 11
-	Status_Unimplemented      Status_StatusCode = 12
-	Status_InternalError      Status_StatusCode = 13
-	Status_Unavailable        Status_StatusCode = 14
-	Status_DataLoss           Status_StatusCode = 15
-	Status_Unauthenticated    Status_StatusCode = 16
+	// The default status.
+	Status_STATUS_CODE_UNSET Status_StatusCode = 0
+	// The Span has been validated by an Application developer or Operator to
+	// have completed successfully.
+	Status_STATUS_CODE_OK Status_StatusCode = 1
+	// The Span contains an error.
+	Status_STATUS_CODE_ERROR Status_StatusCode = 2
 )
 
 var Status_StatusCode_name = map[int32]string{
-	0:  "Ok",
-	1:  "Cancelled",
-	2:  "UnknownError",
-	3:  "InvalidArgument",
-	4:  "DeadlineExceeded",
-	5:  "NotFound",
-	6:  "AlreadyExists",
-	7:  "PermissionDenied",
-	8:  "ResourceExhausted",
-	9:  "FailedPrecondition",
-	10: "Aborted",
-	11: "OutOfRange",
-	12: "Unimplemented",
-	13: "InternalError",
-	14: "Unavailable",
-	15: "DataLoss",
-	16: "Unauthenticated",
+	0: "STATUS_CODE_UNSET",
+	1: "STATUS_CODE_OK",
+	2: "STATUS_CODE_ERROR",
 }
 
 var Status_StatusCode_value = map[string]int32{
-	"Ok":                 0,
-	"Cancelled":          1,
-	"UnknownError":       2,
-	"InvalidArgument":    3,
-	"DeadlineExceeded":   4,
-	"NotFound":           5,
-	"AlreadyExists":      6,
-	"PermissionDenied":   7,
-	"ResourceExhausted":  8,
-	"FailedPrecondition": 9,
-	"Aborted":            10,
-	"OutOfRange":         11,
-	"Unimplemented":      12,
-	"InternalError":      13,
-	"Unavailable":        14,
-	"DataLoss":           15,
-	"Unauthenticated":    16,
+	"STATUS_CODE_UNSET": 0,
+	"STATUS_CODE_OK":    1,
+	"STATUS_CODE_ERROR": 2,
 }
 
 func (x Status_StatusCode) String() string {
@@ -147,23 +109,85 @@ func (x Status_StatusCode) String() string {
 }
 
 func (Status_StatusCode) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{3, 0}
+	return fileDescriptor_5c407ac9c675a601, []int{4, 0}
 }
 
-// A collection of InstrumentationLibrarySpans from a Resource.
+// TracesData represents the traces data that can be stored in a persistent storage,
+// OR can be embedded by other protocols that transfer OTLP traces data but do
+// not implement the OTLP protocol.
+//
+// The main difference between this message and collector protocol is that
+// in this message there will not be any "control" or "metadata" specific to
+// OTLP protocol.
+//
+// When new fields are added into this message, the OTLP request MUST be updated
+// as well.
+type TracesData struct {
+	// An array of ResourceSpans.
+	// For data coming from a single resource this array will typically contain
+	// one element. Intermediary nodes that receive data from multiple origins
+	// typically batch the data before forwarding further and in that case this
+	// array will contain multiple elements.
+	ResourceSpans []*ResourceSpans `protobuf:"bytes,1,rep,name=resource_spans,json=resourceSpans,proto3" json:"resource_spans,omitempty"`
+}
+
+func (m *TracesData) Reset()         { *m = TracesData{} }
+func (m *TracesData) String() string { return proto.CompactTextString(m) }
+func (*TracesData) ProtoMessage()    {}
+func (*TracesData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5c407ac9c675a601, []int{0}
+}
+func (m *TracesData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TracesData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TracesData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TracesData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TracesData.Merge(m, src)
+}
+func (m *TracesData) XXX_Size() int {
+	return m.Size()
+}
+func (m *TracesData) XXX_DiscardUnknown() {
+	xxx_messageInfo_TracesData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TracesData proto.InternalMessageInfo
+
+func (m *TracesData) GetResourceSpans() []*ResourceSpans {
+	if m != nil {
+		return m.ResourceSpans
+	}
+	return nil
+}
+
+// A collection of ScopeSpans from a Resource.
 type ResourceSpans struct {
 	// The resource for the spans in this message.
 	// If this field is not set then no resource info is known.
 	Resource *v1.Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
-	// A list of InstrumentationLibrarySpans that originate from a resource.
-	InstrumentationLibrarySpans []*InstrumentationLibrarySpans `protobuf:"bytes,2,rep,name=instrumentation_library_spans,json=instrumentationLibrarySpans,proto3" json:"instrumentation_library_spans,omitempty"`
+	// A list of ScopeSpans that originate from a resource.
+	ScopeSpans []*ScopeSpans `protobuf:"bytes,2,rep,name=scope_spans,json=scopeSpans,proto3" json:"scope_spans,omitempty"`
+	// This schema_url applies to the data in the "resource" field. It does not apply
+	// to the data in the "scope_spans" field which have their own schema_url field.
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 }
 
 func (m *ResourceSpans) Reset()         { *m = ResourceSpans{} }
 func (m *ResourceSpans) String() string { return proto.CompactTextString(m) }
 func (*ResourceSpans) ProtoMessage()    {}
 func (*ResourceSpans) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{0}
+	return fileDescriptor_5c407ac9c675a601, []int{1}
 }
 func (m *ResourceSpans) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -199,34 +223,44 @@ func (m *ResourceSpans) GetResource() *v1.Resource {
 	return nil
 }
 
-func (m *ResourceSpans) GetInstrumentationLibrarySpans() []*InstrumentationLibrarySpans {
+func (m *ResourceSpans) GetScopeSpans() []*ScopeSpans {
 	if m != nil {
-		return m.InstrumentationLibrarySpans
+		return m.ScopeSpans
 	}
 	return nil
 }
 
-// A collection of Spans produced by an InstrumentationLibrary.
-type InstrumentationLibrarySpans struct {
-	// The instrumentation library information for the spans in this message.
-	// If this field is not set then no library info is known.
-	InstrumentationLibrary *v11.InstrumentationLibrary `protobuf:"bytes,1,opt,name=instrumentation_library,json=instrumentationLibrary,proto3" json:"instrumentation_library,omitempty"`
-	// A list of Spans that originate from an instrumentation library.
-	Spans []*Span `protobuf:"bytes,2,rep,name=spans,proto3" json:"spans,omitempty"`
+func (m *ResourceSpans) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
 }
 
-func (m *InstrumentationLibrarySpans) Reset()         { *m = InstrumentationLibrarySpans{} }
-func (m *InstrumentationLibrarySpans) String() string { return proto.CompactTextString(m) }
-func (*InstrumentationLibrarySpans) ProtoMessage()    {}
-func (*InstrumentationLibrarySpans) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{1}
+// A collection of Spans produced by an InstrumentationScope.
+type ScopeSpans struct {
+	// The instrumentation scope information for the spans in this message.
+	// Semantically when InstrumentationScope isn't set, it is equivalent with
+	// an empty instrumentation scope name (unknown).
+	Scope *v11.InstrumentationScope `protobuf:"bytes,1,opt,name=scope,proto3" json:"scope,omitempty"`
+	// A list of Spans that originate from an instrumentation scope.
+	Spans []*Span `protobuf:"bytes,2,rep,name=spans,proto3" json:"spans,omitempty"`
+	// This schema_url applies to all spans and span events in the "spans" field.
+	SchemaUrl string `protobuf:"bytes,3,opt,name=schema_url,json=schemaUrl,proto3" json:"schema_url,omitempty"`
 }
-func (m *InstrumentationLibrarySpans) XXX_Unmarshal(b []byte) error {
+
+func (m *ScopeSpans) Reset()         { *m = ScopeSpans{} }
+func (m *ScopeSpans) String() string { return proto.CompactTextString(m) }
+func (*ScopeSpans) ProtoMessage()    {}
+func (*ScopeSpans) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5c407ac9c675a601, []int{2}
+}
+func (m *ScopeSpans) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *InstrumentationLibrarySpans) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ScopeSpans) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_InstrumentationLibrarySpans.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ScopeSpans.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -236,39 +270,40 @@ func (m *InstrumentationLibrarySpans) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *InstrumentationLibrarySpans) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InstrumentationLibrarySpans.Merge(m, src)
+func (m *ScopeSpans) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ScopeSpans.Merge(m, src)
 }
-func (m *InstrumentationLibrarySpans) XXX_Size() int {
+func (m *ScopeSpans) XXX_Size() int {
 	return m.Size()
 }
-func (m *InstrumentationLibrarySpans) XXX_DiscardUnknown() {
-	xxx_messageInfo_InstrumentationLibrarySpans.DiscardUnknown(m)
+func (m *ScopeSpans) XXX_DiscardUnknown() {
+	xxx_messageInfo_ScopeSpans.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_InstrumentationLibrarySpans proto.InternalMessageInfo
+var xxx_messageInfo_ScopeSpans proto.InternalMessageInfo
 
-func (m *InstrumentationLibrarySpans) GetInstrumentationLibrary() *v11.InstrumentationLibrary {
+func (m *ScopeSpans) GetScope() *v11.InstrumentationScope {
 	if m != nil {
-		return m.InstrumentationLibrary
+		return m.Scope
 	}
 	return nil
 }
 
-func (m *InstrumentationLibrarySpans) GetSpans() []*Span {
+func (m *ScopeSpans) GetSpans() []*Span {
 	if m != nil {
 		return m.Spans
 	}
 	return nil
 }
 
-// Span represents a single operation within a trace. Spans can be
-// nested to form a trace tree. Spans may also be linked to other spans
-// from the same or different trace and form graphs. Often, a trace
-// contains a root span that describes the end-to-end latency, and one
-// or more subspans for its sub-operations. A trace can also contain
-// multiple root spans, or none at all. Spans do not need to be
-// contiguous - there may be gaps or overlaps between spans in a trace.
+func (m *ScopeSpans) GetSchemaUrl() string {
+	if m != nil {
+		return m.SchemaUrl
+	}
+	return ""
+}
+
+// A Span represents a single operation performed by a single component of the system.
 //
 // The next available field id is 17.
 type Span struct {
@@ -305,16 +340,14 @@ type Span struct {
 	// This makes it easier to correlate spans in different traces.
 	//
 	// This field is semantically required to be set to non-empty string.
-	// When null or empty string received - receiver may use string "name"
-	// as a replacement. There might be smarted algorithms implemented by
-	// receiver to fix the empty span name.
+	// Empty value is equivalent to an unknown span name.
 	//
 	// This field is required.
 	Name string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	// Distinguishes between spans generated in a particular context. For example,
 	// two spans with the same name may be distinguished using `CLIENT` (caller)
 	// and `SERVER` (callee) to identify queueing latency associated with the span.
-	Kind Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=opentelemetrygogo.proto.trace.v1.Span_SpanKind" json:"kind,omitempty"`
+	Kind Span_SpanKind `protobuf:"varint,6,opt,name=kind,proto3,enum=opentelemetry.proto.trace.v1.Span_SpanKind" json:"kind,omitempty"`
 	// start_time_unix_nano is the start time of the span. On the client side, this is the time
 	// kept by the local machine where the span execution starts. On the server side, this
 	// is the time when the server's application handler starts running.
@@ -329,15 +362,19 @@ type Span struct {
 	//
 	// This field is semantically required and it is expected that end_time >= start_time.
 	EndTimeUnixNano uint64 `protobuf:"fixed64,8,opt,name=end_time_unix_nano,json=endTimeUnixNano,proto3" json:"end_time_unix_nano,omitempty"`
-	// attributes is a collection of key/value pairs. The value can be a string,
-	// an integer, a double or the Boolean values `true` or `false`. Note, global attributes
+	// attributes is a collection of key/value pairs. Note, global attributes
 	// like server name can be set using the resource API. Examples of attributes:
 	//
 	//     "/http/user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
 	//     "/http/server_latency": 300
 	//     "abc.com/myattribute": true
 	//     "abc.com/score": 10.239
-	Attributes []*v11.AttributeKeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	//
+	// The OpenTelemetry API specification further restricts the allowed value types:
+	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/common/README.md#attribute
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	Attributes []*v11.KeyValue `protobuf:"bytes,9,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of attributes that were discarded. Attributes
 	// can be discarded because their keys are too long or because there are too many
 	// attributes. If this value is 0, then no attributes were dropped.
@@ -353,9 +390,8 @@ type Span struct {
 	// dropped_links_count is the number of dropped links after the maximum size was
 	// enforced. If this value is 0, then no links were dropped.
 	DroppedLinksCount uint32 `protobuf:"varint,14,opt,name=dropped_links_count,json=droppedLinksCount,proto3" json:"dropped_links_count,omitempty"`
-	// An optional final status for this span. Semantically when Status
-	// wasn't set it is means span ended without errors and assume
-	// Status.Ok (code = 0).
+	// An optional final status for this span. Semantically when Status isn't set, it means
+	// span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
 	Status *Status `protobuf:"bytes,15,opt,name=status,proto3" json:"status,omitempty"`
 }
 
@@ -363,7 +399,7 @@ func (m *Span) Reset()         { *m = Span{} }
 func (m *Span) String() string { return proto.CompactTextString(m) }
 func (*Span) ProtoMessage()    {}
 func (*Span) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{2}
+	return fileDescriptor_5c407ac9c675a601, []int{3}
 }
 func (m *Span) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -448,7 +484,7 @@ func (m *Span) GetEndTimeUnixNano() uint64 {
 	return 0
 }
 
-func (m *Span) GetAttributes() []*v11.AttributeKeyValue {
+func (m *Span) GetAttributes() []*v11.KeyValue {
 	if m != nil {
 		return m.Attributes
 	}
@@ -506,7 +542,9 @@ type Span_Event struct {
 	// This field is semantically required to be set to non-empty string.
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the event.
-	Attributes []*v11.AttributeKeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	Attributes []*v11.KeyValue `protobuf:"bytes,3,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,4,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
@@ -516,7 +554,7 @@ func (m *Span_Event) Reset()         { *m = Span_Event{} }
 func (m *Span_Event) String() string { return proto.CompactTextString(m) }
 func (*Span_Event) ProtoMessage()    {}
 func (*Span_Event) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{2, 0}
+	return fileDescriptor_5c407ac9c675a601, []int{3, 0}
 }
 func (m *Span_Event) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -559,7 +597,7 @@ func (m *Span_Event) GetName() string {
 	return ""
 }
 
-func (m *Span_Event) GetAttributes() []*v11.AttributeKeyValue {
+func (m *Span_Event) GetAttributes() []*v11.KeyValue {
 	if m != nil {
 		return m.Attributes
 	}
@@ -586,7 +624,9 @@ type Span_Link struct {
 	// The trace_state associated with the link.
 	TraceState string `protobuf:"bytes,3,opt,name=trace_state,json=traceState,proto3" json:"trace_state,omitempty"`
 	// attributes is a collection of attribute key/value pairs on the link.
-	Attributes []*v11.AttributeKeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
+	// Attribute keys MUST be unique (it is not allowed to have more than one
+	// attribute with the same key).
+	Attributes []*v11.KeyValue `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// dropped_attributes_count is the number of dropped attributes. If the value is 0,
 	// then no attributes were dropped.
 	DroppedAttributesCount uint32 `protobuf:"varint,5,opt,name=dropped_attributes_count,json=droppedAttributesCount,proto3" json:"dropped_attributes_count,omitempty"`
@@ -596,7 +636,7 @@ func (m *Span_Link) Reset()         { *m = Span_Link{} }
 func (m *Span_Link) String() string { return proto.CompactTextString(m) }
 func (*Span_Link) ProtoMessage()    {}
 func (*Span_Link) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{2, 1}
+	return fileDescriptor_5c407ac9c675a601, []int{3, 1}
 }
 func (m *Span_Link) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -646,7 +686,7 @@ func (m *Span_Link) GetTraceState() string {
 	return ""
 }
 
-func (m *Span_Link) GetAttributes() []*v11.AttributeKeyValue {
+func (m *Span_Link) GetAttributes() []*v11.KeyValue {
 	if m != nil {
 		return m.Attributes
 	}
@@ -663,18 +703,17 @@ func (m *Span_Link) GetDroppedAttributesCount() uint32 {
 // The Status type defines a logical error model that is suitable for different
 // programming environments, including REST APIs and RPC APIs.
 type Status struct {
-	// The status code. This is optional field. It is safe to assume 0 (OK)
-	// when not set.
-	Code Status_StatusCode `protobuf:"varint,1,opt,name=code,proto3,enum=opentelemetrygogo.proto.trace.v1.Status_StatusCode" json:"code,omitempty"`
 	// A developer-facing human readable error message.
 	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	// The status code.
+	Code Status_StatusCode `protobuf:"varint,3,opt,name=code,proto3,enum=opentelemetry.proto.trace.v1.Status_StatusCode" json:"code,omitempty"`
 }
 
 func (m *Status) Reset()         { *m = Status{} }
 func (m *Status) String() string { return proto.CompactTextString(m) }
 func (*Status) ProtoMessage()    {}
 func (*Status) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c407ac9c675a601, []int{3}
+	return fileDescriptor_5c407ac9c675a601, []int{4}
 }
 func (m *Status) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -703,13 +742,6 @@ func (m *Status) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Status proto.InternalMessageInfo
 
-func (m *Status) GetCode() Status_StatusCode {
-	if m != nil {
-		return m.Code
-	}
-	return Status_Ok
-}
-
 func (m *Status) GetMessage() string {
 	if m != nil {
 		return m.Message
@@ -717,15 +749,23 @@ func (m *Status) GetMessage() string {
 	return ""
 }
 
+func (m *Status) GetCode() Status_StatusCode {
+	if m != nil {
+		return m.Code
+	}
+	return Status_STATUS_CODE_UNSET
+}
+
 func init() {
-	proto.RegisterEnum("opentelemetrygogo.proto.trace.v1.Span_SpanKind", Span_SpanKind_name, Span_SpanKind_value)
-	proto.RegisterEnum("opentelemetrygogo.proto.trace.v1.Status_StatusCode", Status_StatusCode_name, Status_StatusCode_value)
-	proto.RegisterType((*ResourceSpans)(nil), "opentelemetrygogo.proto.trace.v1.ResourceSpans")
-	proto.RegisterType((*InstrumentationLibrarySpans)(nil), "opentelemetrygogo.proto.trace.v1.InstrumentationLibrarySpans")
-	proto.RegisterType((*Span)(nil), "opentelemetrygogo.proto.trace.v1.Span")
-	proto.RegisterType((*Span_Event)(nil), "opentelemetrygogo.proto.trace.v1.Span.Event")
-	proto.RegisterType((*Span_Link)(nil), "opentelemetrygogo.proto.trace.v1.Span.Link")
-	proto.RegisterType((*Status)(nil), "opentelemetrygogo.proto.trace.v1.Status")
+	proto.RegisterEnum("opentelemetry.proto.trace.v1.Span_SpanKind", Span_SpanKind_name, Span_SpanKind_value)
+	proto.RegisterEnum("opentelemetry.proto.trace.v1.Status_StatusCode", Status_StatusCode_name, Status_StatusCode_value)
+	proto.RegisterType((*TracesData)(nil), "opentelemetry.proto.trace.v1.TracesData")
+	proto.RegisterType((*ResourceSpans)(nil), "opentelemetry.proto.trace.v1.ResourceSpans")
+	proto.RegisterType((*ScopeSpans)(nil), "opentelemetry.proto.trace.v1.ScopeSpans")
+	proto.RegisterType((*Span)(nil), "opentelemetry.proto.trace.v1.Span")
+	proto.RegisterType((*Span_Event)(nil), "opentelemetry.proto.trace.v1.Span.Event")
+	proto.RegisterType((*Span_Link)(nil), "opentelemetry.proto.trace.v1.Span.Link")
+	proto.RegisterType((*Status)(nil), "opentelemetry.proto.trace.v1.Status")
 }
 
 func init() {
@@ -733,74 +773,104 @@ func init() {
 }
 
 var fileDescriptor_5c407ac9c675a601 = []byte{
-	// 1063 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0x4f, 0x6f, 0x1b, 0x45,
-	0x14, 0xcf, 0xfa, 0x7f, 0x9e, 0xff, 0x64, 0x33, 0x4d, 0xd3, 0x6d, 0x2a, 0x8c, 0x65, 0x10, 0xb2,
-	0x28, 0xb5, 0x49, 0xca, 0x01, 0x24, 0x90, 0x70, 0xed, 0x0d, 0xb2, 0x12, 0x1c, 0x6b, 0x1d, 0xf7,
-	0xc0, 0x65, 0x35, 0xf6, 0x0e, 0xce, 0x90, 0xf5, 0x8c, 0x35, 0x3b, 0x6b, 0x9c, 0x23, 0xdf, 0x00,
-	0xbe, 0x01, 0x77, 0x3e, 0x03, 0x77, 0x6e, 0x94, 0x1b, 0x27, 0x84, 0x92, 0x23, 0x5f, 0x02, 0xcd,
-	0xec, 0x6e, 0x9a, 0x54, 0xf9, 0xe3, 0x4b, 0x7b, 0x49, 0x66, 0xde, 0xfb, 0xfd, 0x79, 0x6f, 0xe6,
-	0xad, 0xc6, 0xd0, 0xe0, 0x73, 0xc2, 0x24, 0xf1, 0xc9, 0x8c, 0x48, 0x71, 0xd6, 0x9a, 0x0b, 0x2e,
-	0x79, 0x4b, 0x0a, 0x3c, 0x21, 0xad, 0xc5, 0x6e, 0xb4, 0x68, 0xea, 0x20, 0xaa, 0x5d, 0x43, 0x4e,
-	0xf9, 0x94, 0x47, 0x89, 0x66, 0x04, 0x5a, 0xec, 0xee, 0x7c, 0x7c, 0x93, 0xd6, 0x84, 0xcf, 0x66,
-	0x9c, 0x29, 0xb1, 0x68, 0x15, 0x91, 0x76, 0x9a, 0x37, 0x61, 0x05, 0x09, 0x78, 0x28, 0x22, 0xeb,
-	0x64, 0x1d, 0xe1, 0xeb, 0xff, 0x18, 0x50, 0x76, 0xe2, 0xd0, 0x70, 0x8e, 0x59, 0x80, 0x7a, 0x50,
-	0x48, 0x30, 0x96, 0x51, 0x33, 0x1a, 0xc5, 0xbd, 0x67, 0xcd, 0xdb, 0x4a, 0xbc, 0x14, 0x5b, 0xec,
-	0x36, 0x13, 0x15, 0xe7, 0x92, 0x8e, 0x7e, 0x32, 0xe0, 0x3d, 0xca, 0x02, 0x29, 0xc2, 0x19, 0x61,
-	0x12, 0x4b, 0xca, 0x99, 0xeb, 0xd3, 0xb1, 0xc0, 0xe2, 0xcc, 0x0d, 0x94, 0x99, 0x95, 0xaa, 0xa5,
-	0x1b, 0xc5, 0xbd, 0xaf, 0x9a, 0xf7, 0x9d, 0x41, 0xb3, 0x77, 0x5d, 0xe6, 0x30, 0x52, 0xd1, 0x15,
-	0x3b, 0x4f, 0xe8, 0xed, 0xc9, 0xfa, 0x9f, 0x06, 0x3c, 0xb9, 0x83, 0x8c, 0x04, 0x3c, 0xba, 0xa5,
-	0xc4, 0xb8, 0xfb, 0x2f, 0x6e, 0x2d, 0x2e, 0x3e, 0xf8, 0x5b, 0xab, 0x73, 0xb6, 0x6f, 0x2e, 0x0c,
-	0x7d, 0x09, 0xd9, 0xab, 0xed, 0x7f, 0x74, 0x7f, 0xfb, 0xaa, 0x56, 0x27, 0x22, 0xd5, 0x7f, 0x05,
-	0xc8, 0xa8, 0x3d, 0x7a, 0x0c, 0x05, 0x0d, 0x70, 0xa9, 0xa7, 0x6b, 0x2d, 0x39, 0x79, 0xbd, 0xef,
-	0x79, 0xe8, 0x11, 0xe4, 0x15, 0x58, 0x65, 0x52, 0x3a, 0x93, 0x53, 0xdb, 0x9e, 0x87, 0xde, 0x87,
-	0x62, 0xc4, 0x09, 0x24, 0x96, 0xc4, 0x4a, 0xd7, 0x8c, 0xc6, 0xba, 0x03, 0x3a, 0x34, 0x54, 0x11,
-	0xf4, 0x21, 0x54, 0xe6, 0x58, 0x10, 0x26, 0xdd, 0x44, 0x20, 0xa3, 0x05, 0x4a, 0x51, 0x74, 0x18,
-	0xc9, 0x20, 0xc8, 0x30, 0x3c, 0x23, 0x56, 0x56, 0xf3, 0xf5, 0x1a, 0x75, 0x20, 0x73, 0x4a, 0x99,
-	0x67, 0xe5, 0x6a, 0x46, 0xa3, 0xb2, 0xd7, 0x5a, 0xad, 0x29, 0xfd, 0xe7, 0x80, 0x32, 0xcf, 0xd1,
-	0x64, 0xd4, 0x82, 0xad, 0x40, 0x62, 0x21, 0x5d, 0x49, 0x67, 0xc4, 0x0d, 0x19, 0x5d, 0xba, 0x0c,
-	0x33, 0x6e, 0xe5, 0x6b, 0x46, 0x23, 0xe7, 0x6c, 0xea, 0xdc, 0x31, 0x9d, 0x91, 0x11, 0xa3, 0xcb,
-	0x3e, 0x66, 0x1c, 0x3d, 0x05, 0x44, 0x98, 0xf7, 0x26, 0xbc, 0xa0, 0xe1, 0x1b, 0x84, 0x79, 0xd7,
-	0xc0, 0xc7, 0x00, 0x58, 0x4a, 0x41, 0xc7, 0xa1, 0x24, 0x81, 0xb5, 0xae, 0x4f, 0xff, 0xb3, 0x15,
-	0xee, 0xb7, 0x9d, 0x90, 0x0e, 0xc8, 0xd9, 0x4b, 0xec, 0x87, 0xc4, 0xb9, 0xa2, 0x83, 0x3e, 0x07,
-	0xcb, 0x13, 0x7c, 0x3e, 0x27, 0x9e, 0xfb, 0x3a, 0xea, 0x4e, 0x78, 0xc8, 0xa4, 0x05, 0x35, 0xa3,
-	0x51, 0x76, 0xb6, 0xe3, 0xfc, 0xa5, 0x4e, 0xd0, 0x51, 0x59, 0xd4, 0x85, 0x1c, 0x59, 0x10, 0x26,
-	0x03, 0xab, 0xa8, 0x6b, 0xf9, 0x64, 0xc5, 0x43, 0xb3, 0x15, 0xc9, 0x89, 0xb9, 0xe8, 0x53, 0xd8,
-	0x4a, 0xfc, 0xa3, 0x48, 0xec, 0x5d, 0xd2, 0xde, 0x28, 0xce, 0x69, 0x4e, 0xec, 0xdb, 0x86, 0xac,
-	0x4f, 0xd9, 0x69, 0x60, 0x95, 0xb5, 0xed, 0xd3, 0x15, 0x6d, 0x0f, 0x29, 0x3b, 0x75, 0x22, 0x26,
-	0x6a, 0xc2, 0x83, 0xc4, 0x54, 0x07, 0x62, 0xcf, 0x8a, 0xf6, 0xdc, 0x8c, 0x53, 0x8a, 0x10, 0x5b,
-	0x7e, 0x0d, 0x39, 0x35, 0x72, 0x61, 0x60, 0x6d, 0xe8, 0xcf, 0xaa, 0xb1, 0x82, 0xa7, 0xc6, 0x3b,
-	0x31, 0x6f, 0xe7, 0x2f, 0x03, 0xb2, 0xba, 0x09, 0x35, 0xa3, 0x6f, 0xdc, 0xb7, 0xa1, 0xef, 0xbb,
-	0x24, 0xaf, 0x5e, 0x76, 0x32, 0xa3, 0xa9, 0x2b, 0x33, 0x7a, 0x7d, 0x00, 0xd2, 0xef, 0x60, 0x00,
-	0x32, 0x77, 0x0d, 0xc0, 0xce, 0x7f, 0x06, 0x64, 0xd4, 0x21, 0xbd, 0x9d, 0x6f, 0xf9, 0x7a, 0xb7,
-	0x99, 0x77, 0xd0, 0x6d, 0xf6, 0xae, 0x6e, 0xeb, 0x53, 0x28, 0x24, 0x9f, 0x3b, 0x7a, 0x0c, 0x0f,
-	0x87, 0x83, 0x76, 0xdf, 0x3d, 0xe8, 0xf5, 0xbb, 0xee, 0xa8, 0x3f, 0x1c, 0xd8, 0x9d, 0xde, 0x7e,
-	0xcf, 0xee, 0x9a, 0x6b, 0xa8, 0x04, 0x85, 0x5e, 0xff, 0xd8, 0x76, 0xfa, 0xed, 0x43, 0xd3, 0x40,
-	0x00, 0xb9, 0xa1, 0xed, 0xbc, 0xb4, 0x1d, 0x33, 0xa5, 0xd6, 0x9d, 0xc3, 0x9e, 0xdd, 0x3f, 0x36,
-	0xd3, 0x0a, 0x35, 0x70, 0x8e, 0xba, 0xa3, 0x8e, 0xed, 0x98, 0x19, 0xb5, 0xeb, 0x1c, 0xf5, 0x87,
-	0xa3, 0x6f, 0x6d, 0xc7, 0xcc, 0xd6, 0x7f, 0x4b, 0x43, 0x2e, 0x9a, 0x1e, 0xf4, 0x0d, 0x64, 0x26,
-	0xdc, 0x8b, 0x9e, 0xb2, 0xca, 0xde, 0xf3, 0x55, 0xa7, 0x2e, 0xfe, 0xd7, 0xe1, 0x1e, 0x71, 0xb4,
-	0x00, 0xb2, 0x20, 0x3f, 0x23, 0x41, 0x80, 0xa7, 0xc9, 0x44, 0x25, 0xdb, 0xfa, 0xef, 0x29, 0x80,
-	0xd7, 0x70, 0x94, 0x83, 0xd4, 0xd1, 0xa9, 0xb9, 0x86, 0xca, 0xb0, 0xde, 0xc1, 0x6c, 0x42, 0x7c,
-	0x9f, 0x78, 0xa6, 0x81, 0x4c, 0x28, 0x8d, 0xd8, 0x29, 0xe3, 0x3f, 0x32, 0x5b, 0x08, 0x2e, 0xcc,
-	0x14, 0x7a, 0x00, 0x1b, 0x3d, 0xb6, 0xc0, 0x3e, 0xf5, 0xda, 0x62, 0xaa, 0x5f, 0x09, 0x33, 0x8d,
-	0xb6, 0xc0, 0xec, 0x12, 0xec, 0xf9, 0x94, 0x11, 0x7b, 0x39, 0x21, 0xc4, 0x23, 0x5e, 0xd4, 0x5e,
-	0x9f, 0xcb, 0x7d, 0x1e, 0x32, 0xcf, 0xcc, 0xa2, 0x4d, 0x28, 0xb7, 0x7d, 0x41, 0xb0, 0x77, 0x66,
-	0x2f, 0x69, 0x20, 0x03, 0x33, 0xa7, 0x68, 0x03, 0x22, 0x66, 0x34, 0x08, 0x28, 0x67, 0x5d, 0xc2,
-	0x28, 0xf1, 0xcc, 0x3c, 0x7a, 0x08, 0x9b, 0xc9, 0xb3, 0x6c, 0x2f, 0x4f, 0x70, 0x18, 0x48, 0xe2,
-	0x99, 0x05, 0xb4, 0x0d, 0x68, 0x1f, 0x53, 0x9f, 0x78, 0x03, 0x41, 0x26, 0x9c, 0x79, 0x54, 0x3d,
-	0x4e, 0xe6, 0x3a, 0x2a, 0x42, 0xbe, 0x3d, 0xe6, 0x42, 0x81, 0x00, 0x55, 0x00, 0x8e, 0x42, 0x79,
-	0xf4, 0xbd, 0x83, 0xd9, 0x94, 0x98, 0x45, 0x65, 0x3a, 0x62, 0x74, 0x36, 0x57, 0x47, 0xc7, 0x14,
-	0xa4, 0xa4, 0x42, 0x3d, 0x26, 0x89, 0x60, 0xd8, 0x8f, 0x7a, 0x2a, 0xa3, 0x0d, 0x28, 0x8e, 0x18,
-	0x5e, 0x60, 0xea, 0xe3, 0xb1, 0x4f, 0xcc, 0x8a, 0xaa, 0xbc, 0x8b, 0x25, 0x3e, 0xe4, 0x41, 0x60,
-	0x6e, 0xa8, 0x96, 0x47, 0x0c, 0x87, 0xf2, 0x84, 0x30, 0x49, 0x27, 0x58, 0xc9, 0x98, 0x2f, 0x7e,
-	0x31, 0xfe, 0x38, 0xaf, 0x1a, 0xaf, 0xce, 0xab, 0xc6, 0xbf, 0xe7, 0x55, 0xe3, 0xe7, 0x8b, 0xea,
-	0xda, 0xab, 0x8b, 0xea, 0xda, 0xdf, 0x17, 0xd5, 0x35, 0xf8, 0x80, 0xf2, 0x7b, 0x6f, 0xec, 0x05,
-	0x1c, 0xab, 0xd5, 0x40, 0x05, 0x07, 0xc6, 0x77, 0xdd, 0x29, 0x95, 0x27, 0xe1, 0x58, 0x8d, 0x73,
-	0x4b, 0xd2, 0xa9, 0xc0, 0x8c, 0xe1, 0x1f, 0xb0, 0x38, 0xc3, 0xac, 0x45, 0x96, 0xf3, 0x67, 0x5c,
-	0x12, 0x3f, 0xfa, 0x55, 0x44, 0xd8, 0x84, 0x7b, 0x94, 0x4d, 0x83, 0x16, 0x97, 0xfe, 0xdc, 0x55,
-	0xca, 0x97, 0xbf, 0xd0, 0xc6, 0x39, 0x8d, 0x79, 0xfe, 0x7f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x7c,
-	0x18, 0x43, 0xc3, 0xc8, 0x09, 0x00, 0x00,
+	// 951 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcd, 0x6e, 0xdb, 0x46,
+	0x10, 0xf6, 0xca, 0xd4, 0x8f, 0xc7, 0xb6, 0x42, 0x6f, 0x9d, 0x94, 0x31, 0x52, 0x45, 0x10, 0x02,
+	0x54, 0x6d, 0x50, 0xa9, 0x76, 0x2e, 0x39, 0xb4, 0x68, 0x1d, 0x89, 0x2d, 0x18, 0xbb, 0x92, 0xb1,
+	0x94, 0x7c, 0xe8, 0x85, 0x5d, 0x8b, 0x0b, 0x85, 0xb5, 0xb4, 0x24, 0xc8, 0x95, 0x61, 0xbf, 0x45,
+	0xaf, 0x05, 0xfa, 0x04, 0x45, 0x0f, 0x7d, 0x81, 0xde, 0x7a, 0xc8, 0x31, 0xc7, 0x9e, 0x8a, 0xc2,
+	0xbe, 0xb4, 0x6f, 0x51, 0xec, 0x2e, 0xa9, 0x1f, 0xc3, 0x90, 0x72, 0xf1, 0xc5, 0x5e, 0x7e, 0x33,
+	0xdf, 0xf7, 0xcd, 0xec, 0x0c, 0x21, 0x42, 0x3d, 0x8c, 0x18, 0x17, 0x6c, 0xc4, 0xc6, 0x4c, 0xc4,
+	0x57, 0xcd, 0x28, 0x0e, 0x45, 0xd8, 0x14, 0x31, 0x1d, 0xb0, 0xe6, 0xc5, 0xbe, 0x3e, 0x34, 0x14,
+	0x88, 0x9f, 0x2c, 0x64, 0x6a, 0xb0, 0xa1, 0x13, 0x2e, 0xf6, 0xf7, 0x3e, 0xbd, 0x4b, 0x67, 0x10,
+	0x8e, 0xc7, 0x21, 0x97, 0x42, 0xfa, 0xa4, 0x49, 0x7b, 0x8d, 0xbb, 0x72, 0x63, 0x96, 0x84, 0x93,
+	0x58, 0xdb, 0x66, 0x67, 0x9d, 0x5f, 0xfb, 0x01, 0xa0, 0x27, 0x7d, 0x92, 0x36, 0x15, 0x14, 0x13,
+	0x28, 0x67, 0x71, 0x2f, 0x89, 0x28, 0x4f, 0x2c, 0x54, 0x5d, 0xaf, 0x6f, 0x1e, 0x3c, 0x6f, 0x2c,
+	0x2b, 0xb0, 0x41, 0x52, 0x8e, 0x2b, 0x29, 0x64, 0x3b, 0x9e, 0x7f, 0xac, 0xbd, 0x45, 0xb0, 0xbd,
+	0x90, 0x80, 0x6d, 0x28, 0x65, 0x29, 0x16, 0xaa, 0xa2, 0xfa, 0xe6, 0xc1, 0x27, 0x77, 0xea, 0x4f,
+	0x4b, 0x9d, 0xb3, 0x20, 0x53, 0x2a, 0x76, 0x60, 0x33, 0x19, 0x84, 0x51, 0x56, 0x69, 0x4e, 0x55,
+	0x5a, 0x5f, 0x5e, 0xa9, 0x2b, 0x09, 0xba, 0x4c, 0x48, 0xa6, 0x67, 0xfc, 0x11, 0x40, 0x32, 0x78,
+	0xc3, 0xc6, 0xd4, 0x9b, 0xc4, 0x23, 0x6b, 0xbd, 0x8a, 0xea, 0x1b, 0x64, 0x43, 0x23, 0xfd, 0x78,
+	0xf4, 0xba, 0x50, 0xfa, 0xb7, 0x68, 0xfe, 0x57, 0xac, 0xfd, 0x8e, 0x00, 0x66, 0x0a, 0xd8, 0x81,
+	0xbc, 0xd2, 0x48, 0x9b, 0x78, 0x71, 0xa7, 0x75, 0x3a, 0x9d, 0x8b, 0xfd, 0x86, 0xc3, 0x13, 0x11,
+	0x4f, 0xc6, 0x8c, 0x0b, 0x2a, 0x82, 0x90, 0x2b, 0x21, 0xa2, 0x15, 0xf0, 0x4b, 0xc8, 0xcf, 0x77,
+	0x51, 0x5b, 0xd1, 0x45, 0x44, 0x39, 0xd1, 0x84, 0x15, 0xa5, 0xd7, 0x7e, 0x01, 0x30, 0x64, 0x3a,
+	0x7e, 0x0c, 0x25, 0xc5, 0xf7, 0x02, 0x5f, 0xd5, 0xbb, 0x45, 0x8a, 0xea, 0xd9, 0xf1, 0xf1, 0x87,
+	0x50, 0x94, 0x5a, 0x32, 0x92, 0x53, 0x91, 0x82, 0x7c, 0x74, 0x7c, 0xfc, 0x14, 0x36, 0x35, 0x27,
+	0x11, 0x54, 0xb0, 0x54, 0x1c, 0x14, 0xe4, 0x4a, 0x04, 0x3f, 0x83, 0x72, 0x44, 0x63, 0xc6, 0x85,
+	0x97, 0x09, 0x18, 0x4a, 0x60, 0x4b, 0xa3, 0xae, 0x96, 0xc1, 0x60, 0x70, 0x3a, 0x66, 0x56, 0x5e,
+	0xf1, 0xd5, 0x19, 0x7f, 0x05, 0xc6, 0x79, 0xc0, 0x7d, 0xab, 0x50, 0x45, 0xf5, 0xf2, 0xaa, 0xfd,
+	0x92, 0x3a, 0xea, 0xcf, 0x51, 0xc0, 0x7d, 0xa2, 0x88, 0xb8, 0x09, 0xbb, 0x89, 0xa0, 0xb1, 0xf0,
+	0x44, 0x30, 0x66, 0xde, 0x84, 0x07, 0x97, 0x1e, 0xa7, 0x3c, 0xb4, 0x8a, 0x55, 0x54, 0x2f, 0x90,
+	0x1d, 0x15, 0xeb, 0x05, 0x63, 0xd6, 0xe7, 0xc1, 0x65, 0x87, 0xf2, 0x10, 0x3f, 0x07, 0xcc, 0xb8,
+	0x7f, 0x3b, 0xbd, 0xa4, 0xd2, 0x1f, 0x30, 0xee, 0x2f, 0x24, 0x7f, 0x0b, 0x40, 0x85, 0x88, 0x83,
+	0xb3, 0x89, 0x60, 0x89, 0xb5, 0xa1, 0x86, 0xf2, 0xf1, 0x8a, 0xf9, 0x1e, 0xb1, 0xab, 0x53, 0x3a,
+	0x9a, 0x30, 0x32, 0x47, 0xc5, 0x2f, 0xc1, 0xf2, 0xe3, 0x30, 0x8a, 0x98, 0xef, 0xcd, 0x50, 0x6f,
+	0x10, 0x4e, 0xb8, 0xb0, 0xa0, 0x8a, 0xea, 0xdb, 0xe4, 0x51, 0x1a, 0x3f, 0x9c, 0x86, 0x5b, 0x32,
+	0x8a, 0xbf, 0x86, 0x02, 0xbb, 0x60, 0x5c, 0x24, 0xd6, 0xe6, 0x7b, 0x6d, 0xb6, 0xbc, 0x23, 0x5b,
+	0x12, 0x48, 0xca, 0xc3, 0x9f, 0xc3, 0x6e, 0xe6, 0xad, 0x91, 0xd4, 0x77, 0x4b, 0xf9, 0xe2, 0x34,
+	0xa6, 0x38, 0xa9, 0xe7, 0x97, 0x90, 0x1f, 0x05, 0xfc, 0x3c, 0xb1, 0xb6, 0x97, 0x74, 0xbc, 0x68,
+	0x79, 0x1c, 0xf0, 0x73, 0xa2, 0x59, 0xb8, 0x01, 0x1f, 0x64, 0x86, 0x0a, 0x48, 0xfd, 0xca, 0xca,
+	0x6f, 0x27, 0x0d, 0x49, 0x42, 0x6a, 0xf7, 0x05, 0x14, 0xe4, 0x66, 0x4d, 0x12, 0xeb, 0x81, 0x7a,
+	0x83, 0x9e, 0xad, 0xf0, 0x53, 0xb9, 0x24, 0xe5, 0xec, 0xfd, 0x89, 0x20, 0xaf, 0x8a, 0x97, 0x6b,
+	0x78, 0x6b, 0xac, 0x48, 0x8d, 0x75, 0x4b, 0xcc, 0xcf, 0x34, 0x5b, 0xc3, 0xdc, 0xdc, 0x1a, 0x2e,
+	0xce, 0x79, 0xfd, 0x7e, 0xe6, 0x6c, 0x2c, 0x9b, 0xf3, 0xde, 0xdf, 0x08, 0x0c, 0x79, 0x27, 0xf7,
+	0xf3, 0x86, 0x2e, 0x36, 0x68, 0xdc, 0x4f, 0x83, 0xf9, 0x65, 0x0d, 0xd6, 0x7e, 0x46, 0x50, 0xca,
+	0x5e, 0x5e, 0xfc, 0x18, 0x1e, 0xba, 0x27, 0x87, 0x1d, 0xef, 0xc8, 0xe9, 0xb4, 0xbd, 0x7e, 0xc7,
+	0x3d, 0xb1, 0x5b, 0xce, 0x37, 0x8e, 0xdd, 0x36, 0xd7, 0xf0, 0x23, 0xc0, 0xb3, 0x90, 0xd3, 0xe9,
+	0xd9, 0xa4, 0x73, 0x78, 0x6c, 0x22, 0xbc, 0x0b, 0xe6, 0x0c, 0x77, 0x6d, 0x72, 0x6a, 0x13, 0x33,
+	0xb7, 0x88, 0xb6, 0x8e, 0x1d, 0xbb, 0xd3, 0x33, 0xd7, 0x17, 0x35, 0x4e, 0x48, 0xb7, 0xdd, 0x6f,
+	0xd9, 0xc4, 0x34, 0x16, 0xf1, 0x56, 0xb7, 0xe3, 0xf6, 0xbf, 0xb3, 0x89, 0x99, 0xaf, 0xfd, 0x81,
+	0xa0, 0xa0, 0xd7, 0x0a, 0x5b, 0x50, 0x1c, 0xb3, 0x24, 0xa1, 0xc3, 0x6c, 0x43, 0xb2, 0x47, 0xdc,
+	0x02, 0x63, 0x10, 0xfa, 0xfa, 0x76, 0xcb, 0x07, 0xcd, 0xf7, 0x59, 0xd2, 0xf4, 0x5f, 0x2b, 0xf4,
+	0x19, 0x51, 0xe4, 0x5a, 0x07, 0x60, 0x86, 0xe1, 0x87, 0xb0, 0xe3, 0xf6, 0x0e, 0x7b, 0x7d, 0xd7,
+	0x6b, 0x75, 0xdb, 0xb6, 0xbc, 0x08, 0xbb, 0x67, 0xae, 0x61, 0x0c, 0xe5, 0x79, 0xb8, 0x7b, 0x64,
+	0xa2, 0xdb, 0xa9, 0x36, 0x21, 0x5d, 0x62, 0xe6, 0x5e, 0x1b, 0x25, 0x64, 0xe6, 0x5e, 0xfd, 0x86,
+	0xde, 0x5e, 0x57, 0xd0, 0xbb, 0xeb, 0x0a, 0xfa, 0xe7, 0xba, 0x82, 0x7e, 0xba, 0xa9, 0xac, 0xbd,
+	0xbb, 0xa9, 0xac, 0xfd, 0x75, 0x53, 0x59, 0x83, 0xa7, 0x41, 0xb8, 0xb4, 0xd2, 0x57, 0xfa, 0x87,
+	0xff, 0x44, 0x82, 0x27, 0xe8, 0xfb, 0xf6, 0x30, 0x10, 0x6f, 0x26, 0x67, 0x72, 0x0d, 0x9a, 0x22,
+	0x18, 0xc6, 0x94, 0x73, 0xfa, 0x23, 0x8d, 0xaf, 0x28, 0x6f, 0xb2, 0xcb, 0xe8, 0xb3, 0x50, 0xb0,
+	0x91, 0xfe, 0x98, 0x60, 0x7c, 0x10, 0xfa, 0x01, 0x1f, 0x26, 0xcd, 0x50, 0x8c, 0x22, 0x6f, 0x18,
+	0x0e, 0x67, 0x1f, 0x35, 0xbf, 0xe6, 0x9e, 0x74, 0x23, 0xc6, 0x7b, 0x53, 0x4b, 0xa5, 0xde, 0x50,
+	0x46, 0x8d, 0xd3, 0xfd, 0xb3, 0x82, 0x92, 0x78, 0xf1, 0x7f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x01,
+	0xf7, 0x56, 0xea, 0x1a, 0x09, 0x00, 0x00,
+}
+
+func (m *TracesData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TracesData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TracesData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ResourceSpans) > 0 {
+		for iNdEx := len(m.ResourceSpans) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.ResourceSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTrace(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ResourceSpans) Marshal() (dAtA []byte, err error) {
@@ -823,10 +893,17 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.InstrumentationLibrarySpans) > 0 {
-		for iNdEx := len(m.InstrumentationLibrarySpans) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.SchemaUrl) > 0 {
+		i -= len(m.SchemaUrl)
+		copy(dAtA[i:], m.SchemaUrl)
+		i = encodeVarintTrace(dAtA, i, uint64(len(m.SchemaUrl)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ScopeSpans) > 0 {
+		for iNdEx := len(m.ScopeSpans) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.InstrumentationLibrarySpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.ScopeSpans[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -852,7 +929,7 @@ func (m *ResourceSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *InstrumentationLibrarySpans) Marshal() (dAtA []byte, err error) {
+func (m *ScopeSpans) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -862,16 +939,23 @@ func (m *InstrumentationLibrarySpans) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *InstrumentationLibrarySpans) MarshalTo(dAtA []byte) (int, error) {
+func (m *ScopeSpans) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *InstrumentationLibrarySpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ScopeSpans) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if len(m.SchemaUrl) > 0 {
+		i -= len(m.SchemaUrl)
+		copy(dAtA[i:], m.SchemaUrl)
+		i = encodeVarintTrace(dAtA, i, uint64(len(m.SchemaUrl)))
+		i--
+		dAtA[i] = 0x1a
+	}
 	if len(m.Spans) > 0 {
 		for iNdEx := len(m.Spans) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -886,9 +970,9 @@ func (m *InstrumentationLibrarySpans) MarshalToSizedBuffer(dAtA []byte) (int, er
 			dAtA[i] = 0x12
 		}
 	}
-	if m.InstrumentationLibrary != nil {
+	if m.Scope != nil {
 		{
-			size, err := m.InstrumentationLibrary.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.Scope.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1183,17 +1267,17 @@ func (m *Status) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.Code != 0 {
+		i = encodeVarintTrace(dAtA, i, uint64(m.Code))
+		i--
+		dAtA[i] = 0x18
+	}
 	if len(m.Message) > 0 {
 		i -= len(m.Message)
 		copy(dAtA[i:], m.Message)
 		i = encodeVarintTrace(dAtA, i, uint64(len(m.Message)))
 		i--
 		dAtA[i] = 0x12
-	}
-	if m.Code != 0 {
-		i = encodeVarintTrace(dAtA, i, uint64(m.Code))
-		i--
-		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -1209,6 +1293,21 @@ func encodeVarintTrace(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *TracesData) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.ResourceSpans) > 0 {
+		for _, e := range m.ResourceSpans {
+			l = e.Size()
+			n += 1 + l + sovTrace(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *ResourceSpans) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1219,23 +1318,27 @@ func (m *ResourceSpans) Size() (n int) {
 		l = m.Resource.Size()
 		n += 1 + l + sovTrace(uint64(l))
 	}
-	if len(m.InstrumentationLibrarySpans) > 0 {
-		for _, e := range m.InstrumentationLibrarySpans {
+	if len(m.ScopeSpans) > 0 {
+		for _, e := range m.ScopeSpans {
 			l = e.Size()
 			n += 1 + l + sovTrace(uint64(l))
 		}
 	}
+	l = len(m.SchemaUrl)
+	if l > 0 {
+		n += 1 + l + sovTrace(uint64(l))
+	}
 	return n
 }
 
-func (m *InstrumentationLibrarySpans) Size() (n int) {
+func (m *ScopeSpans) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.InstrumentationLibrary != nil {
-		l = m.InstrumentationLibrary.Size()
+	if m.Scope != nil {
+		l = m.Scope.Size()
 		n += 1 + l + sovTrace(uint64(l))
 	}
 	if len(m.Spans) > 0 {
@@ -1243,6 +1346,10 @@ func (m *InstrumentationLibrarySpans) Size() (n int) {
 			l = e.Size()
 			n += 1 + l + sovTrace(uint64(l))
 		}
+	}
+	l = len(m.SchemaUrl)
+	if l > 0 {
+		n += 1 + l + sovTrace(uint64(l))
 	}
 	return n
 }
@@ -1377,12 +1484,12 @@ func (m *Status) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.Code != 0 {
-		n += 1 + sovTrace(uint64(m.Code))
-	}
 	l = len(m.Message)
 	if l > 0 {
 		n += 1 + l + sovTrace(uint64(l))
+	}
+	if m.Code != 0 {
+		n += 1 + sovTrace(uint64(m.Code))
 	}
 	return n
 }
@@ -1392,6 +1499,90 @@ func sovTrace(x uint64) (n int) {
 }
 func sozTrace(x uint64) (n int) {
 	return sovTrace(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *TracesData) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTrace
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TracesData: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TracesData: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ResourceSpans", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTrace
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTrace
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTrace
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ResourceSpans = append(m.ResourceSpans, &ResourceSpans{})
+			if err := m.ResourceSpans[len(m.ResourceSpans)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTrace(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTrace
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1460,7 +1651,7 @@ func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstrumentationLibrarySpans", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ScopeSpans", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1487,10 +1678,42 @@ func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.InstrumentationLibrarySpans = append(m.InstrumentationLibrarySpans, &InstrumentationLibrarySpans{})
-			if err := m.InstrumentationLibrarySpans[len(m.InstrumentationLibrarySpans)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.ScopeSpans = append(m.ScopeSpans, &ScopeSpans{})
+			if err := m.ScopeSpans[len(m.ScopeSpans)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SchemaUrl", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTrace
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTrace
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTrace
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1498,10 +1721,7 @@ func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {
@@ -1516,7 +1736,7 @@ func (m *ResourceSpans) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *InstrumentationLibrarySpans) Unmarshal(dAtA []byte) error {
+func (m *ScopeSpans) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1539,15 +1759,15 @@ func (m *InstrumentationLibrarySpans) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: InstrumentationLibrarySpans: wiretype end group for non-group")
+			return fmt.Errorf("proto: ScopeSpans: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: InstrumentationLibrarySpans: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ScopeSpans: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field InstrumentationLibrary", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Scope", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1574,10 +1794,10 @@ func (m *InstrumentationLibrarySpans) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.InstrumentationLibrary == nil {
-				m.InstrumentationLibrary = &v11.InstrumentationLibrary{}
+			if m.Scope == nil {
+				m.Scope = &v11.InstrumentationScope{}
 			}
-			if err := m.InstrumentationLibrary.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Scope.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1615,16 +1835,45 @@ func (m *InstrumentationLibrarySpans) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SchemaUrl", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTrace
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTrace
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTrace
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SchemaUrl = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTrace(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {
@@ -1902,7 +2151,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Attributes = append(m.Attributes, &v11.AttributeKeyValue{})
+			m.Attributes = append(m.Attributes, &v11.KeyValue{})
 			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2074,10 +2323,7 @@ func (m *Span) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {
@@ -2192,7 +2438,7 @@ func (m *Span_Event) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Attributes = append(m.Attributes, &v11.AttributeKeyValue{})
+			m.Attributes = append(m.Attributes, &v11.KeyValue{})
 			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2222,10 +2468,7 @@ func (m *Span_Event) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {
@@ -2398,7 +2641,7 @@ func (m *Span_Link) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Attributes = append(m.Attributes, &v11.AttributeKeyValue{})
+			m.Attributes = append(m.Attributes, &v11.KeyValue{})
 			if err := m.Attributes[len(m.Attributes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -2428,10 +2671,7 @@ func (m *Span_Link) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {
@@ -2475,25 +2715,6 @@ func (m *Status) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Status: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Code", wireType)
-			}
-			m.Code = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTrace
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Code |= Status_StatusCode(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
@@ -2526,16 +2747,32 @@ func (m *Status) Unmarshal(dAtA []byte) error {
 			}
 			m.Message = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Code", wireType)
+			}
+			m.Code = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTrace
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Code |= Status_StatusCode(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTrace(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTrace
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTrace
 			}
 			if (iNdEx + skippy) > l {

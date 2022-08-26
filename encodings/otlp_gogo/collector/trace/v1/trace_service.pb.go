@@ -77,6 +77,22 @@ func (m *ExportTraceServiceRequest) GetResourceSpans() []*v1.ResourceSpans {
 }
 
 type ExportTraceServiceResponse struct {
+	// The details of a partially successful export request.
+	//
+	// If the request is only partially accepted
+	// (i.e. when the server accepts only parts of the data and rejects the rest)
+	// the server MUST initialize the `partial_success` field and MUST
+	// set the `rejected_<signal>` with the number of items it rejected.
+	//
+	// Servers MAY also make use of the `partial_success` field to convey
+	// warnings/suggestions to senders even when the request was fully accepted.
+	// In such cases, the `rejected_<signal>` MUST have a value of `0` and
+	// the `error_message` MUST be non-empty.
+	//
+	// A `partial_success` message with an empty value (rejected_<signal> = 0 and
+	// `error_message` = "") is equivalent to it not being set/present. Senders
+	// SHOULD interpret it the same way as in the full success case.
+	PartialSuccess *ExportTracePartialSuccess `protobuf:"bytes,1,opt,name=partial_success,json=partialSuccess,proto3" json:"partial_success,omitempty"`
 }
 
 func (m *ExportTraceServiceResponse) Reset()         { *m = ExportTraceServiceResponse{} }
@@ -112,9 +128,80 @@ func (m *ExportTraceServiceResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ExportTraceServiceResponse proto.InternalMessageInfo
 
+func (m *ExportTraceServiceResponse) GetPartialSuccess() *ExportTracePartialSuccess {
+	if m != nil {
+		return m.PartialSuccess
+	}
+	return nil
+}
+
+type ExportTracePartialSuccess struct {
+	// The number of rejected spans.
+	//
+	// A `rejected_<signal>` field holding a `0` value indicates that the
+	// request was fully accepted.
+	RejectedSpans int64 `protobuf:"varint,1,opt,name=rejected_spans,json=rejectedSpans,proto3" json:"rejected_spans,omitempty"`
+	// A developer-facing human-readable message in English. It should be used
+	// either to explain why the server rejected parts of the data during a partial
+	// success or to convey warnings/suggestions during a full success. The message
+	// should offer guidance on how users can address such issues.
+	//
+	// error_message is an optional field. An error_message with an empty value
+	// is equivalent to it not being set.
+	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+}
+
+func (m *ExportTracePartialSuccess) Reset()         { *m = ExportTracePartialSuccess{} }
+func (m *ExportTracePartialSuccess) String() string { return proto.CompactTextString(m) }
+func (*ExportTracePartialSuccess) ProtoMessage()    {}
+func (*ExportTracePartialSuccess) Descriptor() ([]byte, []int) {
+	return fileDescriptor_192a962890318cf4, []int{2}
+}
+func (m *ExportTracePartialSuccess) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ExportTracePartialSuccess) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ExportTracePartialSuccess.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ExportTracePartialSuccess) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExportTracePartialSuccess.Merge(m, src)
+}
+func (m *ExportTracePartialSuccess) XXX_Size() int {
+	return m.Size()
+}
+func (m *ExportTracePartialSuccess) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExportTracePartialSuccess.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExportTracePartialSuccess proto.InternalMessageInfo
+
+func (m *ExportTracePartialSuccess) GetRejectedSpans() int64 {
+	if m != nil {
+		return m.RejectedSpans
+	}
+	return 0
+}
+
+func (m *ExportTracePartialSuccess) GetErrorMessage() string {
+	if m != nil {
+		return m.ErrorMessage
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*ExportTraceServiceRequest)(nil), "opentelemetrygogo.proto.collector.trace.v1.ExportTraceServiceRequest")
-	proto.RegisterType((*ExportTraceServiceResponse)(nil), "opentelemetrygogo.proto.collector.trace.v1.ExportTraceServiceResponse")
+	proto.RegisterType((*ExportTraceServiceRequest)(nil), "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
+	proto.RegisterType((*ExportTraceServiceResponse)(nil), "opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse")
+	proto.RegisterType((*ExportTracePartialSuccess)(nil), "opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess")
 }
 
 func init() {
@@ -122,27 +209,34 @@ func init() {
 }
 
 var fileDescriptor_192a962890318cf4 = []byte{
-	// 316 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x92, 0xcf, 0x4a, 0x03, 0x31,
-	0x10, 0xc6, 0x37, 0x08, 0x3d, 0xc4, 0x3f, 0xe0, 0x9e, 0xb4, 0x48, 0x90, 0x9e, 0x8a, 0xd0, 0x84,
-	0xd6, 0x9b, 0xc7, 0x42, 0x3d, 0x4a, 0x69, 0xc5, 0x83, 0x97, 0x92, 0xc6, 0x61, 0x5d, 0xd9, 0x66,
-	0x62, 0x92, 0x96, 0xf6, 0x2d, 0xbc, 0xfa, 0x0a, 0xe2, 0x83, 0x78, 0xec, 0xd1, 0xa3, 0xb4, 0x2f,
-	0x22, 0xbb, 0x51, 0xd9, 0xc2, 0x16, 0x14, 0x6f, 0x49, 0xe6, 0xfb, 0xe6, 0xf7, 0x25, 0x19, 0x7a,
-	0x81, 0x06, 0xb4, 0x87, 0x0c, 0x26, 0xe0, 0xed, 0x42, 0x18, 0x8b, 0x1e, 0x85, 0xc2, 0x2c, 0x03,
-	0xe5, 0xd1, 0x0a, 0x6f, 0xa5, 0x02, 0x31, 0x6b, 0x87, 0xc5, 0xc8, 0x81, 0x9d, 0xa5, 0x0a, 0x78,
-	0x21, 0x8b, 0xcf, 0x36, 0xbc, 0x09, 0x26, 0x18, 0x0a, 0xfc, 0xc7, 0xcf, 0x0b, 0x1b, 0x9f, 0xb5,
-	0xeb, 0xcd, 0x2a, 0xce, 0x66, 0xf7, 0x60, 0x6e, 0x38, 0x7a, 0xdc, 0x9b, 0x1b, 0xb4, 0xfe, 0x3a,
-	0x3f, 0x1c, 0x06, 0xe2, 0x00, 0x1e, 0xa7, 0xe0, 0x7c, 0x7c, 0x43, 0x0f, 0x2c, 0x38, 0x9c, 0xda,
-	0x3c, 0x8c, 0x91, 0xda, 0x1d, 0x91, 0xd3, 0x9d, 0xe6, 0x6e, 0x47, 0xf0, 0x6d, 0x59, 0xbe, 0x13,
-	0xf0, 0xc1, 0x97, 0x6f, 0x98, 0xdb, 0x06, 0xfb, 0xb6, 0xbc, 0x6d, 0x9c, 0xd0, 0x7a, 0x15, 0xd4,
-	0x19, 0xd4, 0x0e, 0x3a, 0x2f, 0x84, 0xee, 0x95, 0x0b, 0xf1, 0x33, 0xa1, 0xb5, 0xa0, 0x8f, 0x7b,
-	0xfc, 0xf7, 0xaf, 0xc0, 0xb7, 0x5e, 0xac, 0x7e, 0xf9, 0xdf, 0x36, 0x21, 0x6a, 0x23, 0xea, 0xbe,
-	0x92, 0xb7, 0x15, 0x23, 0xcb, 0x15, 0x23, 0x1f, 0x2b, 0x46, 0x9e, 0xd6, 0x2c, 0x5a, 0xae, 0x59,
-	0xf4, 0xbe, 0x66, 0x11, 0x6d, 0xa5, 0xf8, 0x07, 0x4c, 0xf7, 0xb0, 0x4c, 0xe8, 0xe7, 0xaa, 0x3e,
-	0xb9, 0xbd, 0x4a, 0x52, 0x7f, 0x3f, 0x1d, 0x73, 0x85, 0x13, 0xe1, 0xd3, 0xc4, 0x4a, 0xad, 0xe5,
-	0x83, 0xb4, 0x0b, 0xa9, 0x05, 0xcc, 0x4d, 0x0b, 0x3d, 0x64, 0xe1, 0x73, 0x41, 0x2b, 0xbc, 0x4b,
-	0x75, 0xe2, 0x04, 0xfa, 0xcc, 0x8c, 0x72, 0x54, 0xc5, 0x60, 0x8d, 0x6b, 0x85, 0xfa, 0xfc, 0x33,
-	0x00, 0x00, 0xff, 0xff, 0x62, 0x77, 0x48, 0xb4, 0x89, 0x02, 0x00, 0x00,
+	// 417 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0xbf, 0x8e, 0xd3, 0x30,
+	0x18, 0x8f, 0xef, 0xa4, 0x93, 0xf0, 0xfd, 0x41, 0x64, 0x3a, 0x3a, 0x44, 0xa7, 0x20, 0x4e, 0x41,
+	0x08, 0x47, 0x2d, 0x1b, 0x1b, 0x45, 0x8c, 0x40, 0x95, 0x56, 0x0c, 0x2c, 0x91, 0xeb, 0x7e, 0x0a,
+	0xa9, 0x52, 0x7f, 0xc6, 0x76, 0xaa, 0xf6, 0x0d, 0x18, 0xe1, 0x15, 0x18, 0x79, 0x12, 0xc6, 0xb2,
+	0x31, 0xa2, 0xf6, 0x45, 0x50, 0x62, 0x88, 0x12, 0x29, 0x43, 0xc5, 0x6d, 0xf9, 0x7e, 0xfa, 0x7e,
+	0xff, 0x62, 0x9b, 0xbe, 0x40, 0x05, 0xd2, 0x42, 0x01, 0x2b, 0xb0, 0x7a, 0x1b, 0x2b, 0x8d, 0x16,
+	0x63, 0x81, 0x45, 0x01, 0xc2, 0xa2, 0x8e, 0xad, 0xe6, 0x02, 0xe2, 0xf5, 0xd0, 0x7d, 0xa4, 0x06,
+	0xf4, 0x3a, 0x17, 0xc0, 0xea, 0x35, 0xff, 0xb6, 0xc3, 0x75, 0x20, 0x6b, 0xb8, 0xac, 0xa6, 0xb0,
+	0xf5, 0x70, 0x10, 0xf5, 0x79, 0x74, 0x95, 0x1d, 0x39, 0x44, 0xfa, 0xf0, 0xf5, 0x46, 0xa1, 0xb6,
+	0xb3, 0x0a, 0x9c, 0x3a, 0xb7, 0x04, 0x3e, 0x95, 0x60, 0xac, 0x9f, 0xd0, 0x2b, 0x0d, 0x06, 0x4b,
+	0x5d, 0x05, 0x51, 0x5c, 0x9a, 0x6b, 0x72, 0x73, 0x1a, 0x9d, 0x8f, 0x9e, 0xb2, 0xbe, 0x1c, 0xff,
+	0xdc, 0x59, 0xf2, 0x97, 0x33, 0xad, 0x28, 0xc9, 0xa5, 0x6e, 0x8f, 0xe1, 0x67, 0x42, 0x07, 0x7d,
+	0x8e, 0x46, 0xa1, 0x34, 0xe0, 0x2f, 0xe9, 0x7d, 0xc5, 0xb5, 0xcd, 0x79, 0x91, 0x9a, 0x52, 0x08,
+	0x30, 0x95, 0x27, 0x89, 0xce, 0x47, 0x2f, 0xd9, 0x71, 0xdd, 0x59, 0x4b, 0x7c, 0xe2, 0x94, 0xa6,
+	0x4e, 0x28, 0xb9, 0x52, 0x9d, 0x39, 0xcc, 0x3a, 0xdd, 0xbb, 0xcb, 0xfe, 0xe3, 0xaa, 0xfb, 0x12,
+	0x84, 0x85, 0x45, 0xd3, 0x9d, 0x44, 0xa7, 0x55, 0x1d, 0x87, 0xd6, 0x75, 0xfc, 0x47, 0xf4, 0x12,
+	0xb4, 0x46, 0x9d, 0xae, 0xc0, 0x18, 0x9e, 0xc1, 0xf5, 0xc9, 0x0d, 0x89, 0xee, 0x25, 0x17, 0x35,
+	0xf8, 0xc6, 0x61, 0xa3, 0x6f, 0x84, 0x5e, 0xb4, 0xdb, 0xfa, 0x5f, 0x09, 0x3d, 0x73, 0xd6, 0xfe,
+	0xff, 0xf4, 0xea, 0x1e, 0xd3, 0x60, 0x7c, 0x17, 0x09, 0xf7, 0xdf, 0x43, 0x6f, 0xfc, 0x93, 0xfc,
+	0xd8, 0x07, 0x64, 0xb7, 0x0f, 0xc8, 0xef, 0x7d, 0x40, 0xbe, 0x1c, 0x02, 0x6f, 0x77, 0x08, 0xbc,
+	0x5f, 0x87, 0xc0, 0xa3, 0x4f, 0x72, 0x3c, 0xd2, 0x62, 0xfc, 0xa0, 0xad, 0x3e, 0xa9, 0xb6, 0x26,
+	0xe4, 0xc3, 0xdb, 0x2c, 0xb7, 0x1f, 0xcb, 0x39, 0x13, 0xb8, 0x8a, 0x6d, 0x9e, 0x69, 0x2e, 0x25,
+	0x5f, 0x72, 0xbd, 0xe5, 0x32, 0x86, 0x8d, 0x7a, 0x86, 0x16, 0x0a, 0x77, 0x45, 0x41, 0x0a, 0x5c,
+	0xe4, 0x32, 0x33, 0x31, 0xda, 0x42, 0xa5, 0x19, 0x66, 0x7d, 0x4f, 0xe3, 0xfb, 0xc9, 0xed, 0x3b,
+	0x05, 0x72, 0xd6, 0xa4, 0xa9, 0x7d, 0xd8, 0xab, 0x26, 0x4d, 0x9d, 0x81, 0xbd, 0x1f, 0xce, 0xcf,
+	0x6a, 0xd9, 0xe7, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0xb9, 0x49, 0x1c, 0x8a, 0x74, 0x03, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -172,7 +266,7 @@ func NewTraceServiceClient(cc *grpc.ClientConn) TraceServiceClient {
 
 func (c *traceServiceClient) Export(ctx context.Context, in *ExportTraceServiceRequest, opts ...grpc.CallOption) (*ExportTraceServiceResponse, error) {
 	out := new(ExportTraceServiceResponse)
-	err := c.cc.Invoke(ctx, "/opentelemetrygogo.proto.collector.trace.v1.TraceService/Export", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/opentelemetry.proto.collector.trace.v1.TraceService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +302,7 @@ func _TraceService_Export_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/opentelemetrygogo.proto.collector.trace.v1.TraceService/Export",
+		FullMethod: "/opentelemetry.proto.collector.trace.v1.TraceService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TraceServiceServer).Export(ctx, req.(*ExportTraceServiceRequest))
@@ -217,7 +311,7 @@ func _TraceService_Export_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 var _TraceService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "opentelemetrygogo.proto.collector.trace.v1.TraceService",
+	ServiceName: "opentelemetry.proto.collector.trace.v1.TraceService",
 	HandlerType: (*TraceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -286,6 +380,53 @@ func (m *ExportTraceServiceResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	_ = i
 	var l int
 	_ = l
+	if m.PartialSuccess != nil {
+		{
+			size, err := m.PartialSuccess.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTraceService(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExportTracePartialSuccess) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ExportTracePartialSuccess) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExportTracePartialSuccess) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ErrorMessage) > 0 {
+		i -= len(m.ErrorMessage)
+		copy(dAtA[i:], m.ErrorMessage)
+		i = encodeVarintTraceService(dAtA, i, uint64(len(m.ErrorMessage)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.RejectedSpans != 0 {
+		i = encodeVarintTraceService(dAtA, i, uint64(m.RejectedSpans))
+		i--
+		dAtA[i] = 0x8
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -321,6 +462,26 @@ func (m *ExportTraceServiceResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.PartialSuccess != nil {
+		l = m.PartialSuccess.Size()
+		n += 1 + l + sovTraceService(uint64(l))
+	}
+	return n
+}
+
+func (m *ExportTracePartialSuccess) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.RejectedSpans != 0 {
+		n += 1 + sovTraceService(uint64(m.RejectedSpans))
+	}
+	l = len(m.ErrorMessage)
+	if l > 0 {
+		n += 1 + l + sovTraceService(uint64(l))
+	}
 	return n
 }
 
@@ -399,10 +560,7 @@ func (m *ExportTraceServiceRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthTraceService
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceService
 			}
 			if (iNdEx + skippy) > l {
@@ -446,16 +604,150 @@ func (m *ExportTraceServiceResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: ExportTraceServiceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PartialSuccess", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTraceService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTraceService
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTraceService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.PartialSuccess == nil {
+				m.PartialSuccess = &ExportTracePartialSuccess{}
+			}
+			if err := m.PartialSuccess.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTraceService(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceService
 			}
-			if (iNdEx + skippy) < 0 {
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ExportTracePartialSuccess) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTraceService
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExportTracePartialSuccess: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExportTracePartialSuccess: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RejectedSpans", wireType)
+			}
+			m.RejectedSpans = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTraceService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RejectedSpans |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ErrorMessage", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTraceService
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTraceService
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTraceService
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ErrorMessage = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTraceService(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthTraceService
 			}
 			if (iNdEx + skippy) > l {
