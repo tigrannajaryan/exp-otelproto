@@ -516,7 +516,7 @@ func TestEncodeSize(t *testing.T) {
 					}
 
 					zlibedBytes := doZlib(bodyBytes)
-					zstdedBytes := doZstd(bodyBytes)
+					zstdedBytes := compressZstd(bodyBytes)
 
 					uncompressedSize := len(bodyBytes)
 					zlibedSize := len(zlibedBytes)
@@ -697,7 +697,7 @@ func TestEncodeSizeFromFile(t *testing.T) {
 					}
 
 					zlibedBytes := doZlib(bodyBytes)
-					zstdedBytes := doZstd(bodyBytes)
+					zstdedBytes := compressZstd(bodyBytes)
 
 					uncompressedSize += len(bodyBytes)
 					zlibedSize += len(zlibedBytes)
@@ -757,18 +757,24 @@ func doZlib(input []byte) []byte {
 	return b.Bytes()
 }
 
-func doZstd(input []byte) []byte {
-	var b bytes.Buffer
-	w, err := zstd.NewWriter(&b)
+// Create a writer that caches compressors.
+// For this operation type we supply a nil Reader.
+var zstdEncoder, _ = zstd.NewWriter(nil)
+
+// Create a reader that caches decompressors.
+// For this operation type we supply a nil Reader.
+var zstdDecoder, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(1))
+
+func compressZstd(input []byte) []byte {
+	return zstdEncoder.EncodeAll(input, make([]byte, 0, len(input)))
+}
+
+func decompressZstd(input []byte) []byte {
+	b, err := zstdDecoder.DecodeAll(input, nil)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	_, err = w.Write(input)
-	w.Close()
-	if err != nil {
-		panic(err)
-	}
-	return b.Bytes()
+	return b
 }
 
 func BenchmarkEndianness(b *testing.B) {
