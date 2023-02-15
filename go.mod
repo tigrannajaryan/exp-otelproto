@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jaegertracing/jaeger v1.15.1
 	github.com/klauspost/compress v1.11.2
-	github.com/prometheus/client_golang v1.1.0
+	github.com/prometheus/client_golang v1.11.1
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
 	github.com/signalfx/sapm-proto v0.5.1
