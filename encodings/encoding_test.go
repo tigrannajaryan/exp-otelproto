@@ -15,11 +15,13 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/assert"
+	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+
 	v15 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 	v12 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/common/v1"
 	v14 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/logs/v1"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	v13 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/trace/v1"
-	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
@@ -50,10 +52,10 @@ var tests = []struct {
 	//	name: "OTLP",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
-	//{
-	//	name: "OTELP2",
-	//	gen:  func() core.Generator { return otelp2.NewGenerator() },
-	//},
+	{
+		name: "OTELP2",
+		gen:  func() core.Generator { return otelp2.NewGenerator() },
+	},
 	{
 		name: "ShortKeys",
 		gen:  func() core.Generator { return experimental.NewGenerator() },
@@ -617,10 +619,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			name:       "OTLP",
 			translator: func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
-		//{
-		//	name:       "OTELP2",
-		//	translator: func() core.SpanTranslator { return &otelp2.SpanTranslator{} },
-		//},
+		{
+			name:       "OTELP2",
+			translator: func() core.SpanTranslator { return otelp2.NewSpanTranslator() },
+		},
 		//{
 		//	name: "MoreFieldsinAKV",
 		//	gen:  func() core.Generator { return experimental.NewGenerator() },
@@ -759,7 +761,7 @@ func doZlib(input []byte) []byte {
 
 // Create a writer that caches compressors.
 // For this operation type we supply a nil Reader.
-var zstdEncoder, _ = zstd.NewWriter(nil)
+var zstdEncoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedBestCompression))
 
 // Create a reader that caches decompressors.
 // For this operation type we supply a nil Reader.

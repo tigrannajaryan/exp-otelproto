@@ -8,41 +8,49 @@ import (
 	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
-type SpanTranslator struct {
+type spanTranslator struct {
+	dict map[string]uint32
 }
 
-func (st *SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+func NewSpanTranslator() *spanTranslator {
+	return &spanTranslator{dict: map[string]uint32{}}
+}
+
+func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 
 	res := &TraceExportRequest{}
-	dict := map[string]uint32{}
+	deltaDict := map[string]uint32{}
 
 	for _, rssi := range batch.ResourceSpans {
 		rsso := &ResourceSpans{
 			Resource: &Resource{
-				Attributes: translateAttrs(dict, rssi.Resource.Attributes),
+				Attributes: translateAttrs(st.dict, deltaDict, rssi.Resource.Attributes),
 			},
-			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(dict, rssi.ScopeSpans),
+			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(st.dict, deltaDict, rssi.ScopeSpans),
 		}
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 
 	}
 
-	res.StringDict = createDict(dict)
+	res.StringDict = createDict(deltaDict)
+	for k, v := range deltaDict {
+		st.dict[k] = v
+	}
 
 	return res
 }
 
-func translateAttrs(dict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
+func translateAttrs(dict map[string]uint32, deltaDict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
 	for _, attr := range attrs {
 		kv := &KeyValue{
 			//Key:               attr.Key,
-			KeyRef: getStringRef(dict, attr.Key),
+			KeyRef: getStringRef(dict, deltaDict, attr.Key),
 		}
 
 		var v *AnyValue
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
-			kv.ValueRef = getStringRef(dict, iv.StringValue)
+			kv.ValueRef = getStringRef(dict, deltaDict, iv.StringValue)
 			//v = &AnyValue{Value:&AnyValue_StringValue{StringValue:iv.StringValue}}
 		case *v1.AnyValue_BoolValue:
 			v = &AnyValue{Value: &AnyValue_BoolValue{BoolValue: iv.BoolValue}}
@@ -62,17 +70,17 @@ func translateAttrs(dict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue
 }
 
 func translateInstrumentationLibrarySpans(
-	dict map[string]uint32,
+	dict, deltaDict map[string]uint32,
 	in []*v12.ScopeSpans,
 ) (r []*InstrumentationLibrarySpans) {
 
 	for _, ils := range in {
 		out := &InstrumentationLibrarySpans{
-			InstrumentationLibrary: translateInstrumentationLibrary(dict, ils.Scope),
+			InstrumentationLibrary: translateInstrumentationLibrary(dict, deltaDict, ils.Scope),
 		}
 
 		for _, span := range ils.Spans {
-			outSpan := translateSpan(dict, span)
+			outSpan := translateSpan(dict, deltaDict, span)
 			out.Spans = append(out.Spans, outSpan)
 		}
 
@@ -82,7 +90,7 @@ func translateInstrumentationLibrarySpans(
 	return r
 }
 
-func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
+func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
 	if span == nil {
 		return nil
 	}
@@ -96,7 +104,7 @@ func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
 		Kind:                   Span_SpanKind(span.Kind),
 		StartTimeUnixNano:      int64(span.StartTimeUnixNano),
 		DurationNano:           span.EndTimeUnixNano - span.StartTimeUnixNano,
-		Attributes:             translateAttrs(dict, span.Attributes),
+		Attributes:             translateAttrs(dict, deltaDict, span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
 		Events:                 nil,
 		DroppedEventsCount:     0,
@@ -106,12 +114,14 @@ func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
 	}
 }
 
-func translateInstrumentationLibrary(dict map[string]uint32, in *v1.InstrumentationScope) *InstrumentationLibrary {
+func translateInstrumentationLibrary(
+	dict, deltaDict map[string]uint32, in *v1.InstrumentationScope,
+) *InstrumentationLibrary {
 	if in == nil {
 		return nil
 	}
 	return &InstrumentationLibrary{
-		NameRef:    getStringRef(dict, in.Name),
-		VersionRef: getStringRef(dict, in.Version),
+		NameRef:    getStringRef(dict, deltaDict, in.Name),
+		VersionRef: getStringRef(dict, deltaDict, in.Version),
 	}
 }
