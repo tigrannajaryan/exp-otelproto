@@ -21,7 +21,7 @@ func (st *SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 			Resource: &Resource{
 				Attributes: translateAttrs(dict, rssi.Resource.Attributes),
 			},
-			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(dict, rssi.InstrumentationLibrarySpans),
+			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(dict, rssi.ScopeSpans),
 		}
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 
@@ -63,12 +63,12 @@ func translateAttrs(dict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue
 
 func translateInstrumentationLibrarySpans(
 	dict map[string]uint32,
-	in []*v12.InstrumentationLibrarySpans,
+	in []*v12.ScopeSpans,
 ) (r []*InstrumentationLibrarySpans) {
 
 	for _, ils := range in {
 		out := &InstrumentationLibrarySpans{
-			InstrumentationLibrary: translateInstrumentationLibrary(dict, ils.InstrumentationLibrary),
+			InstrumentationLibrary: translateInstrumentationLibrary(dict, ils.Scope),
 		}
 
 		for _, span := range ils.Spans {
@@ -106,7 +106,7 @@ func translateSpan(dict map[string]uint32, span *v12.Span) *Span {
 	}
 }
 
-func translateInstrumentationLibrary(dict map[string]uint32, in *v1.InstrumentationLibrary) *InstrumentationLibrary {
+func translateInstrumentationLibrary(dict map[string]uint32, in *v1.InstrumentationScope) *InstrumentationLibrary {
 	if in == nil {
 		return nil
 	}
