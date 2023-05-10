@@ -1,11 +1,8 @@
 package encodings
 
 import (
-	"log"
-	"runtime"
-	"testing"
-
 	"github.com/golang/protobuf/proto"
+
 	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
 	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 )
@@ -68,6 +65,7 @@ func encodeUnpreparedTraces(spanCount int) proto.Message {
 	return request
 }
 
+/*
 func BenchmarkEncodeTraces(b *testing.B) {
 	tests := []struct {
 		name    string
@@ -137,3 +135,4 @@ func BenchmarkDecodeEncodeTraces(b *testing.B) {
 		})
 	}
 }
+*/
