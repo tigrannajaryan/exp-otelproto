@@ -56,9 +56,9 @@ var FirstStringRef = uint32(len(builtInDict) + 1)
 
 func createBuiltInDict() map[string]uint32 {
 	m := map[string]uint32{}
-	for _, str := range core.ExampleAttributeNames {
-		m[str] = uint32(len(m) + 1)
-	}
+	//	for _, str := range core.ExampleAttributeNames {
+	//m[str] = uint32(len(m) + 1)
+	//}
 	return m
 }
 

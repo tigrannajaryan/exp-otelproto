@@ -28,7 +28,7 @@ benchmark() {
 benchmark_all() {
     echo ${BATCHES} $1 batches, ${SPANSPERBATCH} spans per batch, ${ATTRPERSPAN} attrs per span
     #benchmark sapm
-#    benchmark http11
+    benchmark http11
 #    benchmark http11conc
 #    benchmark wsasyncworker
 #    benchmark wsasyncworkerconc
@@ -36,10 +36,10 @@ benchmark_all() {
 #    benchmark wsstreamasyncconc
 #    benchmark wsstreamsync
     #benchmark wsstreamasynczlib
-#    benchmark unary
+    benchmark unary
 #    benchmark unaryasync
-    benchmark streamlbasync
-    benchmark streamlbconc
+#    benchmark streamlbasync
+#    benchmark streamlbconc
     #benchmark opencensus
     #benchmark ocack
     #benchmark streamsync
@@ -54,7 +54,7 @@ benchmark_all_latency() {
     echo ${roundtrip}ms network roundtrip latency
     tc qdisc add dev lo root netem delay ${1}ms
     benchmark_all large
-    tc qdisc delete dev lo root netem delay ${1}ms
+    #tc qdisc delete dev lo root netem delay ${1}ms
 }
 
 benchmark_some_latency() {
@@ -72,13 +72,13 @@ benchmark_some_latency() {
     benchmark wsstreamasync
     benchmark wsstreamasyncconc
     #benchmark wsstreamasynczlib
-    tc qdisc delete dev lo root netem delay 100ms
+    #tc qdisc delete dev lo root netem delay 100ms
 }
 
 
 #./beforebenchmarks.sh
 
-tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
+#tc qdisc delete dev lo root netem delay 100ms > /dev/null 2>&1
 echo
 
 cd bin

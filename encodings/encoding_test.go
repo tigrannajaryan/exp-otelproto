@@ -53,13 +53,13 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
 	{
-		name: "OTELP2",
+		name: "OTLPDICT",
 		gen:  func() core.Generator { return otelp2.NewGenerator() },
 	},
-	{
-		name: "ShortKeys",
-		gen:  func() core.Generator { return experimental.NewGenerator() },
-	},
+	//{
+	//	name: "ShortKeys",
+	//	gen:  func() core.Generator { return experimental.NewGenerator() },
+	//},
 	//{
 	//	name: "Proposed",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
@@ -601,6 +601,20 @@ func TestEncodeSize(t *testing.T) {
 	}
 }
 
+func countTracesAndSpans(msg *v1.ExportTraceServiceRequest) (int, int) {
+	traces := map[string]bool{}
+	spans := 0
+	for _, rss := range msg.ResourceSpans {
+		for _, ss := range rss.ScopeSpans {
+			spans += len(ss.Spans)
+			for _, s := range ss.Spans {
+				traces[string(s.TraceId)] = true
+			}
+		}
+	}
+	return len(traces), spans
+}
+
 func TestEncodeSizeFromFile(t *testing.T) {
 
 	var tests = []struct {
@@ -680,12 +694,17 @@ func TestEncodeSizeFromFile(t *testing.T) {
 				uncompressedSize := 0
 				zlibedSize := 0
 				zstdedSize := 0
+				totalTraces := 0
+				totalSpans := 0
 
 				for {
 					msg := otlp.ReadTraceMessage(f)
 					if msg == nil {
 						break
 					}
+					traces, spans := countTracesAndSpans(msg)
+					totalTraces += traces
+					totalSpans += spans
 
 					batch := translator.TranslateSpans(msg)
 					if batch == nil {
@@ -743,6 +762,8 @@ func TestEncodeSizeFromFile(t *testing.T) {
 					zlibedRatioStr,
 					zstdedSize,
 					zstdedRatioStr,
+					//totalTraces,
+					//totalSpans,
 				)
 
 			},

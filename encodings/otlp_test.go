@@ -11,11 +11,12 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
+
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo"
 	v1 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/collector/trace/v1"
 )
 
-var gzipWriter = gzip.NewWriter(nil)
+var gzipWriter, _ = gzip.NewWriterLevel(nil, gzip.BestCompression)
 var gzipReader = createGzipReader()
 
 func createGzipReader() *gzip.Reader {
