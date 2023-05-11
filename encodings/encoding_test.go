@@ -56,10 +56,10 @@ var tests = []struct {
 		name: "OTLPDICT",
 		gen:  func() core.Generator { return otelp2.NewGenerator() },
 	},
-	//{
-	//	name: "ShortKeys",
-	//	gen:  func() core.Generator { return experimental.NewGenerator() },
-	//},
+	{
+		name: "Experimental",
+		gen:  func() core.Generator { return experimental.NewGenerator() },
+	},
 	//{
 	//	name: "Proposed",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },

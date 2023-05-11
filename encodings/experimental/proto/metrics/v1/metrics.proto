@@ -41,7 +41,7 @@ message MetricsData {
   // one element. Intermediary nodes that receive data from multiple origins
   // typically batch the data before forwarding further and in that case this
   // array will contain multiple elements.
-  repeated ResourceMetrics resource_metrics = 1 [json_name="m"];
+  repeated ResourceMetrics resource_metrics = 1;
 }
 
 // A collection of ScopeMetrics from a Resource.
@@ -50,14 +50,14 @@ message ResourceMetrics {
 
   // The resource for the metrics in this message.
   // If this field is not set then no resource info is known.
-  experimental.resource.v1.Resource resource = 1 [json_name="r"];
+  experimental.resource.v1.Resource resource = 1;
 
   // A list of metrics that originate from a resource.
-  repeated ScopeMetrics scope_metrics = 2 [json_name="m"];
+  repeated ScopeMetrics scope_metrics = 2;
 
   // This schema_url applies to the data in the "resource" field. It does not apply
   // to the data in the "scope_metrics" field which have their own schema_url field.
-  string schema_url = 3 [json_name="u"];
+  string schema_url = 3;
 }
 
 // A collection of Metrics produced by an Scope.
@@ -65,13 +65,13 @@ message ScopeMetrics {
   // The instrumentation scope information for the metrics in this message.
   // Semantically when InstrumentationScope isn't set, it is equivalent with
   // an empty instrumentation scope name (unknown).
-  experimental.common.v1.InstrumentationScope scope = 1 [json_name="i"];
+  experimental.common.v1.InstrumentationScope scope = 1;
 
   // A list of metrics that originate from an instrumentation library.
-  repeated Metric metrics = 2 [json_name="m"];
+  repeated Metric metrics = 2;
 
   // This schema_url applies to all metrics in the "metrics" field.
-  string schema_url = 3 [json_name="u"];
+  string schema_url = 3;
 }
 
 // Defines a Metric which has one or more timeseries.  The following is a
@@ -163,24 +163,24 @@ message Metric {
   reserved 4, 6, 8;
 
   // name of the metric, including its DNS name prefix. It must be unique.
-  string name = 1 [json_name="n"];
+  string name = 1;
 
   // description of the metric, which can be used in documentation.
-  string description = 2 [json_name="d"];
+  string description = 2;
 
   // unit in which the metric value is reported. Follows the format
   // described by http://unitsofmeasure.org/ucum.html.
-  string unit = 3 [json_name="u"];
+  string unit = 3;
 
   // Data determines the aggregation type (if any) of the metric, what is the
   // reported value type for the data points, as well as the relatationship to
   // the time interval over which they are reported.
   oneof data {
-    Gauge gauge = 5 [json_name="g"];
-    Sum sum = 7 [json_name="s"];
-    Histogram histogram = 9 [json_name="h"];
-    ExponentialHistogram exponential_histogram = 10 [json_name="eh"];
-    Summary summary = 11 [json_name="su"];
+    Gauge gauge = 5;
+    Sum sum = 7;
+    Histogram histogram = 9;
+    ExponentialHistogram exponential_histogram = 10;
+    Summary summary = 11;
   }
 }
 
@@ -194,40 +194,40 @@ message Metric {
 // AggregationTemporality is not included. Consequently, this also means
 // "StartTimeUnixNano" is ignored for all data points.
 message Gauge {
-  repeated NumberDataPoint data_points = 1 [json_name="d"];
+  repeated NumberDataPoint data_points = 1;
 }
 
 // Sum represents the type of a scalar metric that is calculated as a sum of all
 // reported measurements over a time interval.
 message Sum {
-  repeated NumberDataPoint data_points = 1 [json_name="d"];
+  repeated NumberDataPoint data_points = 1;
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2 [json_name="a"];
+  AggregationTemporality aggregation_temporality = 2;
 
   // If "true" means that the sum is monotonic.
-  bool is_monotonic = 3 [json_name="m"];
+  bool is_monotonic = 3;
 }
 
 // Histogram represents the type of a metric that is calculated by aggregating
 // as a Histogram of all reported measurements over a time interval.
 message Histogram {
-  repeated HistogramDataPoint data_points = 1 [json_name="d"];
+  repeated HistogramDataPoint data_points = 1;
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2 [json_name="a"];
+  AggregationTemporality aggregation_temporality = 2;
 }
 
 // ExponentialHistogram represents the type of a metric that is calculated by aggregating
 // as a ExponentialHistogram of all reported double measurements over a time interval.
 message ExponentialHistogram {
-  repeated ExponentialHistogramDataPoint data_points = 1 [json_name="d"];
+  repeated ExponentialHistogramDataPoint data_points = 1;
 
   // aggregation_temporality describes if the aggregator reports delta changes
   // since last report time, or cumulative changes since a fixed start time.
-  AggregationTemporality aggregation_temporality = 2 [json_name="a"];
+  AggregationTemporality aggregation_temporality = 2;
 }
 
 // Summary metric data are used to convey quantile summaries,
@@ -237,7 +237,7 @@ message ExponentialHistogram {
 // While they can be useful in some applications, histogram data points are
 // recommended for new applications.
 message Summary {
-  repeated SummaryDataPoint data_points = 1 [json_name="d"];
+  repeated SummaryDataPoint data_points = 1;
 }
 
 // AggregationTemporality defines how a metric aggregator reports aggregated
@@ -316,15 +316,17 @@ enum AggregationTemporality {
 // enum is a bit-mask.  To test the presence of a single flag in the flags of
 // a data point, for example, use an expression like:
 //
-//   (point.flags & FLAG_NO_RECORDED_VALUE) == FLAG_NO_RECORDED_VALUE
+//   (point.flags & FLAG_NO_RECORDED_VALUE_MASK) == FLAG_NO_RECORDED_VALUE_MASK
 //
 enum DataPointFlags {
-  FLAG_NONE = 0;
+  // The zero value for the enum. Should not be used for comparisons.
+  // Instead use bitwise "and" with the appropriate mask as shown above.
+  FLAG_DO_NOT_USE = 0;
 
   // This DataPoint is valid but has no recorded value.  This value
   // SHOULD be used to reflect explicitly missing data in a series, as
   // for an equivalent to the Prometheus "staleness marker".
-  FLAG_NO_RECORDED_VALUE = 1;
+  FLAG_NO_RECORDED_VALUE_MASK = 1;
 
   // Bits 2-31 are reserved for future use.
 }
@@ -338,35 +340,35 @@ message NumberDataPoint {
   // where this point belongs. The list may be empty (may contain 0 elements).
   // Attribute keys MUST be unique (it is not allowed to have more than one
   // attribute with the same key).
-  repeated experimental.common.v1.KeyValue attributes = 7 [json_name="a"];
+  repeated experimental.common.v1.KeyValue attributes = 7;
 
   // StartTimeUnixNano is optional but strongly encouraged, see the
   // the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 start_time_unix_nano = 2 [json_name="s"];
+  fixed64 start_time_unix_nano = 2;
 
   // TimeUnixNano is required, see the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3 [json_name="t"];
+  fixed64 time_unix_nano = 3;
 
   // The value itself.  A point is considered invalid when one of the recognized
   // value fields is not present inside this oneof.
   oneof value {
-    double as_double = 4 [json_name="d"];
-    sfixed64 as_int = 6 [json_name="i"];
+    double as_double = 4;
+    sfixed64 as_int = 6;
   }
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated Exemplar exemplars = 5 [json_name="e"];
+  repeated Exemplar exemplars = 5;
 
   // Flags that apply to this specific data point.  See DataPointFlags
   // for the available flags and their meaning.
-  uint32 flags = 8 [json_name="f"];
+  uint32 flags = 8;
 }
 
 // HistogramDataPoint is a single data point in a timeseries that describes the
@@ -386,25 +388,25 @@ message HistogramDataPoint {
   // where this point belongs. The list may be empty (may contain 0 elements).
   // Attribute keys MUST be unique (it is not allowed to have more than one
   // attribute with the same key).
-  repeated experimental.common.v1.KeyValue attributes = 9 [json_name="a"];
+  repeated experimental.common.v1.KeyValue attributes = 9;
 
   // StartTimeUnixNano is optional but strongly encouraged, see the
   // the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 start_time_unix_nano = 2 [json_name="s"];
+  fixed64 start_time_unix_nano = 2;
 
   // TimeUnixNano is required, see the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3 [json_name="t"];
+  fixed64 time_unix_nano = 3;
 
   // count is the number of values in the population. Must be non-negative. This
   // value must be equal to the sum of the "count" fields in buckets if a
   // histogram is provided.
-  fixed64 count = 4 [json_name="c"];
+  fixed64 count = 4;
 
   // sum of the values in the population. If count is zero then this field
   // must be zero.
@@ -414,7 +416,7 @@ message HistogramDataPoint {
   // Negative events *can* be recorded, but sum should not be filled out when
   // doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
   // see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#histogram
-  optional double sum = 5 [json_name="su"];
+  optional double sum = 5;
 
   // bucket_counts is an optional field contains the count values of histogram
   // for each bucket.
@@ -423,7 +425,7 @@ message HistogramDataPoint {
   //
   // The number of elements in bucket_counts array must be by one greater than
   // the number of elements in explicit_bounds array.
-  repeated fixed64 bucket_counts = 6 [json_name="b"];
+  repeated fixed64 bucket_counts = 6;
 
   // explicit_bounds specifies buckets with explicitly defined bounds for values.
   //
@@ -438,21 +440,21 @@ message HistogramDataPoint {
   // Histogram buckets are inclusive of their upper boundary, except the last
   // bucket where the boundary is at infinity. This format is intentionally
   // compatible with the OpenMetrics histogram definition.
-  repeated double explicit_bounds = 7 [json_name="eb"];
+  repeated double explicit_bounds = 7;
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated Exemplar exemplars = 8 [json_name="e"];
+  repeated Exemplar exemplars = 8;
 
   // Flags that apply to this specific data point.  See DataPointFlags
   // for the available flags and their meaning.
-  uint32 flags = 10 [json_name="f"];
+  uint32 flags = 10;
 
   // min is the minimum value over (start_time, end_time].
-  optional double min = 11 [json_name="mi"];
+  optional double min = 11;
 
   // max is the maximum value over (start_time, end_time].
-  optional double max = 12 [json_name="ma"];
+  optional double max = 12;
 }
 
 // ExponentialHistogramDataPoint is a single data point in a timeseries that describes the
@@ -465,25 +467,25 @@ message ExponentialHistogramDataPoint {
   // where this point belongs. The list may be empty (may contain 0 elements).
   // Attribute keys MUST be unique (it is not allowed to have more than one
   // attribute with the same key).
-  repeated experimental.common.v1.KeyValue attributes = 1 [json_name="a"];
+  repeated experimental.common.v1.KeyValue attributes = 1;
 
   // StartTimeUnixNano is optional but strongly encouraged, see the
   // the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 start_time_unix_nano = 2 [json_name="s"];
+  fixed64 start_time_unix_nano = 2;
 
   // TimeUnixNano is required, see the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3 [json_name="t"];
+  fixed64 time_unix_nano = 3;
 
   // count is the number of values in the population. Must be
   // non-negative. This value must be equal to the sum of the "bucket_counts"
   // values in the positive and negative Buckets plus the "zero_count" field.
-  fixed64 count = 4 [json_name="c"];
+  fixed64 count = 4;
 
   // sum of the values in the population. If count is zero then this field
   // must be zero.
@@ -493,7 +495,7 @@ message ExponentialHistogramDataPoint {
   // Negative events *can* be recorded, but sum should not be filled out when
   // doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
   // see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#histogram
-  optional double sum = 5 [json_name="su"];
+  optional double sum = 5;
   
   // scale describes the resolution of the histogram.  Boundaries are
   // located at powers of the base, where:
@@ -501,8 +503,8 @@ message ExponentialHistogramDataPoint {
   //   base = (2^(2^-scale))
   //
   // The histogram bucket identified by `index`, a signed integer,
-  // contains values that are greater than or equal to (base^index) and
-  // less than (base^(index+1)).
+  // contains values that are greater than (base^index) and
+  // less than or equal to (base^(index+1)).
   //
   // The positive and negative ranges of the histogram are expressed
   // separately.  Negative values are mapped by their absolute value
@@ -510,7 +512,7 @@ message ExponentialHistogramDataPoint {
   //
   // scale is not restricted by the protocol, as the permissible
   // values depend on the range of the data.
-  sint32 scale = 6 [json_name="sc"];
+  sint32 scale = 6;
 
   // zero_count is the count of values that are either exactly zero or
   // within the region considered zero by the instrumentation at the
@@ -520,13 +522,13 @@ message ExponentialHistogramDataPoint {
   //
   // Implementations MAY consider the zero bucket to have probability
   // mass equal to (zero_count / count).
-  fixed64 zero_count = 7 [json_name="z"];
+  fixed64 zero_count = 7;
 
   // positive carries the positive range of exponential bucket counts.
-  Buckets positive = 8 [json_name="p"];
+  Buckets positive = 8;
 
   // negative carries the negative range of exponential bucket counts.
-  Buckets negative = 9 [json_name="n"];
+  Buckets negative = 9;
 
   // Buckets are a set of bucket counts, encoded in a contiguous array
   // of counts.
@@ -534,33 +536,41 @@ message ExponentialHistogramDataPoint {
     // Offset is the bucket index of the first entry in the bucket_counts array.
     // 
     // Note: This uses a varint encoding as a simple form of compression.
-    sint32 offset = 1 [json_name="o"];
+    sint32 offset = 1;
 
     // Count is an array of counts, where count[i] carries the count
     // of the bucket at index (offset+i).  count[i] is the count of
-    // values greater than or equal to base^(offset+i) and less than
+    // values greater than base^(offset+i) and less or equal to than
     // base^(offset+i+1).
     //
     // Note: By contrast, the explicit HistogramDataPoint uses
     // fixed64.  This field is expected to have many buckets,
     // especially zeros, so uint64 has been selected to ensure
     // varint encoding.
-    repeated uint64 bucket_counts = 2 [json_name="b"];
+    repeated uint64 bucket_counts = 2;
   } 
 
   // Flags that apply to this specific data point.  See DataPointFlags
   // for the available flags and their meaning.
-  uint32 flags = 10 [json_name="f"];
+  uint32 flags = 10;
 
   // (Optional) List of exemplars collected from
   // measurements that were used to form the data point
-  repeated Exemplar exemplars = 11 [json_name="e"];
+  repeated Exemplar exemplars = 11;
 
   // min is the minimum value over (start_time, end_time].
-  optional double min = 12 [json_name="mi"];
+  optional double min = 12;
 
   // max is the maximum value over (start_time, end_time].
-  optional double max = 13 [json_name="ma"];
+  optional double max = 13;
+
+  // ZeroThreshold may be optionally set to convey the width of the zero
+  // region. Where the zero region is defined as the closed interval
+  // [-ZeroThreshold, ZeroThreshold].
+  // When ZeroThreshold is 0, zero count bucket stores values that cannot be
+  // expressed using the standard exponential formula as well as values that
+  // have been rounded to zero.
+  double zero_threshold = 14;
 }
 
 // SummaryDataPoint is a single data point in a timeseries that describes the
@@ -572,23 +582,23 @@ message SummaryDataPoint {
   // where this point belongs. The list may be empty (may contain 0 elements).
   // Attribute keys MUST be unique (it is not allowed to have more than one
   // attribute with the same key).
-  repeated experimental.common.v1.KeyValue attributes = 7 [json_name="a"];
+  repeated experimental.common.v1.KeyValue attributes = 7;
 
   // StartTimeUnixNano is optional but strongly encouraged, see the
   // the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 start_time_unix_nano = 2 [json_name="s"];
+  fixed64 start_time_unix_nano = 2;
 
   // TimeUnixNano is required, see the detailed comments above Metric.
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 3 [json_name="t"];
+  fixed64 time_unix_nano = 3;
 
   // count is the number of values in the population. Must be non-negative.
-  fixed64 count = 4 [json_name="c"];
+  fixed64 count = 4;
 
   // sum of the values in the population. If count is zero then this field
   // must be zero.
@@ -598,7 +608,7 @@ message SummaryDataPoint {
   // Negative events *can* be recorded, but sum should not be filled out when
   // doing so.  This is specifically to enforce compatibility w/ OpenMetrics,
   // see: https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#summary
-  double sum = 5 [json_name="su"];
+  double sum = 5;
 
   // Represents the value at a given quantile of a distribution.
   //
@@ -611,21 +621,21 @@ message SummaryDataPoint {
   message ValueAtQuantile {
     // The quantile of a distribution. Must be in the interval
     // [0.0, 1.0].
-    double quantile = 1 [json_name="q"];
+    double quantile = 1;
 
     // The value at the given quantile of a distribution.
     //
     // Quantile values must NOT be negative.
-    double value = 2 [json_name="v"];
+    double value = 2;
   }
 
   // (Optional) list of values at different quantiles of the distribution calculated
   // from the current snapshot. The quantiles must be strictly increasing.
-  repeated ValueAtQuantile quantile_values = 6 [json_name="q"];
+  repeated ValueAtQuantile quantile_values = 6;
 
   // Flags that apply to this specific data point.  See DataPointFlags
   // for the available flags and their meaning.
-  uint32 flags = 8 [json_name="f"];
+  uint32 flags = 8;
 }
 
 // A representation of an exemplar, which is a sample input measurement.
@@ -638,29 +648,29 @@ message Exemplar {
   // The set of key/value pairs that were filtered out by the aggregator, but
   // recorded alongside the original measurement. Only key/value pairs that were
   // filtered out by the aggregator should be included
-  repeated experimental.common.v1.KeyValue filtered_attributes = 7 [json_name="f"];
+  repeated experimental.common.v1.KeyValue filtered_attributes = 7;
 
   // time_unix_nano is the exact time when this exemplar was recorded
   //
   // Value is UNIX Epoch time in nanoseconds since 00:00:00 UTC on 1 January
   // 1970.
-  fixed64 time_unix_nano = 2 [json_name="t"];
+  fixed64 time_unix_nano = 2;
 
   // The value of the measurement that was recorded. An exemplar is
   // considered invalid when one of the recognized value fields is not present
   // inside this oneof.
   oneof value {
-    double as_double = 3 [json_name="d"];
-    sfixed64 as_int = 6 [json_name="i"];
+    double as_double = 3;
+    sfixed64 as_int = 6;
   }
 
   // (Optional) Span ID of the exemplar trace.
   // span_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes span_id = 4 [json_name="si"];
+  bytes span_id = 4;
 
   // (Optional) Trace ID of the exemplar trace.
   // trace_id may be missing if the measurement is not recorded inside a trace
   // or if the trace is not sampled.
-  bytes trace_id = 5 [json_name="ti"];
+  bytes trace_id = 5;
 }
