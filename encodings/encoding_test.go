@@ -45,7 +45,7 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return baseline2.NewGenerator() },
 	//},
 	{
-		name: "OTLP 0.18",
+		name: "OTLP 0.19",
 		gen:  func() core.Generator { return otlp.NewGenerator() },
 	},
 	//{

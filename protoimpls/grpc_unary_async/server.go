@@ -7,8 +7,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/tigrannajaryan/exp-otelproto/core"
 	otlp "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+
+	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
 type GrpcServer struct {
@@ -17,7 +18,7 @@ type GrpcServer struct {
 }
 
 func (s *GrpcServer) Export(ctx context.Context, batch *otlp.ExportTraceServiceRequest) (*otlp.ExportTraceServiceResponse, error) {
-	s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+	s.onReceive(batch, len(batch.ResourceSpans[0].ScopeSpans[0].Spans))
 	return &otlp.ExportTraceServiceResponse{}, nil
 }
 

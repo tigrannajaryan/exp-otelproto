@@ -21,7 +21,7 @@ func (s *GrpcServer) Export(ctx context.Context, batch *otlptracecol.ExportTrace
 	//	log.Fatal("Received 0 Id")
 	//}
 
-	s.onReceive(batch, len(batch.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+	s.onReceive(batch, len(batch.ResourceSpans[0].ScopeSpans[0].Spans))
 	return &otlptracecol.ExportTraceServiceResponse{}, nil
 }
 

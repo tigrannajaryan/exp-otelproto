@@ -9,8 +9,9 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 
-	"github.com/tigrannajaryan/exp-otelproto/core"
 	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+
+	"github.com/tigrannajaryan/exp-otelproto/core"
 )
 
 type Server struct {
@@ -42,7 +43,7 @@ func (ch *ConnectionHandler) requestDecoder() {
 		//}
 		//lastId = Id
 
-		ch.onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+		ch.onReceive(request, len(request.ResourceSpans[0].ScopeSpans[0].Spans))
 
 		response := &otlptracecol.ExportTraceServiceResponse{
 			//ResponseType: experimental.RequestType_TraceExport,

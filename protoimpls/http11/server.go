@@ -35,7 +35,7 @@ func telemetryReceiver(w http.ResponseWriter, r *http.Request, onReceive func(ba
 	//	log.Fatal("Received 0 Id")
 	//}
 
-	onReceive(request, len(request.ResourceSpans[0].InstrumentationLibrarySpans[0].Spans))
+	onReceive(request, len(request.ResourceSpans[0].ScopeSpans[0].Spans))
 
 	response := &otlptracecol.ExportTraceServiceResponse{}
 	responseBytes, err := proto.Marshal(response)

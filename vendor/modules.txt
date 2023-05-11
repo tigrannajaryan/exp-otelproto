@@ -107,7 +107,7 @@ go.opencensus.io/tag
 go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/tracestate
-# go.opentelemetry.io/proto/otlp v0.18.0
+# go.opentelemetry.io/proto/otlp v0.19.0
 ## explicit
 go.opentelemetry.io/proto/otlp/collector/logs/v1
 go.opentelemetry.io/proto/otlp/collector/metrics/v1
