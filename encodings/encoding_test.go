@@ -2,6 +2,7 @@ package encodings
 
 import (
 	"bytes"
+	"compress/gzip"
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
@@ -697,7 +698,7 @@ func TestEncodeSizeFromFile(t *testing.T) {
 
 type encodeSizeFromFileTest struct {
 	firstUncompessedSize int
-	firstZlibedSize      int
+	firstGzipedSize      int
 	firstZstdedSize      int
 	batchSize            int
 }
@@ -730,7 +731,7 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 	}
 
 	uncompressedSize := 0
-	zlibedSize := 0
+	gzipedSize := 0
 	zstdedSize := 0
 	totalSpans := 0
 
@@ -755,16 +756,16 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 			log.Fatal(err)
 		}
 
-		zlibedBytes := doZlib(bodyBytes)
+		gzipedBytes := doGzip(bodyBytes)
 		zstdedBytes := compressZstd(bodyBytes)
 
 		uncompressedSize += len(bodyBytes)
-		zlibedSize += len(zlibedBytes)
+		gzipedSize += len(gzipedBytes)
 		zstdedSize += len(zstdedBytes)
 	}
 
 	uncompressedRatioStr := "[1.000]"
-	zlibedRatioStr := "[1.000]"
+	gzipedRatioStr := "[1.000]"
 	zstdedRatioStr := "[1.000]"
 
 	if tt.firstUncompessedSize == 0 {
@@ -775,11 +776,11 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 		)
 	}
 
-	if tt.firstZlibedSize == 0 {
-		tt.firstZlibedSize = zlibedSize
+	if tt.firstGzipedSize == 0 {
+		tt.firstGzipedSize = gzipedSize
 	} else {
-		zlibedRatioStr = fmt.Sprintf(
-			"[%1.3f]", float64(tt.firstZlibedSize)/float64(zlibedSize),
+		gzipedRatioStr = fmt.Sprintf(
+			"[%1.3f]", float64(tt.firstGzipedSize)/float64(gzipedSize),
 		)
 	}
 
@@ -792,16 +793,14 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 	}
 
 	fmt.Printf(
-		"%-29v %8d bytes%8s, zlib %7d bytes%8s, zstd %7d bytes%8s\n",
+		"%-29v %8d bytes%8s, gzip %7d bytes%8s, zstd %7d bytes%8s\n",
 		testName,
 		uncompressedSize,
 		uncompressedRatioStr,
-		zlibedSize,
-		zlibedRatioStr,
+		gzipedSize,
+		gzipedRatioStr,
 		zstdedSize,
 		zstdedRatioStr,
-		//totalTraces,
-		//totalSpans,
 	)
 
 	//fmt.Printf("Spans=%d\n", totalSpans)
@@ -810,6 +809,14 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 func doZlib(input []byte) []byte {
 	var b bytes.Buffer
 	w := zlib.NewWriter(&b)
+	w.Write(input)
+	w.Close()
+	return b.Bytes()
+}
+
+func doGzip(input []byte) []byte {
+	var b bytes.Buffer
+	w := gzip.NewWriter(&b)
 	w.Write(input)
 	w.Close()
 	return b.Bytes()
