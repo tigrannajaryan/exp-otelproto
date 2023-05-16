@@ -40,10 +40,19 @@ func GenResource(deltaDict map[string]uint32) *Resource {
 				Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: 12345678}},
 			},
 			{KeyRef: getStringRef(deltaDict, "Pid"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: 1234}}},
-			{KeyRef: getStringRef(deltaDict, "HostName"), ValueRef: getStringRef(deltaDict, "fakehost")},
 			{
-				KeyRef:   getStringRef(deltaDict, "ServiceName"),
-				ValueRef: getStringRef(deltaDict, "generator"),
+				KeyRef: getStringRef(deltaDict, "HostName"),
+				Value:  &AnyValue{Value: &AnyValue_StringValueRef{StringValueRef: getStringRef(deltaDict, "fakehost")}},
+			},
+			{
+				KeyRef: getStringRef(deltaDict, "ServiceName"),
+				Value: &AnyValue{
+					Value: &AnyValue_StringValueRef{
+						StringValueRef: getStringRef(
+							deltaDict, "generator",
+						),
+					},
+				},
 			},
 		},
 	}
@@ -122,7 +131,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			Name:              "load-generator-span",
 			Kind:              Span_SPAN_KIND_CLIENT,
 			StartTimeUnixNano: startTime.Sub(batchStartTime).Nanoseconds(),
-			DurationNano:      uint64((time.Duration(i) * time.Millisecond).Nanoseconds()),
+			EndTimeUnixNano:   uint64(startTime.Add(time.Duration(i) * time.Millisecond).UnixNano()),
 		}
 
 		if attrsPerSpan >= 0 {
@@ -256,8 +265,14 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			log.Attributes = append(
 				log.Attributes,
 				&KeyValue{
-					KeyRef:   getStringRef(deltaDict, "event_type"),
-					ValueRef: getStringRef(deltaDict, "auto_generated_event"),
+					KeyRef: getStringRef(deltaDict, "event_type"),
+					Value: &AnyValue{
+						Value: &AnyValue_StringValueRef{
+							StringValueRef: getStringRef(
+								deltaDict, "auto_generated_event",
+							),
+						},
+					},
 				},
 			)
 

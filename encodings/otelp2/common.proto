@@ -22,6 +22,7 @@ message AnyValue {
     // in which case this AnyValue is considered to be "null".
     oneof value {
         string string_value = 1;
+        uint32 string_value_ref = 7;
         bool bool_value = 2;
         int64 int_value = 3;
         double double_value = 4;
@@ -54,7 +55,6 @@ message KeyValue {
     string key = 1;
     AnyValue value = 2;
     uint32 key_ref = 3;
-    uint32 value_ref = 4;
 }
 
 // StringKeyValue is a pair of key/value strings. This is the simpler (and faster) version

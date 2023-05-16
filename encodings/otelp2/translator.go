@@ -23,7 +23,8 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	for _, rssi := range batch.ResourceSpans {
 		rsso := &ResourceSpans{
 			Resource: &Resource{
-				Attributes: translateAttrs(deltaDict, rssi.Resource.Attributes),
+				Attributes:             translateAttrs(deltaDict, rssi.Resource.Attributes),
+				DroppedAttributesCount: rssi.Resource.DroppedAttributesCount,
 			},
 			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(deltaDict, rssi.ScopeSpans),
 		}
@@ -39,15 +40,15 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 func translateAttrs(deltaDict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
 	for _, attr := range attrs {
 		kv := &KeyValue{
-			//Key:               attr.Key,
+			//Key: attr.Key,
 			KeyRef: getStringRef(deltaDict, attr.Key),
 		}
 
 		var v *AnyValue
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
-			kv.ValueRef = getStringRef(deltaDict, iv.StringValue)
-			//v = &AnyValue{Value:&AnyValue_StringValue{StringValue:iv.StringValue}}
+			v = &AnyValue{Value: &AnyValue_StringValueRef{StringValueRef: getStringRef(deltaDict, iv.StringValue)}}
+			//v = &AnyValue{Value: &AnyValue_StringValue{StringValue: iv.StringValue}}
 		case *v1.AnyValue_BoolValue:
 			v = &AnyValue{Value: &AnyValue_BoolValue{BoolValue: iv.BoolValue}}
 		case *v1.AnyValue_IntValue:
@@ -103,14 +104,21 @@ func translateSpan(deltaDict map[string]uint32, span *v12.Span) *Span {
 		Name:                   span.Name,
 		Kind:                   Span_SpanKind(span.Kind),
 		StartTimeUnixNano:      int64(span.StartTimeUnixNano),
-		DurationNano:           span.EndTimeUnixNano - span.StartTimeUnixNano,
+		EndTimeUnixNano:        span.EndTimeUnixNano,
 		Attributes:             translateAttrs(deltaDict, span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
 		Events:                 translateEvents(deltaDict, span.Events),
-		DroppedEventsCount:     0,
+		DroppedEventsCount:     span.DroppedEventsCount,
 		Links:                  nil,
-		DroppedLinksCount:      0,
-		Status:                 nil,
+		DroppedLinksCount:      span.DroppedLinksCount,
+		Status:                 translateStatus(span.Status),
+	}
+}
+
+func translateStatus(status *v12.Status) *Status {
+	return &Status{
+		Code:    Status_StatusCode(status.Code),
+		Message: status.Message,
 	}
 }
 
@@ -140,5 +148,7 @@ func translateInstrumentationLibrary(
 	return &InstrumentationLibrary{
 		NameRef:    getStringRef(deltaDict, in.Name),
 		VersionRef: getStringRef(deltaDict, in.Version),
+		//Name:    in.Name,
+		//Version: in.Version,
 	}
 }

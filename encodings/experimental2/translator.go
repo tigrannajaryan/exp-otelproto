@@ -38,7 +38,8 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	for _, rssi := range batch.ResourceSpans {
 		rsso := &otlptrace.ResourceSpans{
 			Resource: &otlpresource.Resource{
-				Attributes: st.translateAttrs(rssi.Resource.Attributes),
+				Attributes:             st.translateAttrs(rssi.Resource.Attributes),
+				DroppedAttributesCount: rssi.Resource.DroppedAttributesCount,
 			},
 			ScopeSpans: st.translateInstrumentationLibrarySpans(rssi.ScopeSpans),
 		}
@@ -68,6 +69,7 @@ var FirstStringRef = uint32(len(builtInDict) + 1)
 //}
 
 func dictionizeStr(dict map[string]uint32, str *string, ref *uint32) bool {
+	//return false
 	var idx uint32
 	var ok bool
 	if idx, ok = dict[*str]; !ok {
@@ -182,10 +184,10 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		Attributes:             st.translateAttrs(span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
 		Events:                 st.translateEvents(span.Events),
-		DroppedEventsCount:     0,
+		DroppedEventsCount:     span.DroppedEventsCount,
 		Links:                  nil,
-		DroppedLinksCount:      0,
-		Status:                 nil,
+		DroppedLinksCount:      span.DroppedLinksCount,
+		Status:                 st.translateStatus(span.Status),
 	}
 	dictionizeStr(st.spanNameDict, &s.Name, &s.NameRef)
 	return s
@@ -196,8 +198,10 @@ func (st *spanTranslator) translateInstrumentationLibrary(in *v1.Instrumentation
 		return nil
 	}
 	is := &otlpcommon.InstrumentationScope{
-		Name:    in.Name,
-		Version: in.Version,
+		Name:                   in.Name,
+		Version:                in.Version,
+		Attributes:             st.translateAttrs(in.Attributes),
+		DroppedAttributesCount: in.DroppedAttributesCount,
 	}
 	dictionizeStr(st.valDict, &is.Name, &is.NameRef)
 	dictionizeStr(st.valDict, &is.Version, &is.VersionRef)
@@ -218,5 +222,12 @@ func (st *spanTranslator) translateEvent(e *v12.Span_Event) *otlptrace.Span_Even
 		Name:                   e.Name,
 		Attributes:             st.translateAttrs(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
+	}
+}
+
+func (st *spanTranslator) translateStatus(status *v12.Status) *otlptrace.Status {
+	return &otlptrace.Status{
+		Message: status.Message,
+		Code:    otlptrace.Status_StatusCode(status.Code),
 	}
 }
