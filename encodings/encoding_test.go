@@ -638,6 +638,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			name:       "OTLP DICT",
 			translator: func() core.SpanTranslator { return otelp2.NewSpanTranslator() },
 		},
+		{
+			name:       "OTLP MDICT",
+			translator: func() core.SpanTranslator { return experimental2.NewSpanTranslator() },
+		},
 		//{
 		//	name: "MoreFieldsinAKV",
 		//	gen:  func() core.Generator { return experimental.NewGenerator() },

@@ -30,6 +30,8 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	res := &otlptracecolexp.ExportTraceServiceRequest{}
 	st.keyDict = map[string]uint32{}
 	st.valDict = map[string]uint32{}
+	st.spanNameDict = map[string]uint32{}
+	st.eventNameDict = map[string]uint32{}
 
 	for _, rssi := range batch.ResourceSpans {
 		rsso := &otlptrace.ResourceSpans{
