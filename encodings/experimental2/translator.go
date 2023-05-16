@@ -166,6 +166,10 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		return nil
 	}
 
+	if span.Links != nil {
+		panic("not implemented")
+	}
+
 	s := &otlptrace.Span{
 		TraceId:                span.TraceId,
 		SpanId:                 span.SpanId,
@@ -177,7 +181,7 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		EndTimeUnixNano:        span.EndTimeUnixNano,
 		Attributes:             st.translateAttrs(span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
-		Events:                 nil,
+		Events:                 st.translateEvents(span.Events),
 		DroppedEventsCount:     0,
 		Links:                  nil,
 		DroppedLinksCount:      0,
@@ -198,4 +202,21 @@ func (st *spanTranslator) translateInstrumentationLibrary(in *v1.Instrumentation
 	dictionizeStr(st.valDict, &is.Name, &is.NameRef)
 	dictionizeStr(st.valDict, &is.Version, &is.VersionRef)
 	return is
+}
+
+func (st *spanTranslator) translateEvents(events []*v12.Span_Event) []*otlptrace.Span_Event {
+	out := []*otlptrace.Span_Event{}
+	for _, e := range events {
+		out = append(out, st.translateEvent(e))
+	}
+	return out
+}
+
+func (st *spanTranslator) translateEvent(e *v12.Span_Event) *otlptrace.Span_Event {
+	return &otlptrace.Span_Event{
+		TimeUnixNano:           e.TimeUnixNano,
+		Name:                   e.Name,
+		Attributes:             st.translateAttrs(e.Attributes),
+		DroppedAttributesCount: e.DroppedAttributesCount,
+	}
 }

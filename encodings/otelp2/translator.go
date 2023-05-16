@@ -95,6 +95,10 @@ func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
 		return nil
 	}
 
+	if span.Links != nil {
+		panic("not implemented")
+	}
+
 	return &Span{
 		TraceId:                span.TraceId,
 		SpanId:                 span.SpanId,
@@ -106,11 +110,28 @@ func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
 		DurationNano:           span.EndTimeUnixNano - span.StartTimeUnixNano,
 		Attributes:             translateAttrs(dict, deltaDict, span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
-		Events:                 nil,
+		Events:                 translateEvents(dict, deltaDict, span.Events),
 		DroppedEventsCount:     0,
 		Links:                  nil,
 		DroppedLinksCount:      0,
 		Status:                 nil,
+	}
+}
+
+func translateEvents(dict map[string]uint32, dict2 map[string]uint32, events []*v12.Span_Event) []*Span_Event {
+	out := []*Span_Event{}
+	for _, e := range events {
+		out = append(out, translateEvent(dict, dict2, e))
+	}
+	return out
+}
+
+func translateEvent(dict map[string]uint32, dict2 map[string]uint32, e *v12.Span_Event) *Span_Event {
+	return &Span_Event{
+		TimeUnixNano:           int64(e.TimeUnixNano),
+		Name:                   e.Name,
+		Attributes:             translateAttrs(dict, dict2, e.Attributes),
+		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
 }
 
