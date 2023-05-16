@@ -1,6 +1,8 @@
 package experimental2
 
 import (
+	"encoding/binary"
+
 	v12 "go.opentelemetry.io/proto/otlp/trace/v1"
 
 	otlptracecol "go.opentelemetry.io/proto/otlp/collector/trace/v1"
@@ -56,13 +58,33 @@ var builtInDict = map[string]uint32{}
 
 var FirstStringRef = uint32(len(builtInDict) + 1)
 
-func getStringRef(dict map[string]uint32, str string) uint32 {
-	if ref, found := dict[str]; found {
-		return ref
+//func getStringRef(dict map[string]uint32, str string) uint32 {
+//	if ref, found := dict[str]; found {
+//		return ref
+//	}
+//	ref := FirstStringRef + uint32(len(dict))
+//	dict[str] = ref
+//	return ref
+//}
+
+func dictionizeStr(dict map[string]uint32, str *string, ref *uint32) bool {
+	var idx uint32
+	var ok bool
+	if idx, ok = dict[*str]; !ok {
+		idx = uint32(len(dict) + 1)
+
+		buf := make([]byte, 10)
+		n := binary.PutUvarint(buf, uint64(idx))
+		if n >= len(*str) {
+			// Not worth using ref.
+			return false
+		}
+
+		dict[*str] = idx
 	}
-	ref := FirstStringRef + uint32(len(dict))
-	dict[str] = ref
-	return ref
+	*str = ""
+	*ref = idx
+	return true
 }
 
 func createDict(dict map[string]uint32) *otlpcommon.StringDict {
@@ -73,26 +95,35 @@ func createDict(dict map[string]uint32) *otlpcommon.StringDict {
 	for k, v := range dict {
 		r.Values[v-FirstStringRef] = k
 	}
-	for _, v := range r.Values {
-		if v == "" {
-			panic("Empty string in the dictionary")
-		}
-	}
+	//for _, v := range r.Values {
+	//	if v == "" {
+	//		panic("Empty string in the dictionary")
+	//	}
+	//}
 
 	return r
 }
 
 func (st *spanTranslator) translateAttrs(attrs []*v1.KeyValue) (r []*otlpcommon.KeyValue) {
 	for _, attr := range attrs {
-		kv := &otlpcommon.KeyValue{
-			KeyRef: getStringRef(st.keyDict, attr.Key),
+		var ref uint32
+		var kv *otlpcommon.KeyValue
+		if dictionizeStr(st.keyDict, &attr.Key, &ref) {
+			kv = &otlpcommon.KeyValue{KeyRef: ref}
+		} else {
+			kv = &otlpcommon.KeyValue{Key: attr.Key}
 		}
 
 		var v *otlpcommon.AnyValue
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
-			ref := getStringRef(st.valDict, iv.StringValue)
-			v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringRefValue{StringRefValue: ref}}
+			var ref uint32
+			if dictionizeStr(st.valDict, &iv.StringValue, &ref) {
+				v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringRefValue{StringRefValue: ref}}
+			} else {
+				v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: iv.StringValue}}
+			}
+
 		case *v1.AnyValue_BoolValue:
 			v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_BoolValue{BoolValue: iv.BoolValue}}
 		case *v1.AnyValue_IntValue:
@@ -135,12 +166,12 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		return nil
 	}
 
-	return &otlptrace.Span{
+	s := &otlptrace.Span{
 		TraceId:                span.TraceId,
 		SpanId:                 span.SpanId,
 		TraceState:             span.TraceState,
 		ParentSpanId:           span.ParentSpanId,
-		NameRef:                getStringRef(st.spanNameDict, span.Name),
+		Name:                   span.Name,
 		Kind:                   otlptrace.Span_SpanKind(span.Kind),
 		StartTimeUnixNano:      span.StartTimeUnixNano,
 		EndTimeUnixNano:        span.EndTimeUnixNano,
@@ -152,14 +183,19 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		DroppedLinksCount:      0,
 		Status:                 nil,
 	}
+	dictionizeStr(st.spanNameDict, &s.Name, &s.NameRef)
+	return s
 }
 
 func (st *spanTranslator) translateInstrumentationLibrary(in *v1.InstrumentationScope) *otlpcommon.InstrumentationScope {
 	if in == nil {
 		return nil
 	}
-	return &otlpcommon.InstrumentationScope{
-		NameRef:    getStringRef(st.valDict, in.Name),
-		VersionRef: getStringRef(st.valDict, in.Version),
+	is := &otlpcommon.InstrumentationScope{
+		Name:    in.Name,
+		Version: in.Version,
 	}
+	dictionizeStr(st.valDict, &is.Name, &is.NameRef)
+	dictionizeStr(st.valDict, &is.Version, &is.VersionRef)
+	return is
 }

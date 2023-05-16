@@ -88,11 +88,11 @@ func createDict(dict map[string]uint32) *StringDict {
 	for k, v := range dict {
 		r.Values[v-FirstStringRef] = k
 	}
-	for _, v := range r.Values {
-		if v == "" {
-			panic("Empty string in the dictionary")
-		}
-	}
+	//for _, v := range r.Values {
+	//	if v == "" {
+	//		panic("Empty string in the dictionary")
+	//	}
+	//}
 
 	return r
 }

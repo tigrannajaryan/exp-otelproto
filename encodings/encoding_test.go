@@ -689,7 +689,11 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			test.name, func(t *testing.T) {
 				translator := test.translator()
 
-				f, err := os.Open("testdata/traces.protobuf")
+				bytes, err := os.ReadFile("testdata/hipstershop_traces.pb")
+				assert.NoError(t, err)
+
+				msg := &v1.ExportTraceServiceRequest{}
+				err = proto.Unmarshal(bytes, msg)
 				assert.NoError(t, err)
 
 				uncompressedSize := 0
@@ -699,10 +703,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 				totalSpans := 0
 
 				for {
-					msg := otlp.ReadTraceMessage(f)
-					if msg == nil {
-						break
-					}
+					//msg := otlp.ReadTraceMessage(f)
+					//if msg == nil {
+					//	break
+					//}
 					traces, spans := countTracesAndSpans(msg)
 					totalTraces += traces
 					totalSpans += spans
@@ -724,6 +728,8 @@ func TestEncodeSizeFromFile(t *testing.T) {
 					uncompressedSize += len(bodyBytes)
 					zlibedSize += len(zlibedBytes)
 					zstdedSize += len(zstdedBytes)
+
+					break
 				}
 
 				uncompressedRatioStr := "[1.000]"
