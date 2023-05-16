@@ -634,7 +634,7 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			translator: func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
 		{
-			name:       "OTELP2",
+			name:       "OTLP DICT",
 			translator: func() core.SpanTranslator { return otelp2.NewSpanTranslator() },
 		},
 		//{
@@ -644,10 +644,6 @@ func TestEncodeSizeFromFile(t *testing.T) {
 		//{
 		//	name: "Proposed",
 		//	gen:  func() core.Generator { return baseline.NewGenerator() },
-		//},
-		//{
-		//	name: "Alternate",
-		//	gen:  func() core.Generator { return experimental.NewGenerator() },
 		//},
 		//{
 		//	name: "Current(Gogo)",
