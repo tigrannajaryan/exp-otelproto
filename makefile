@@ -53,7 +53,7 @@ gen-experimental:
 	cp -R encodings/experimental/github.com/tigrannajaryan/exp-otelproto/encodings/experimental/* encodings/experimental/
 	rm -rf encodings/experimental/github.com/
 
-	$(foreach file,$(EXP2_PROTO_FILES),$(call exec-command,protoc -I/usr/local/include -I encodings/experimental2/proto/ $(file) --go_out=encodings/experimental2/ --go-grpc_out=encodings/experimental2/ ))
+	$(foreach file,$(EXP2_PROTO_FILES),$(call exec-command,protoc -I/usr/local/include -I encodings/ $(file) --go_out=encodings/experimental2/ --go-grpc_out=encodings/experimental2/ ))
 	cp -R encodings/experimental2/github.com/tigrannajaryan/exp-otelproto/encodings/experimental2/* encodings/experimental2/
 	rm -rf encodings/experimental2/github.com/
 

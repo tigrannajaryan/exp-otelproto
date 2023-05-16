@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.5
-// source: collector/trace/v1/trace_service.proto
+// source: experimental2/proto/collector/trace/v1/trace_service.proto
 
 package v1
 
@@ -37,7 +37,7 @@ func NewTraceServiceClient(cc grpc.ClientConnInterface) TraceServiceClient {
 
 func (c *traceServiceClient) Export(ctx context.Context, in *ExportTraceServiceRequest, opts ...grpc.CallOption) (*ExportTraceServiceResponse, error) {
 	out := new(ExportTraceServiceResponse)
-	err := c.cc.Invoke(ctx, "/experimental.collector.trace.v1.TraceService/Export", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/experimental2.collector.trace.v1.TraceService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func _TraceService_Export_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/experimental.collector.trace.v1.TraceService/Export",
+		FullMethod: "/experimental2.collector.trace.v1.TraceService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TraceServiceServer).Export(ctx, req.(*ExportTraceServiceRequest))
@@ -96,7 +96,7 @@ func _TraceService_Export_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TraceService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "experimental.collector.trace.v1.TraceService",
+	ServiceName: "experimental2.collector.trace.v1.TraceService",
 	HandlerType: (*TraceServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -105,5 +105,5 @@ var TraceService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "collector/trace/v1/trace_service.proto",
+	Metadata: "experimental2/proto/collector/trace/v1/trace_service.proto",
 }

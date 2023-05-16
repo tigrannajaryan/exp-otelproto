@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.5
-// source: collector/logs/v1/logs_service.proto
+// source: experimental2/proto/collector/logs/v1/logs_service.proto
 
 package v1
 
@@ -37,7 +37,7 @@ func NewLogsServiceClient(cc grpc.ClientConnInterface) LogsServiceClient {
 
 func (c *logsServiceClient) Export(ctx context.Context, in *ExportLogsServiceRequest, opts ...grpc.CallOption) (*ExportLogsServiceResponse, error) {
 	out := new(ExportLogsServiceResponse)
-	err := c.cc.Invoke(ctx, "/experimental.collector.logs.v1.LogsService/Export", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/experimental2.collector.logs.v1.LogsService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func _LogsService_Export_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/experimental.collector.logs.v1.LogsService/Export",
+		FullMethod: "/experimental2.collector.logs.v1.LogsService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LogsServiceServer).Export(ctx, req.(*ExportLogsServiceRequest))
@@ -96,7 +96,7 @@ func _LogsService_Export_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var LogsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "experimental.collector.logs.v1.LogsService",
+	ServiceName: "experimental2.collector.logs.v1.LogsService",
 	HandlerType: (*LogsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -105,5 +105,5 @@ var LogsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "collector/logs/v1/logs_service.proto",
+	Metadata: "experimental2/proto/collector/logs/v1/logs_service.proto",
 }

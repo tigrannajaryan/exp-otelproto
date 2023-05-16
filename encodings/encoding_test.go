@@ -20,6 +20,7 @@ import (
 	v15 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
 	v12 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/common/v1"
 	v14 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/logs/v1"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	v13 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/trace/v1"
 
@@ -53,12 +54,12 @@ var tests = []struct {
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
 	{
-		name: "OTLPDICT",
+		name: "OTLP DICT",
 		gen:  func() core.Generator { return otelp2.NewGenerator() },
 	},
 	{
-		name: "Experimental",
-		gen:  func() core.Generator { return experimental.NewGenerator() },
+		name: "OTLP MDICT",
+		gen:  func() core.Generator { return experimental2.NewGenerator() },
 	},
 	//{
 	//	name: "Proposed",

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.5
-// source: collector/metrics/v1/metrics_service.proto
+// source: experimental2/proto/collector/metrics/v1/metrics_service.proto
 
 package v1
 
@@ -37,7 +37,7 @@ func NewMetricsServiceClient(cc grpc.ClientConnInterface) MetricsServiceClient {
 
 func (c *metricsServiceClient) Export(ctx context.Context, in *ExportMetricsServiceRequest, opts ...grpc.CallOption) (*ExportMetricsServiceResponse, error) {
 	out := new(ExportMetricsServiceResponse)
-	err := c.cc.Invoke(ctx, "/experimental.collector.metrics.v1.MetricsService/Export", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/experimental2.collector.metrics.v1.MetricsService/Export", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func _MetricsService_Export_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/experimental.collector.metrics.v1.MetricsService/Export",
+		FullMethod: "/experimental2.collector.metrics.v1.MetricsService/Export",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MetricsServiceServer).Export(ctx, req.(*ExportMetricsServiceRequest))
@@ -96,7 +96,7 @@ func _MetricsService_Export_Handler(srv interface{}, ctx context.Context, dec fu
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MetricsService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "experimental.collector.metrics.v1.MetricsService",
+	ServiceName: "experimental2.collector.metrics.v1.MetricsService",
 	HandlerType: (*MetricsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -105,5 +105,5 @@ var MetricsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "collector/metrics/v1/metrics_service.proto",
+	Metadata: "experimental2/proto/collector/metrics/v1/metrics_service.proto",
 }

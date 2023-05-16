@@ -14,13 +14,13 @@
 
 syntax = "proto3";
 
-package experimental.resource.v1;
+package experimental2.resource.v1;
 
-import "common/v1/common.proto";
+import "experimental2/proto/common/v1/common.proto";
 
-option csharp_namespace = "experimental.Resource.V1";
+option csharp_namespace = "experimental2.Resource.V1";
 option java_multiple_files = true;
-option java_package = "io.experimental.resource.v1";
+option java_package = "io.experimental2.resource.v1";
 option java_outer_classname = "ResourceProto";
 option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/experimental2/resource/v1";
 
@@ -29,7 +29,7 @@ message Resource {
   // Set of attributes that describe the resource.
   // Attribute keys MUST be unique (it is not allowed to have more than one
   // attribute with the same key).
-  repeated experimental.common.v1.KeyValue attributes = 1;
+  repeated experimental2.common.v1.KeyValue attributes = 1;
 
   // dropped_attributes_count is the number of dropped attributes. If the value is 0, then
   // no attributes were dropped.

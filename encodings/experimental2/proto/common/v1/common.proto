@@ -14,11 +14,11 @@
 
 syntax = "proto3";
 
-package experimental.common.v1;
+package experimental2.common.v1;
 
-option csharp_namespace = "experimental.Common.V1";
+option csharp_namespace = "experimental2.Common.V1";
 option java_multiple_files = true;
-option java_package = "io.experimental.common.v1";
+option java_package = "io.experimental2.common.v1";
 option java_outer_classname = "CommonProto";
 option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/experimental2/common/v1";
 

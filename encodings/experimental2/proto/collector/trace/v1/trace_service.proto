@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package experimental.collector.trace.v1;
+package experimental2.collector.trace.v1;
 
-import "common/v1/common.proto";
-import "trace/v1/trace.proto";
+import "experimental2/proto/common/v1/common.proto";
+import "experimental2/proto/trace/v1/trace.proto";
 
-option csharp_namespace = "experimental.Collector.Trace.V1";
+option csharp_namespace = "experimental2.Collector.Trace.V1";
 option java_multiple_files = true;
-option java_package = "io.experimental.collector.trace.v1";
+option java_package = "io.experimental2.collector.trace.v1";
 option java_outer_classname = "TraceServiceProto";
 option go_package = "github.com/tigrannajaryan/exp-otelproto/encodings/experimental2/collector/trace/v1";
 
@@ -40,12 +40,12 @@ message ExportTraceServiceRequest {
   // element. Intermediary nodes (such as OpenTelemetry Collector) that receive
   // data from multiple origins typically batch the data before forwarding further and
   // in that case this array will contain multiple elements.
-  repeated experimental.trace.v1.ResourceSpans resource_spans = 1;
+  repeated experimental2.trace.v1.ResourceSpans resource_spans = 1;
 
-  experimental.common.v1.StringDict key_dict = 3;
-  experimental.common.v1.StringDict val_dict = 4;
-  experimental.common.v1.StringDict span_name_dict = 5;
-  experimental.common.v1.StringDict event_name_dict = 6;
+  experimental2.common.v1.StringDict key_dict = 3;
+  experimental2.common.v1.StringDict val_dict = 4;
+  experimental2.common.v1.StringDict span_name_dict = 5;
+  experimental2.common.v1.StringDict event_name_dict = 6;
 }
 
 message ExportTraceServiceResponse {
