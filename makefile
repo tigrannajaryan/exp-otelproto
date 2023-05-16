@@ -26,6 +26,7 @@ OTLP_PROTO_FILES := $(wildcard encodings/otlp_gogo/opentelemetry/proto/*/v1/*.pr
 OTLP_PROTO_FILES2 := $(wildcard encodings/otlp_gogo2/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo2/opentelemetry/proto/collector/*/v1/*.proto)
 OTLP_PROTO_FILES3 := $(wildcard encodings/otlp_gogo3/opentelemetry/proto/*/v1/*.proto encodings/otlp_gogo3/opentelemetry/proto/collector/*/v1/*.proto)
 EXP_PROTO_FILES := $(wildcard encodings/experimental/proto/*/v1/*.proto encodings/experimental/proto/collector/*/v1/*.proto)
+EXP2_PROTO_FILES := $(wildcard encodings/experimental2/proto/*/v1/*.proto encodings/experimental2/proto/collector/*/v1/*.proto)
 
 
 all: build test
@@ -51,6 +52,11 @@ gen-experimental:
 	$(foreach file,$(EXP_PROTO_FILES),$(call exec-command,protoc -I/usr/local/include -I encodings/experimental/proto/ $(file) --go_out=encodings/experimental/ --go-grpc_out=encodings/experimental/ ))
 	cp -R encodings/experimental/github.com/tigrannajaryan/exp-otelproto/encodings/experimental/* encodings/experimental/
 	rm -rf encodings/experimental/github.com/
+
+	$(foreach file,$(EXP2_PROTO_FILES),$(call exec-command,protoc -I/usr/local/include -I encodings/experimental2/proto/ $(file) --go_out=encodings/experimental2/ --go-grpc_out=encodings/experimental2/ ))
+	cp -R encodings/experimental2/github.com/tigrannajaryan/exp-otelproto/encodings/experimental2/* encodings/experimental2/
+	rm -rf encodings/experimental2/github.com/
+
 
 #	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/commone.proto --go_out=.
 #	protoc -I/usr/local/include -I encodings/experimental/ encodings/experimental/exchangee.proto --go_out=.
