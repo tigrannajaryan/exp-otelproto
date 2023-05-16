@@ -16,7 +16,6 @@ type Generator struct {
 	random     *rand.Rand
 	tracesSent uint64
 	spansSent  uint64
-	dict       map[string]uint32
 }
 
 func NewGenerator() *Generator {
@@ -33,18 +32,18 @@ func (g *Generator) genRandByteString(len int) string {
 	return string(b)
 }
 
-func GenResource(dict, deltaDict map[string]uint32) *Resource {
+func GenResource(deltaDict map[string]uint32) *Resource {
 	return &Resource{
 		Attributes: []*KeyValue{
 			{
-				KeyRef: getStringRef(dict, deltaDict, "StartTimeUnixnano"),
+				KeyRef: getStringRef(deltaDict, "StartTimeUnixnano"),
 				Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: 12345678}},
 			},
-			{KeyRef: getStringRef(dict, deltaDict, "Pid"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: 1234}}},
-			{KeyRef: getStringRef(dict, deltaDict, "HostName"), ValueRef: getStringRef(dict, deltaDict, "fakehost")},
+			{KeyRef: getStringRef(deltaDict, "Pid"), Value: &AnyValue{Value: &AnyValue_IntValue{IntValue: 1234}}},
+			{KeyRef: getStringRef(deltaDict, "HostName"), ValueRef: getStringRef(deltaDict, "fakehost")},
 			{
-				KeyRef:   getStringRef(dict, deltaDict, "ServiceName"),
-				ValueRef: getStringRef(dict, deltaDict, "generator"),
+				KeyRef:   getStringRef(deltaDict, "ServiceName"),
+				ValueRef: getStringRef(deltaDict, "generator"),
 			},
 		},
 	}
@@ -62,7 +61,7 @@ func createBuiltInDict() map[string]uint32 {
 	return m
 }
 
-func getStringRef(dict map[string]uint32, deltaDict map[string]uint32, str string) uint32 {
+func getStringRef(dict map[string]uint32, str string) uint32 {
 	if ref, found := builtInDict[str]; found {
 		return ref
 	}
@@ -71,12 +70,8 @@ func getStringRef(dict map[string]uint32, deltaDict map[string]uint32, str strin
 		return ref
 	}
 
-	if ref, found := deltaDict[str]; found {
-		return ref
-	}
-
-	ref := uint32(FirstStringRef + uint32(len(deltaDict)))
-	deltaDict[str] = ref
+	ref := uint32(FirstStringRef + uint32(len(dict)))
+	dict[str] = ref
 	return ref
 }
 
@@ -103,12 +98,12 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 
 	deltaDict := map[string]uint32{}
 	il := &InstrumentationLibrarySpans{
-		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(g.dict, deltaDict, "io.opentelemetry")},
+		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(deltaDict, "io.opentelemetry")},
 	}
 	batch := &TraceExportRequest{
 		ResourceSpans: []*ResourceSpans{
 			{
-				Resource:                    GenResource(g.dict, deltaDict),
+				Resource:                    GenResource(deltaDict),
 				InstrumentationLibrarySpans: []*InstrumentationLibrarySpans{il},
 			},
 		},
@@ -137,12 +132,12 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 			if attrsPerSpan >= 2 {
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, "load_generator.span_seq_num"),
+						KeyRef: getStringRef(deltaDict, "load_generator.span_seq_num"),
 						Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
 					})
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, "load_generator.trace_seq_num"),
+						KeyRef: getStringRef(deltaDict, "load_generator.trace_seq_num"),
 						Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(traceID)}},
 					})
 			}
@@ -152,7 +147,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 				attrVal := g.genRandByteString(g.random.Intn(20) + 1)
 				span.Attributes = append(span.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, attrName),
+						KeyRef: getStringRef(deltaDict, attrName),
 						Value:  &AnyValue{Value: &AnyValue_StringValue{StringValue: attrVal}},
 					})
 			}
@@ -165,7 +160,7 @@ func (g *Generator) GenerateSpanBatch(spansPerBatch int, attrsPerSpan int, timed
 					// TimeStartDeltaNano: (time.Duration(i) * time.Millisecond).Nanoseconds(),
 					Attributes: []*KeyValue{
 						{
-							KeyRef: getStringRef(g.dict, deltaDict, "te"),
+							KeyRef: getStringRef(deltaDict, "te"),
 							Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
 						},
 					},
@@ -187,12 +182,12 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 
 	deltaDict := map[string]uint32{}
 	il := &InstrumentationLibraryLogs{
-		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(g.dict, deltaDict, "io.opentelemetry")},
+		InstrumentationLibrary: &InstrumentationLibrary{NameRef: getStringRef(deltaDict, "io.opentelemetry")},
 	}
 	batch := &ExportLogsServiceRequest{
 		ResourceLogs: []*ResourceLogs{
 			{
-				Resource:                   GenResource(g.dict, deltaDict),
+				Resource:                   GenResource(deltaDict),
 				InstrumentationLibraryLogs: []*InstrumentationLibraryLogs{il},
 			},
 		},
@@ -234,14 +229,14 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 				log.Attributes = append(
 					log.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, "load_generator.span_seq_num"),
+						KeyRef: getStringRef(deltaDict, "load_generator.span_seq_num"),
 						Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(spanID)}},
 					},
 				)
 				log.Attributes = append(
 					log.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, "load_generator.trace_seq_num"),
+						KeyRef: getStringRef(deltaDict, "load_generator.trace_seq_num"),
 						Value:  &AnyValue{Value: &AnyValue_IntValue{IntValue: int64(traceID)}},
 					},
 				)
@@ -252,7 +247,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 				log.Attributes = append(
 					log.Attributes,
 					&KeyValue{
-						KeyRef: getStringRef(g.dict, deltaDict, attrName),
+						KeyRef: getStringRef(deltaDict, attrName),
 						Value:  &AnyValue{Value: &AnyValue_StringValue{StringValue: g.genRandByteString(g.random.Intn(20) + 1)}},
 					},
 				)
@@ -261,8 +256,8 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 			log.Attributes = append(
 				log.Attributes,
 				&KeyValue{
-					KeyRef:   getStringRef(g.dict, deltaDict, "event_type"),
-					ValueRef: getStringRef(g.dict, deltaDict, "auto_generated_event"),
+					KeyRef:   getStringRef(deltaDict, "event_type"),
+					ValueRef: getStringRef(deltaDict, "auto_generated_event"),
 				},
 			)
 
@@ -278,7 +273,7 @@ func (g *Generator) GenerateLogBatch(logsPerBatch int, attrsPerLog int) core.Exp
 }
 
 func GenInt64Timeseries(
-	startTime time.Time, offset int, valuesPerTimeseries int, dict, deltaDict map[string]uint32,
+	startTime time.Time, offset int, valuesPerTimeseries int, deltaDict map[string]uint32,
 ) *Metric_IntGauge {
 	var timeseries []*IntDataPoint
 	for j := 0; j < 5; j++ {
@@ -292,12 +287,12 @@ func GenInt64Timeseries(
 				Value:        int64(offset * j * k),
 				Labels: []*StringKeyValue{
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label1"),
-						ValueRef: getStringRef(dict, deltaDict, "val1"),
+						KeyRef:   getStringRef(deltaDict, "label1"),
+						ValueRef: getStringRef(deltaDict, "val1"),
 					},
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label2"),
-						ValueRef: getStringRef(dict, deltaDict, "val2"),
+						KeyRef:   getStringRef(deltaDict, "label2"),
+						ValueRef: getStringRef(deltaDict, "val2"),
 					},
 				},
 			}
@@ -316,26 +311,26 @@ func GenInt64Timeseries(
 }
 
 func genInt64Gauge(
-	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict, deltaDict map[string]uint32,
+	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, deltaDict map[string]uint32,
 ) *Metric {
-	descr := GenMetricDescriptor(i, dict, deltaDict)
-	descr.Data = GenInt64Timeseries(startTime, i, valuesPerTimeseries, dict, deltaDict)
+	descr := GenMetricDescriptor(i, deltaDict)
+	descr.Data = GenInt64Timeseries(startTime, i, valuesPerTimeseries, deltaDict)
 	return descr
 }
 
-func GenMetricDescriptor(i int, dict, deltaDict map[string]uint32) *Metric {
+func GenMetricDescriptor(i int, deltaDict map[string]uint32) *Metric {
 	descr := &Metric{
-		NameRef:        getStringRef(dict, deltaDict, "metric"+strconv.Itoa(i)),
-		DescriptionRef: getStringRef(dict, deltaDict, "some description: "+strconv.Itoa(i)),
+		NameRef:        getStringRef(deltaDict, "metric"+strconv.Itoa(i)),
+		DescriptionRef: getStringRef(deltaDict, "some description: "+strconv.Itoa(i)),
 	}
 	return descr
 }
 
 func genHistogram(
-	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict, deltaDict map[string]uint32,
+	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, deltaDict map[string]uint32,
 ) *Metric {
 	// Add Histogram
-	descr := GenMetricDescriptor(i, dict, deltaDict)
+	descr := GenMetricDescriptor(i, deltaDict)
 
 	var timeseries2 []*DoubleHistogramDataPoint
 	for j := 0; j < 1; j++ {
@@ -361,12 +356,12 @@ func genHistogram(
 				ExplicitBounds: []float64{0, 1000000},
 				Labels: []*StringKeyValue{
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label1"),
-						ValueRef: getStringRef(dict, deltaDict, "val1"),
+						KeyRef:   getStringRef(deltaDict, "label1"),
+						ValueRef: getStringRef(deltaDict, "val1"),
 					},
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label2"),
-						ValueRef: getStringRef(dict, deltaDict, "val2"),
+						KeyRef:   getStringRef(deltaDict, "label2"),
+						ValueRef: getStringRef(deltaDict, "val2"),
 					},
 				},
 			}
@@ -385,10 +380,10 @@ func genHistogram(
 }
 
 func genSummary(
-	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, dict, deltaDict map[string]uint32,
+	startTime time.Time, i int, labelKeys []string, valuesPerTimeseries int, deltaDict map[string]uint32,
 ) *Metric {
 	// Add Histogram
-	descr := GenMetricDescriptor(i, dict, deltaDict)
+	descr := GenMetricDescriptor(i, deltaDict)
 
 	var timeseries2 []*DoubleDataPoint
 	for j := 0; j < 1; j++ {
@@ -402,12 +397,12 @@ func genSummary(
 				Value:        val,
 				Labels: []*StringKeyValue{
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label1"),
-						ValueRef: getStringRef(dict, deltaDict, "val1"),
+						KeyRef:   getStringRef(deltaDict, "label1"),
+						ValueRef: getStringRef(deltaDict, "val1"),
 					},
 					{
-						KeyRef:   getStringRef(dict, deltaDict, "label2"),
-						ValueRef: getStringRef(dict, deltaDict, "val2"),
+						KeyRef:   getStringRef(deltaDict, "label2"),
+						ValueRef: getStringRef(deltaDict, "val2"),
 					},
 				},
 			}
@@ -440,7 +435,7 @@ func (g *Generator) GenerateMetricBatch(
 	batch := &MetricExportRequest{
 		ResourceMetrics: []*ResourceMetrics{
 			{
-				Resource:                      GenResource(g.dict, deltaDict),
+				Resource:                      GenResource(deltaDict),
 				InstrumentationLibraryMetrics: []*InstrumentationLibraryMetrics{il},
 			},
 		},
@@ -457,16 +452,16 @@ func (g *Generator) GenerateMetricBatch(
 
 		if int64 {
 			il.Metrics = append(
-				il.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries, g.dict, deltaDict),
+				il.Metrics, genInt64Gauge(startTime, i, labelKeys, valuesPerTimeseries, deltaDict),
 			)
 		}
 		if histogram {
 			il.Metrics = append(
-				il.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries, g.dict, deltaDict),
+				il.Metrics, genHistogram(startTime, i, labelKeys, valuesPerTimeseries, deltaDict),
 			)
 		}
 		if summary {
-			il.Metrics = append(il.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries, g.dict, deltaDict))
+			il.Metrics = append(il.Metrics, genSummary(startTime, i, labelKeys, valuesPerTimeseries, deltaDict))
 		}
 	}
 

@@ -9,11 +9,10 @@ import (
 )
 
 type spanTranslator struct {
-	dict map[string]uint32
 }
 
 func NewSpanTranslator() *spanTranslator {
-	return &spanTranslator{dict: map[string]uint32{}}
+	return &spanTranslator{}
 }
 
 func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
@@ -24,33 +23,30 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	for _, rssi := range batch.ResourceSpans {
 		rsso := &ResourceSpans{
 			Resource: &Resource{
-				Attributes: translateAttrs(st.dict, deltaDict, rssi.Resource.Attributes),
+				Attributes: translateAttrs(deltaDict, rssi.Resource.Attributes),
 			},
-			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(st.dict, deltaDict, rssi.ScopeSpans),
+			InstrumentationLibrarySpans: translateInstrumentationLibrarySpans(deltaDict, rssi.ScopeSpans),
 		}
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 
 	}
 
 	res.StringDict = createDict(deltaDict)
-	for k, v := range deltaDict {
-		st.dict[k] = v
-	}
 
 	return res
 }
 
-func translateAttrs(dict map[string]uint32, deltaDict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
+func translateAttrs(deltaDict map[string]uint32, attrs []*v1.KeyValue) (r []*KeyValue) {
 	for _, attr := range attrs {
 		kv := &KeyValue{
 			//Key:               attr.Key,
-			KeyRef: getStringRef(dict, deltaDict, attr.Key),
+			KeyRef: getStringRef(deltaDict, attr.Key),
 		}
 
 		var v *AnyValue
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
-			kv.ValueRef = getStringRef(dict, deltaDict, iv.StringValue)
+			kv.ValueRef = getStringRef(deltaDict, iv.StringValue)
 			//v = &AnyValue{Value:&AnyValue_StringValue{StringValue:iv.StringValue}}
 		case *v1.AnyValue_BoolValue:
 			v = &AnyValue{Value: &AnyValue_BoolValue{BoolValue: iv.BoolValue}}
@@ -70,17 +66,17 @@ func translateAttrs(dict map[string]uint32, deltaDict map[string]uint32, attrs [
 }
 
 func translateInstrumentationLibrarySpans(
-	dict, deltaDict map[string]uint32,
+	deltaDict map[string]uint32,
 	in []*v12.ScopeSpans,
 ) (r []*InstrumentationLibrarySpans) {
 
 	for _, ils := range in {
 		out := &InstrumentationLibrarySpans{
-			InstrumentationLibrary: translateInstrumentationLibrary(dict, deltaDict, ils.Scope),
+			InstrumentationLibrary: translateInstrumentationLibrary(deltaDict, ils.Scope),
 		}
 
 		for _, span := range ils.Spans {
-			outSpan := translateSpan(dict, deltaDict, span)
+			outSpan := translateSpan(deltaDict, span)
 			out.Spans = append(out.Spans, outSpan)
 		}
 
@@ -90,7 +86,7 @@ func translateInstrumentationLibrarySpans(
 	return r
 }
 
-func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
+func translateSpan(deltaDict map[string]uint32, span *v12.Span) *Span {
 	if span == nil {
 		return nil
 	}
@@ -108,9 +104,9 @@ func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
 		Kind:                   Span_SpanKind(span.Kind),
 		StartTimeUnixNano:      int64(span.StartTimeUnixNano),
 		DurationNano:           span.EndTimeUnixNano - span.StartTimeUnixNano,
-		Attributes:             translateAttrs(dict, deltaDict, span.Attributes),
+		Attributes:             translateAttrs(deltaDict, span.Attributes),
 		DroppedAttributesCount: span.DroppedAttributesCount,
-		Events:                 translateEvents(dict, deltaDict, span.Events),
+		Events:                 translateEvents(deltaDict, span.Events),
 		DroppedEventsCount:     0,
 		Links:                  nil,
 		DroppedLinksCount:      0,
@@ -118,31 +114,31 @@ func translateSpan(dict, deltaDict map[string]uint32, span *v12.Span) *Span {
 	}
 }
 
-func translateEvents(dict map[string]uint32, dict2 map[string]uint32, events []*v12.Span_Event) []*Span_Event {
+func translateEvents(dict map[string]uint32, events []*v12.Span_Event) []*Span_Event {
 	out := []*Span_Event{}
 	for _, e := range events {
-		out = append(out, translateEvent(dict, dict2, e))
+		out = append(out, translateEvent(dict, e))
 	}
 	return out
 }
 
-func translateEvent(dict map[string]uint32, dict2 map[string]uint32, e *v12.Span_Event) *Span_Event {
+func translateEvent(dict map[string]uint32, e *v12.Span_Event) *Span_Event {
 	return &Span_Event{
 		TimeUnixNano:           int64(e.TimeUnixNano),
 		Name:                   e.Name,
-		Attributes:             translateAttrs(dict, dict2, e.Attributes),
+		Attributes:             translateAttrs(dict, e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
 }
 
 func translateInstrumentationLibrary(
-	dict, deltaDict map[string]uint32, in *v1.InstrumentationScope,
+	deltaDict map[string]uint32, in *v1.InstrumentationScope,
 ) *InstrumentationLibrary {
 	if in == nil {
 		return nil
 	}
 	return &InstrumentationLibrary{
-		NameRef:    getStringRef(dict, deltaDict, in.Name),
-		VersionRef: getStringRef(dict, deltaDict, in.Version),
+		NameRef:    getStringRef(deltaDict, in.Name),
+		VersionRef: getStringRef(deltaDict, in.Version),
 	}
 }
