@@ -680,7 +680,7 @@ func TestEncodeSizeFromFile(t *testing.T) {
 
 	fmt.Println("===== Encoded sizes")
 
-	batchSizes := []int{10000}
+	batchSizes := []int{10, 10000}
 	for _, batchSize := range batchSizes {
 		t.Run(
 			"Batch="+strconv.Itoa(batchSize), func(t *testing.T) {

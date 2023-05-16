@@ -217,12 +217,14 @@ func (st *spanTranslator) translateEvents(events []*v12.Span_Event) []*otlptrace
 }
 
 func (st *spanTranslator) translateEvent(e *v12.Span_Event) *otlptrace.Span_Event {
-	return &otlptrace.Span_Event{
+	e1 := &otlptrace.Span_Event{
 		TimeUnixNano:           e.TimeUnixNano,
 		Name:                   e.Name,
 		Attributes:             st.translateAttrs(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
+	dictionizeStr(st.eventNameDict, &e1.Name, &e1.NameRef)
+	return e1
 }
 
 func (st *spanTranslator) translateStatus(status *v12.Status) *otlptrace.Status {
