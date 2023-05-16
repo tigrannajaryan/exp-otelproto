@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 	"testing"
 	"unsafe"
 
@@ -679,104 +680,131 @@ func TestEncodeSizeFromFile(t *testing.T) {
 
 	fmt.Println("===== Encoded sizes")
 
-	firstUncompessedSize := 0
-	firstZlibedSize := 0
-	firstZstdedSize := 0
-
-	for _, test := range tests {
-		fmt.Println("Encoding                       Uncompressed  Improved      Compressed  Improved      Compressed  Improved")
+	batchSizes := []int{1, 10, 100, 1000, 10000}
+	for _, batchSize := range batchSizes {
 		t.Run(
-			test.name, func(t *testing.T) {
-				translator := test.translator()
-
-				bytes, err := os.ReadFile("testdata/hipstershop_traces.pb")
-				assert.NoError(t, err)
-
-				msg := &v1.ExportTraceServiceRequest{}
-				err = proto.Unmarshal(bytes, msg)
-				assert.NoError(t, err)
-
-				uncompressedSize := 0
-				zlibedSize := 0
-				zstdedSize := 0
-				totalTraces := 0
-				totalSpans := 0
-
-				for {
-					//msg := otlp.ReadTraceMessage(f)
-					//if msg == nil {
-					//	break
-					//}
-					traces, spans := countTracesAndSpans(msg)
-					totalTraces += traces
-					totalSpans += spans
-
-					batch := translator.TranslateSpans(msg)
-					if batch == nil {
-						// Skip this case.
-						return
-					}
-
-					bodyBytes, err := proto.Marshal(batch.(proto.Message))
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					zlibedBytes := doZlib(bodyBytes)
-					zstdedBytes := compressZstd(bodyBytes)
-
-					uncompressedSize += len(bodyBytes)
-					zlibedSize += len(zlibedBytes)
-					zstdedSize += len(zstdedBytes)
-
-					break
+			"Batch="+strconv.Itoa(batchSize), func(t *testing.T) {
+				fmt.Println("Encoding                       Uncompressed  Improved      Compressed    Improved      Compressed    Improved")
+				tt := encodeSizeFromFileTest{batchSize: batchSize}
+				for _, test := range tests {
+					tt.testBatchSize(t, test.translator, test.name)
 				}
-
-				uncompressedRatioStr := "[1.000]"
-				zlibedRatioStr := "[1.000]"
-				zstdedRatioStr := "[1.000]"
-
-				if firstUncompessedSize == 0 {
-					firstUncompessedSize = uncompressedSize
-				} else {
-					uncompressedRatioStr = fmt.Sprintf(
-						"[%1.3f]", float64(firstUncompessedSize)/float64(uncompressedSize),
-					)
-				}
-
-				if firstZlibedSize == 0 {
-					firstZlibedSize = zlibedSize
-				} else {
-					zlibedRatioStr = fmt.Sprintf(
-						"[%1.3f]", float64(firstZlibedSize)/float64(zlibedSize),
-					)
-				}
-
-				if firstZstdedSize == 0 {
-					firstZstdedSize = zstdedSize
-				} else {
-					zstdedRatioStr = fmt.Sprintf(
-						"[%1.3f]", float64(firstZstdedSize)/float64(zstdedSize),
-					)
-				}
-
-				fmt.Printf(
-					"%-31v %6d bytes%8s, zlib %5d bytes%8s, zstd %5d bytes%8s\n",
-					test.name,
-					uncompressedSize,
-					uncompressedRatioStr,
-					zlibedSize,
-					zlibedRatioStr,
-					zstdedSize,
-					zstdedRatioStr,
-					//totalTraces,
-					//totalSpans,
-				)
-
+				fmt.Println("")
 			},
 		)
-		fmt.Println("")
 	}
+}
+
+type encodeSizeFromFileTest struct {
+	firstUncompessedSize int
+	firstZlibedSize      int
+	firstZstdedSize      int
+	batchSize            int
+}
+
+func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() core.SpanTranslator, testName string) {
+	bytes, err := os.ReadFile("testdata/hipstershop_traces.pb")
+	assert.NoError(t, err)
+
+	msg := &v1.ExportTraceServiceRequest{}
+	err = proto.Unmarshal(bytes, msg)
+	assert.NoError(t, err)
+
+	var batches []*v1.ExportTraceServiceRequest
+	for len(msg.ResourceSpans) > 0 {
+		if len(msg.ResourceSpans) > tt.batchSize {
+			batches = append(
+				batches, &v1.ExportTraceServiceRequest{
+					ResourceSpans: msg.ResourceSpans[:tt.batchSize],
+				},
+			)
+			msg.ResourceSpans = msg.ResourceSpans[tt.batchSize:]
+		} else {
+			batches = append(
+				batches, &v1.ExportTraceServiceRequest{
+					ResourceSpans: msg.ResourceSpans,
+				},
+			)
+			break
+		}
+	}
+
+	uncompressedSize := 0
+	zlibedSize := 0
+	zstdedSize := 0
+	totalSpans := 0
+
+	for _, batch := range batches {
+		//msg := otlp.ReadTraceMessage(f)
+		//if msg == nil {
+		//	break
+		//}
+		_, spans := countTracesAndSpans(batch)
+		totalSpans += spans
+
+		translator := translator()
+
+		batch := translator.TranslateSpans(batch)
+		if batch == nil {
+			// Skip this case.
+			return
+		}
+
+		bodyBytes, err := proto.Marshal(batch.(proto.Message))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		zlibedBytes := doZlib(bodyBytes)
+		zstdedBytes := compressZstd(bodyBytes)
+
+		uncompressedSize += len(bodyBytes)
+		zlibedSize += len(zlibedBytes)
+		zstdedSize += len(zstdedBytes)
+	}
+
+	uncompressedRatioStr := "[1.000]"
+	zlibedRatioStr := "[1.000]"
+	zstdedRatioStr := "[1.000]"
+
+	if tt.firstUncompessedSize == 0 {
+		tt.firstUncompessedSize = uncompressedSize
+	} else {
+		uncompressedRatioStr = fmt.Sprintf(
+			"[%1.3f]", float64(tt.firstUncompessedSize)/float64(uncompressedSize),
+		)
+	}
+
+	if tt.firstZlibedSize == 0 {
+		tt.firstZlibedSize = zlibedSize
+	} else {
+		zlibedRatioStr = fmt.Sprintf(
+			"[%1.3f]", float64(tt.firstZlibedSize)/float64(zlibedSize),
+		)
+	}
+
+	if tt.firstZstdedSize == 0 {
+		tt.firstZstdedSize = zstdedSize
+	} else {
+		zstdedRatioStr = fmt.Sprintf(
+			"[%1.3f]", float64(tt.firstZstdedSize)/float64(zstdedSize),
+		)
+	}
+
+	fmt.Printf(
+		"%-29v %8d bytes%8s, zlib %7d bytes%8s, zstd %7d bytes%8s\n",
+		testName,
+		uncompressedSize,
+		uncompressedRatioStr,
+		zlibedSize,
+		zlibedRatioStr,
+		zstdedSize,
+		zstdedRatioStr,
+		//totalTraces,
+		//totalSpans,
+	)
+
+	//fmt.Printf("Spans=%d\n", totalSpans)
 }
 
 func doZlib(input []byte) []byte {
