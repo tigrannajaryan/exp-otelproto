@@ -60,10 +60,10 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 	}
 
-	res.KeyDict = createDict(st.keyDict)
-	res.ValDict = createDict(st.valDict)
-	res.SpanNameDict = createDict(st.spanNameDict)
-	res.EventNameDict = createDict(st.eventNameDict)
+	res.KeyDict = createDict(&st.keyDict)
+	res.ValDict = createDict(&st.valDict)
+	res.SpanNameDict = createDict(&st.spanNameDict)
+	res.EventNameDict = createDict(&st.eventNameDict)
 
 	res = &otlptracecolexp.ExportTraceServiceRequest{}
 	st.pass = replacePass
@@ -85,6 +85,10 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 const firstStringRef = uint32(1)
 
 func (st *spanTranslator) dictionizeStr(dict dictType, str *string, ref *uint32) bool {
+	if *str == "" {
+		return false
+	}
+
 	var idx dictElem
 	var ok bool
 
@@ -110,17 +114,13 @@ func (st *spanTranslator) dictionizeStr(dict dictType, str *string, ref *uint32)
 	}
 }
 
-func createDict(dict dictType) *otlpcommon.StringDict {
+func createDict(dict *dictType) *otlpcommon.StringDict {
 
 	var freqs []struct {
 		str   string
 		count int
 	}
-	for k, v := range dict {
-		if v.count < 2 {
-			// Not worth dictionary encoding since only one occurrence of this string.
-			continue
-		}
+	for k, v := range *dict {
 		freqs = append(
 			freqs, struct {
 				str   string
@@ -129,12 +129,12 @@ func createDict(dict dictType) *otlpcommon.StringDict {
 		)
 	}
 
-	sort.Slice(
+	sort.SliceStable(
 		freqs, func(i, j int) bool {
 			return freqs[i].count > freqs[j].count
 		},
 	)
-	dict = dictType{}
+	*dict = dictType{}
 	ref := firstStringRef
 	for _, e := range freqs {
 
@@ -144,7 +144,7 @@ func createDict(dict dictType) *otlpcommon.StringDict {
 			// Not worth using ref since numeric encoding of the ref is larger than the string itself
 			continue
 		}
-		dict[e.str] = dictElem{
+		(*dict)[e.str] = dictElem{
 			ref:   ref,
 			count: e.count,
 		}
@@ -153,9 +153,9 @@ func createDict(dict dictType) *otlpcommon.StringDict {
 
 	r := &otlpcommon.StringDict{
 		StartIndex: firstStringRef,
-		Values:     make([]string, len(dict)),
+		Values:     make([]string, len(*dict)),
 	}
-	for k, v := range dict {
+	for k, v := range *dict {
 		r.Values[v.ref-firstStringRef] = k
 	}
 
