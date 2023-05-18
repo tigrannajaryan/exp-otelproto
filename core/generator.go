@@ -33,9 +33,9 @@ type Generator interface {
 }
 
 type SpanTranslator interface {
-	TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) ExportRequest
+	FromOTLPSpans(batch *otlptracecol.ExportTraceServiceRequest) ExportRequest
 }
 
 type MetricTranslator interface {
-	TranslateMetrics(batch *otlpmetriccol.ExportMetricsServiceRequest) ExportRequest
+	FromOTLPMetrics(batch *otlpmetriccol.ExportMetricsServiceRequest) ExportRequest
 }

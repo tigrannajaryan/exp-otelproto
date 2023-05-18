@@ -15,7 +15,7 @@ func NewSpanTranslator() *spanTranslator {
 	return &spanTranslator{}
 }
 
-func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+func (st *spanTranslator) FromOTLPSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 
 	res := &TraceExportRequest{}
 	deltaDict := map[string]uint32{}

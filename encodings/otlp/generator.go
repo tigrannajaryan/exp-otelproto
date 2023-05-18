@@ -473,6 +473,6 @@ func timeToTimestamp(t time.Time) *timestamp.Timestamp {
 type SpanTranslator struct {
 }
 
-func (st *SpanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+func (st *SpanTranslator) FromOTLPSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 	return batch
 }

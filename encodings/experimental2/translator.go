@@ -38,7 +38,7 @@ func NewSpanTranslator() *spanTranslator {
 	return &spanTranslator{}
 }
 
-func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
+func (st *spanTranslator) FromOTLPSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 
 	res := &otlptracecolexp.ExportTraceServiceRequest{}
 	st.stringDict = dictType{}

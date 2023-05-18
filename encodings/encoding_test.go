@@ -739,7 +739,7 @@ func (tt *encodeSizeFromFileTest) testBatchSize(t *testing.T, translator func() 
 
 		translator := translator()
 
-		batch := translator.TranslateSpans(batch)
+		batch := translator.FromOTLPSpans(batch)
 		if batch == nil {
 			// Skip this case.
 			return
