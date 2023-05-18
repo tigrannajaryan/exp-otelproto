@@ -46,6 +46,7 @@ message ExportTraceServiceRequest {
   experimental2.common.v1.StringDict val_dict = 4;
   experimental2.common.v1.StringDict span_name_dict = 5;
   experimental2.common.v1.StringDict event_name_dict = 6;
+  experimental2.common.v1.BytesDict bytes_dict = 7;
 }
 
 message ExportTraceServiceResponse {

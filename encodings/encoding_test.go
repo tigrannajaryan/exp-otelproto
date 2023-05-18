@@ -23,7 +23,6 @@ import (
 	v12 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/common/v1"
 	v14 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/logs/v1"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/otelp2"
 	v13 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/trace/v1"
 
 	"github.com/tigrannajaryan/exp-otelproto/core"
@@ -55,10 +54,10 @@ var tests = []struct {
 	//	name: "OTLP",
 	//	gen:  func() core.Generator { return baseline.NewGenerator() },
 	//},
-	{
-		name: "OTLP DICT",
-		gen:  func() core.Generator { return otelp2.NewGenerator() },
-	},
+	//{
+	//	name: "OTLP DICT",
+	//	gen:  func() core.Generator { return otelp2.NewGenerator() },
+	//},
 	{
 		name: "OTLP MDICT",
 		gen:  func() core.Generator { return experimental2.NewGenerator() },
@@ -636,10 +635,10 @@ func TestEncodeSizeFromFile(t *testing.T) {
 			name:       "OTLP",
 			translator: func() core.SpanTranslator { return &otlp.SpanTranslator{} },
 		},
-		{
-			name:       "OTLP DICT",
-			translator: func() core.SpanTranslator { return otelp2.NewSpanTranslator() },
-		},
+		//{
+		//	name:       "OTLP DICT",
+		//	translator: func() core.SpanTranslator { return otelp2.NewSpanTranslator() },
+		//},
 		{
 			name:       "OTLP MDICT",
 			translator: func() core.SpanTranslator { return experimental2.NewSpanTranslator() },

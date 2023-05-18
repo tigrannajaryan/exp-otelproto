@@ -115,7 +115,6 @@ message Span {
   //
   // This field is required.
   string name = 5;
-  uint32 name_ref = 16;
 
   // SpanKind is the type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
@@ -251,6 +250,11 @@ message Span {
   // An optional final status for this span. Semantically when Status isn't set, it means
   // span's status code is unset, i.e. assume STATUS_CODE_UNSET (code = 0).
   Status status = 15;
+
+  uint32 name_ref = 16;
+  uint32 trace_id_ref = 17;
+  uint32 span_id_ref = 18;
+  uint32 parent_span_id_ref = 19;
 }
 
 // The Status type defines a logical error model that is suitable for different

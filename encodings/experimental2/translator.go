@@ -34,6 +34,7 @@ type spanTranslator struct {
 	valDict       dictType
 	spanNameDict  dictType
 	eventNameDict dictType
+	bytesDict     dictType
 }
 
 func NewSpanTranslator() *spanTranslator {
@@ -47,6 +48,7 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	st.valDict = dictType{}
 	st.spanNameDict = dictType{}
 	st.eventNameDict = dictType{}
+	st.bytesDict = dictType{}
 
 	st.pass = countStringsPass
 	for _, rssi := range batch.ResourceSpans {
@@ -60,10 +62,11 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 	}
 
-	res.KeyDict = createDict(&st.keyDict)
-	res.ValDict = createDict(&st.valDict)
-	res.SpanNameDict = createDict(&st.spanNameDict)
-	res.EventNameDict = createDict(&st.eventNameDict)
+	res.KeyDict = createStringDict(&st.keyDict)
+	res.ValDict = createStringDict(&st.valDict)
+	res.SpanNameDict = createStringDict(&st.spanNameDict)
+	res.EventNameDict = createStringDict(&st.eventNameDict)
+	res.BytesDict = createBytesDict(&st.bytesDict)
 
 	res = &otlptracecolexp.ExportTraceServiceRequest{}
 	st.pass = replacePass
@@ -82,10 +85,10 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 	return res
 }
 
-const firstStringRef = uint32(1)
+const firstDictRef = uint32(1)
 
 func (st *spanTranslator) dictionizeStr(dict dictType, str *string, ref *uint32) bool {
-	if *str == "" {
+	if len(*str) == 0 {
 		return false
 	}
 
@@ -114,7 +117,37 @@ func (st *spanTranslator) dictionizeStr(dict dictType, str *string, ref *uint32)
 	}
 }
 
-func createDict(dict *dictType) *otlpcommon.StringDict {
+func (st *spanTranslator) dictionizeBytes(dict dictType, str *[]byte, ref *uint32) bool {
+	if len(*str) == 0 {
+		return false
+	}
+
+	var idx dictElem
+	var ok bool
+
+	if st.pass == countStringsPass {
+		if idx, ok = dict[string(*str)]; !ok {
+			idx.ref = uint32(len(dict) + 1)
+			idx.count = 1
+			dict[string(*str)] = idx
+		} else {
+			idx.count++
+			dict[string(*str)] = idx
+		}
+		return false
+	} else if st.pass == replacePass {
+		if idx, ok = dict[string(*str)]; !ok {
+			return false
+		}
+		*str = nil
+		*ref = idx.ref
+		return true
+	} else {
+		return false
+	}
+}
+
+func createDict(dict *dictType) {
 
 	var freqs []struct {
 		str   string
@@ -135,7 +168,7 @@ func createDict(dict *dictType) *otlpcommon.StringDict {
 		},
 	)
 	*dict = dictType{}
-	ref := firstStringRef
+	ref := firstDictRef
 	for _, e := range freqs {
 
 		buf := make([]byte, 10)
@@ -150,13 +183,31 @@ func createDict(dict *dictType) *otlpcommon.StringDict {
 		}
 		ref++
 	}
+}
+
+func createStringDict(dict *dictType) *otlpcommon.StringDict {
+	createDict(dict)
 
 	r := &otlpcommon.StringDict{
-		StartIndex: firstStringRef,
+		StartIndex: firstDictRef,
 		Values:     make([]string, len(*dict)),
 	}
 	for k, v := range *dict {
-		r.Values[v.ref-firstStringRef] = k
+		r.Values[v.ref-firstDictRef] = k
+	}
+
+	return r
+}
+
+func createBytesDict(dict *dictType) *otlpcommon.BytesDict {
+	createDict(dict)
+
+	r := &otlpcommon.BytesDict{
+		StartIndex: firstDictRef,
+		Values:     make([][]byte, len(*dict)),
+	}
+	for k, v := range *dict {
+		r.Values[v.ref-firstDictRef] = []byte(k)
 	}
 
 	return r
@@ -166,7 +217,7 @@ func (st *spanTranslator) translateAttrs(attrs []*v1.KeyValue) (r []*otlpcommon.
 	for _, attr := range attrs {
 		var ref uint32
 		var kv *otlpcommon.KeyValue
-		if st.dictionizeStr(st.keyDict, &attr.Key, &ref) {
+		if st.dictionizeStr(st.valDict, &attr.Key, &ref) {
 			kv = &otlpcommon.KeyValue{KeyRef: ref}
 		} else {
 			kv = &otlpcommon.KeyValue{Key: attr.Key}
@@ -245,7 +296,10 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		DroppedLinksCount:      span.DroppedLinksCount,
 		Status:                 st.translateStatus(span.Status),
 	}
-	st.dictionizeStr(st.spanNameDict, &s.Name, &s.NameRef)
+	st.dictionizeStr(st.valDict, &s.Name, &s.NameRef)
+	st.dictionizeBytes(st.bytesDict, &s.TraceId, &s.TraceIdRef)
+	st.dictionizeBytes(st.bytesDict, &s.SpanId, &s.SpanIdRef)
+	st.dictionizeBytes(st.bytesDict, &s.ParentSpanId, &s.ParentSpanIdRef)
 	return s
 }
 
@@ -279,7 +333,7 @@ func (st *spanTranslator) translateEvent(e *v12.Span_Event) *otlptrace.Span_Even
 		Attributes:             st.translateAttrs(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
-	st.dictionizeStr(st.eventNameDict, &e1.Name, &e1.NameRef)
+	st.dictionizeStr(st.valDict, &e1.Name, &e1.NameRef)
 	return e1
 }
 

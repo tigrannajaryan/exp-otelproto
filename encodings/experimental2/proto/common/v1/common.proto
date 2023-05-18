@@ -84,3 +84,8 @@ message StringDict {
   repeated string values = 2;
   uint32 startIndex = 1;
 }
+
+message BytesDict {
+  repeated bytes values = 2;
+  uint32 startIndex = 1;
+}
