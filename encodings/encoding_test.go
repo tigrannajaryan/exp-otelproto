@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strconv"
 	"testing"
-	"unsafe"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -19,14 +18,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	v1 "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 
-	v15 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
-	v12 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/common/v1"
-	v14 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/logs/v1"
-	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
-	v13 "github.com/tigrannajaryan/exp-otelproto/encodings/otlp_gogo/trace/v1"
-
 	"github.com/tigrannajaryan/exp-otelproto/core"
 	experimental "github.com/tigrannajaryan/exp-otelproto/encodings/experimental"
+	v15 "github.com/tigrannajaryan/exp-otelproto/encodings/experimental/collector/trace/v1"
+	"github.com/tigrannajaryan/exp-otelproto/encodings/experimental2"
 	"github.com/tigrannajaryan/exp-otelproto/encodings/otlp"
 )
 
@@ -869,41 +864,6 @@ func BenchmarkEndianness(b *testing.B) {
 	}
 }
 
-func TestSizes(t *testing.T) {
-	akv := v12.KeyValue{}
-	log.Printf("AttributeKeyValue is %d bytes", unsafe.Sizeof(akv))
-	log.Printf("AttributeKeyValue.Key is %d bytes", unsafe.Sizeof(akv.Key))
-
-	log.Printf("Span is %d bytes", unsafe.Sizeof(v13.Span{}))
-	log.Printf("LogRecord is %d bytes", unsafe.Sizeof(v14.LogRecord{}))
-}
-
-func createAKV() *v12.KeyValue {
-	for i := 0; i < 1; i++ {
-		return &v12.KeyValue{}
-	}
-	return nil
-}
-
-func createAV() *v12.KeyValue {
-	for i := 0; i < 1; i++ {
-		return &v12.KeyValue{}
-	}
-	return nil
-}
-
-func BenchmarkAttributeKeyValueSize(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		createAKV()
-	}
-}
-
-func BenchmarkAttributeValueSize(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		createAV()
-	}
-}
-
 func TestJson(t *testing.T) {
 	g := experimental.NewGenerator()
 	b := g.GenerateSpanBatch(1, 1, 1)
@@ -911,8 +871,8 @@ func TestJson(t *testing.T) {
 	m := jsonpb.Marshaler{}
 	str, err := m.MarshalToString(b.(*v15.ExportTraceServiceRequest))
 	assert.NoError(t, err)
-	fmt.Println("ShortKeys, OrigName=false")
-	fmt.Println(str)
+	//fmt.Println("ShortKeys, OrigName=false")
+	//fmt.Println(str)
 
 	err = jsonpb.UnmarshalString(str, b.(proto.Message))
 	assert.NoError(t, err)
@@ -920,8 +880,8 @@ func TestJson(t *testing.T) {
 	m.OrigName = true
 	str, err = m.MarshalToString(b.(*v15.ExportTraceServiceRequest))
 	assert.NoError(t, err)
-	fmt.Println("ShortKeys, OrigName=true")
-	fmt.Println(str)
+	//fmt.Println("ShortKeys, OrigName=true")
+	//fmt.Println(str)
 
 	err = jsonpb.UnmarshalString(str, b.(proto.Message))
 	assert.NoError(t, err)
@@ -932,8 +892,8 @@ func TestJson(t *testing.T) {
 	m2 := jsonpb.Marshaler{}
 	str, err = m2.MarshalToString(b2.(*v1.ExportTraceServiceRequest))
 	assert.NoError(t, err)
-	fmt.Println("OTLP, OrigName=false")
-	fmt.Println(str)
+	//fmt.Println("OTLP, OrigName=false")
+	//fmt.Println(str)
 
 	err = jsonpb.UnmarshalString(str, b2.(proto.Message))
 	assert.NoError(t, err)
@@ -941,8 +901,8 @@ func TestJson(t *testing.T) {
 	m2.OrigName = true
 	str, err = m2.MarshalToString(b2.(*v1.ExportTraceServiceRequest))
 	assert.NoError(t, err)
-	fmt.Println("OTLP, OrigName=true")
-	fmt.Println(str)
+	//fmt.Println("OTLP, OrigName=true")
+	//fmt.Println(str)
 
 	err = jsonpb.UnmarshalString(str, b2.(proto.Message))
 	assert.NoError(t, err)
