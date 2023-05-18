@@ -29,12 +29,9 @@ const countStringsPass translatorPass = 1
 const replacePass translatorPass = 2
 
 type spanTranslator struct {
-	pass          translatorPass
-	keyDict       dictType
-	valDict       dictType
-	spanNameDict  dictType
-	eventNameDict dictType
-	bytesDict     dictType
+	pass       translatorPass
+	stringDict dictType
+	bytesDict  dictType
 }
 
 func NewSpanTranslator() *spanTranslator {
@@ -44,10 +41,7 @@ func NewSpanTranslator() *spanTranslator {
 func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceRequest) core.ExportRequest {
 
 	res := &otlptracecolexp.ExportTraceServiceRequest{}
-	st.keyDict = dictType{}
-	st.valDict = dictType{}
-	st.spanNameDict = dictType{}
-	st.eventNameDict = dictType{}
+	st.stringDict = dictType{}
 	st.bytesDict = dictType{}
 
 	st.pass = countStringsPass
@@ -62,10 +56,7 @@ func (st *spanTranslator) TranslateSpans(batch *otlptracecol.ExportTraceServiceR
 		res.ResourceSpans = append(res.ResourceSpans, rsso)
 	}
 
-	res.KeyDict = createStringDict(&st.keyDict)
-	res.ValDict = createStringDict(&st.valDict)
-	res.SpanNameDict = createStringDict(&st.spanNameDict)
-	res.EventNameDict = createStringDict(&st.eventNameDict)
+	res.StringDict = createStringDict(&st.stringDict)
 	res.BytesDict = createBytesDict(&st.bytesDict)
 
 	res = &otlptracecolexp.ExportTraceServiceRequest{}
@@ -217,7 +208,7 @@ func (st *spanTranslator) translateAttrs(attrs []*v1.KeyValue) (r []*otlpcommon.
 	for _, attr := range attrs {
 		var ref uint32
 		var kv *otlpcommon.KeyValue
-		if st.dictionizeStr(st.valDict, &attr.Key, &ref) {
+		if st.dictionizeStr(st.stringDict, &attr.Key, &ref) {
 			kv = &otlpcommon.KeyValue{KeyRef: ref}
 		} else {
 			kv = &otlpcommon.KeyValue{Key: attr.Key}
@@ -227,7 +218,7 @@ func (st *spanTranslator) translateAttrs(attrs []*v1.KeyValue) (r []*otlpcommon.
 		switch iv := attr.Value.Value.(type) {
 		case *v1.AnyValue_StringValue:
 			var ref uint32
-			if st.dictionizeStr(st.valDict, &iv.StringValue, &ref) {
+			if st.dictionizeStr(st.stringDict, &iv.StringValue, &ref) {
 				v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringRefValue{StringRefValue: ref}}
 			} else {
 				v = &otlpcommon.AnyValue{Value: &otlpcommon.AnyValue_StringValue{StringValue: iv.StringValue}}
@@ -296,7 +287,7 @@ func (st *spanTranslator) translateSpan(span *v12.Span) *otlptrace.Span {
 		DroppedLinksCount:      span.DroppedLinksCount,
 		Status:                 st.translateStatus(span.Status),
 	}
-	st.dictionizeStr(st.valDict, &s.Name, &s.NameRef)
+	st.dictionizeStr(st.stringDict, &s.Name, &s.NameRef)
 	st.dictionizeBytes(st.bytesDict, &s.TraceId, &s.TraceIdRef)
 	st.dictionizeBytes(st.bytesDict, &s.SpanId, &s.SpanIdRef)
 	st.dictionizeBytes(st.bytesDict, &s.ParentSpanId, &s.ParentSpanIdRef)
@@ -313,8 +304,8 @@ func (st *spanTranslator) translateInstrumentationLibrary(in *v1.Instrumentation
 		Attributes:             st.translateAttrs(in.Attributes),
 		DroppedAttributesCount: in.DroppedAttributesCount,
 	}
-	st.dictionizeStr(st.valDict, &is.Name, &is.NameRef)
-	st.dictionizeStr(st.valDict, &is.Version, &is.VersionRef)
+	st.dictionizeStr(st.stringDict, &is.Name, &is.NameRef)
+	st.dictionizeStr(st.stringDict, &is.Version, &is.VersionRef)
 	return is
 }
 
@@ -333,7 +324,7 @@ func (st *spanTranslator) translateEvent(e *v12.Span_Event) *otlptrace.Span_Even
 		Attributes:             st.translateAttrs(e.Attributes),
 		DroppedAttributesCount: e.DroppedAttributesCount,
 	}
-	st.dictionizeStr(st.valDict, &e1.Name, &e1.NameRef)
+	st.dictionizeStr(st.stringDict, &e1.Name, &e1.NameRef)
 	return e1
 }
 

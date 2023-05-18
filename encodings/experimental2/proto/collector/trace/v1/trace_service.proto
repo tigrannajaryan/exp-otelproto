@@ -42,11 +42,8 @@ message ExportTraceServiceRequest {
   // in that case this array will contain multiple elements.
   repeated experimental2.trace.v1.ResourceSpans resource_spans = 1;
 
-  experimental2.common.v1.StringDict key_dict = 3;
-  experimental2.common.v1.StringDict val_dict = 4;
-  experimental2.common.v1.StringDict span_name_dict = 5;
-  experimental2.common.v1.StringDict event_name_dict = 6;
-  experimental2.common.v1.BytesDict bytes_dict = 7;
+  experimental2.common.v1.StringDict string_dict = 2;
+  experimental2.common.v1.BytesDict bytes_dict = 3;
 }
 
 message ExportTraceServiceResponse {
